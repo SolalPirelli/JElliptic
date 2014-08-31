@@ -11,7 +11,7 @@ class CurveWalk {
 
     constructor(problem: DiscreteLogProblem, u?: ModNumber, v?: ModNumber) {
         u = u || new ModNumber(1, problem.Curve.N);
-        v = v || new ModNumber(1, problem.Curve.N);
+        v = v || new ModNumber(0, problem.Curve.N);
 
         this.problem = problem;
         this.u = u;

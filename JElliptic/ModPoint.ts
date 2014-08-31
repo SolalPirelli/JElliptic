@@ -2,12 +2,19 @@
 import ModCurve = require("ModCurve");
 
 class ModPoint {
+    private static ZERO = new ModPoint();
+
     private x: ModNumber;
     private y: ModNumber;
     private curve: ModCurve;
 
     public static create(x: number, y: number, curve: ModCurve) {
         return ModPoint.createNum(new ModNumber(x, curve.N), new ModNumber(y, curve.N), curve);
+    }
+
+
+    static get Zero() {
+        return ModPoint.ZERO;
     }
 
 
@@ -25,6 +32,13 @@ class ModPoint {
 
 
     add(other: ModPoint): ModPoint {
+        if (this == ModPoint.ZERO) {
+            return other;
+        }
+        if (other == ModPoint.ZERO) {
+            return this;
+        }
+
         var lambda: ModNumber;
         if (this.eq(other)) {
             var num = this.x.pow(2).mulNum(3).add(this.curve.A);
@@ -43,8 +57,8 @@ class ModPoint {
     }
 
     mul(n: ModNumber): ModPoint {
-        var g = this;
-        for (var _ = 1; _ < n.Value; _++) {
+        var g = ModPoint.ZERO;
+        for (var _ = 0; _ < n.Value; _++) {
             g = g.add(this);
         }
         return g;
@@ -55,7 +69,7 @@ class ModPoint {
     }
 
     eq(other: ModPoint): boolean {
-        return this.x.eq(other.x) && this.y.eq(other.y);
+        return this == other || (this.x.eq(other.x) && this.y.eq(other.y));
     }
 
 

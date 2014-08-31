@@ -6,6 +6,14 @@
             return ModPoint.createNum(new ModNumber(x, curve.N), new ModNumber(y, curve.N), curve);
         };
 
+        Object.defineProperty(ModPoint, "Zero", {
+            get: function () {
+                return ModPoint.ZERO;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         Object.defineProperty(ModPoint.prototype, "X", {
             get: function () {
                 return this.x;
@@ -31,6 +39,13 @@
         });
 
         ModPoint.prototype.add = function (other) {
+            if (this == ModPoint.ZERO) {
+                return other;
+            }
+            if (other == ModPoint.ZERO) {
+                return this;
+            }
+
             var lambda;
             if (this.eq(other)) {
                 var num = this.x.pow(2).mulNum(3).add(this.curve.A);
@@ -49,8 +64,8 @@
         };
 
         ModPoint.prototype.mul = function (n) {
-            var g = this;
-            for (var _ = 1; _ < n.Value; _++) {
+            var g = ModPoint.ZERO;
+            for (var _ = 0; _ < n.Value; _++) {
                 g = g.add(this);
             }
             return g;
@@ -61,7 +76,7 @@
         };
 
         ModPoint.prototype.eq = function (other) {
-            return this.x.eq(other.x) && this.y.eq(other.y);
+            return this == other || (this.x.eq(other.x) && this.y.eq(other.y));
         };
 
         ModPoint.prototype.toString = function () {
@@ -84,6 +99,7 @@
         ModPoint.prototype.isInCurve = function (curve) {
             return this.y.pow(2).eq(this.x.pow(3).add(curve.A.mul(this.x)).add(curve.B));
         };
+        ModPoint.ZERO = new ModPoint();
         return ModPoint;
     })();
 
