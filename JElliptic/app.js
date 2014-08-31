@@ -1,26 +1,4 @@
-﻿// Logs debugging messages
-var Debug;
-(function (Debug) {
-    function clear() {
-        document.getElementById("log").innerHTML = "";
-    }
-    Debug.clear = clear;
-
-    function log(str) {
-        var elem = document.getElementById("log");
-
-        var span = document.createElement("span");
-        span.textContent = str;
-
-        var br = document.createElement("br");
-
-        elem.appendChild(span);
-        elem.appendChild(br);
-    }
-    Debug.log = log;
-})(Debug || (Debug = {}));
-
-var ModMath;
+﻿var ModMath;
 (function (ModMath) {
     // Non-negative mod
     function mod(a, n) {
@@ -44,7 +22,7 @@ var ModMath;
             newr = oldr - quotient * newr;
         }
         if (r > 1) {
-            alert(a + " is not invertible");
+            throw (a + " is not invertible");
         }
         if (t < 0) {
             t = t + n;
@@ -60,7 +38,7 @@ var ModNum = (function () {
         this.n = n;
     }
     ModNum.prototype.negate = function () {
-        return new ModNum(-this.value, this.n);
+        return new ModNum(-this.val, this.n);
     };
 
     ModNum.prototype.add = function (other) {
@@ -112,7 +90,7 @@ var ModNum = (function () {
             throw "Incompatible ModNums";
         }
 
-        return this.value == other.value;
+        return this.val == other.val;
     };
 
     ModNum.prototype.value = function () {
@@ -121,7 +99,7 @@ var ModNum = (function () {
 
     // override toString for debugging
     ModNum.prototype.toString = function () {
-        return "[" + this.value + " mod " + this.n + "]";
+        return this.val + " mod " + this.n;
     };
     return ModNum;
 })();
@@ -141,9 +119,10 @@ var ModPoint = (function () {
         p.y = y;
         p.a = a;
         p.b = b;
+        p.n = n;
 
         if (!y.pow(2).eq(x.pow(3).add(a.mul(p.x)).add(b))) {
-            Debug.log("!!! ERROR: " + p + " is not a valid point !!!");
+            throw (p + " is not a valid point.");
         }
 
         return p;
@@ -170,12 +149,11 @@ var ModPoint = (function () {
         return ModPoint.createNum(x, y, this.a, this.b, this.n);
     };
 
-    ModPoint.prototype.mulNum = function (c) {
+    ModPoint.prototype.mulNum = function (n) {
         var g = this;
-        for (var n = 1; n < c; n++) {
+        for (var _ = 1; _ < n; _++) {
             g = g.add(this);
         }
-
         return g;
     };
 
@@ -189,38 +167,30 @@ var ModPoint = (function () {
 
     // Override toString for debugging
     ModPoint.prototype.toString = function () {
-        return "[" + this.x.value() + ", " + this.y.value() + "] % " + this.n + "(A = " + this.a.value() + ", B = " + this.b.value() + ")";
+        return "[Point: (" + this.x.value() + ", " + this.y.value() + ") % " + this.n + " (A = " + this.a.value() + ", B = " + this.b.value() + ")]";
     };
     return ModPoint;
 })();
 
-// Walk over G
-var Walk = (function () {
-    function Walk() {
+// we want to find m such that m*g = h
+var Target = (function () {
+    function Target(gx, gy, hx, hy, a, b, n) {
+        this.g = ModPoint.create(gx, gy, a, b, n);
+        this.h = ModPoint.create(hx, hy, a, b, n);
+        this.n = n;
     }
-    Walk.create = function (gx, gy, hx, hy, a, b, n) {
-        var w = new Walk();
-        w.g = ModPoint.create(gx, gy, a, b, n);
-        w.h = ModPoint.create(hx, hy, a, b, n);
-        w.u = new ModNum(1, n);
-        w.v = new ModNum(0, n);
-        w.p = w.g;
-        return w;
-    };
+    return Target;
+})();
 
-    Walk.createNum = function (g, h, u, v) {
-        var w = new Walk();
-        w.g = g;
-        w.h = h;
-        w.u = u;
-        w.v = v;
-        w.p = g.mulNum(u.value()).add(h.mulNum(v.value()));
-        return w;
-    };
-
+// Walk over a curve
+var Walk = (function () {
+    function Walk(target) {
+        this.target = target;
+        this.setUV(new ModNum(1, target.n), new ModNum(1, target.n));
+    }
     Walk.prototype.step = function () {
         var u, v;
-        switch (this.p.partition(3)) {
+        switch (this.current.partition(3)) {
             case 0:
                 u = this.u.mulNum(2);
                 v = this.v.mulNum(2);
@@ -237,7 +207,7 @@ var Walk = (function () {
                 break;
         }
 
-        return Walk.createNum(this.g, this.h, u, v);
+        return new Walk(this.target).setUV(u, v);
     };
 
     Walk.prototype.eq = function (other) {
@@ -246,7 +216,14 @@ var Walk = (function () {
 
     // Override toString for debugging
     Walk.prototype.toString = function () {
-        return "[Walk: u = " + this.u + ", v = " + this.v + ", p = " + this.p + "]";
+        return "[Walk: u = " + this.u + ", v = " + this.v + ", current = " + this.current + "]";
+    };
+
+    Walk.prototype.setUV = function (u, v) {
+        this.u = u;
+        this.v = v;
+        this.current = this.target.g.mulNum(u.value()).add(this.target.h.mulNum(v.value()));
+        return this;
     };
     return Walk;
 })();
@@ -256,20 +233,22 @@ var PollardRho;
 (function (PollardRho) {
     // Find m such that m*g = h
     function solve(gx, gy, hx, hy, a, b, n) {
-        var tortoise = Walk.create(gx, gy, hx, hy, a, b, n);
-        var hare = tortoise;
+        var target = new Target(gx, gy, hx, hy, a, b, n);
+
+        var tortoise = new Walk(target);
+        var hare = new Walk(target);
 
         for (var step = 1; step < n; step++) {
             tortoise = tortoise.step();
 
             hare = hare.step().step();
 
-            Debug.log("Step: " + step);
-            Debug.log("Tortoise: " + tortoise);
-            Debug.log("Hare: " + hare);
-            Debug.log("---");
+            console.log("Step: " + step);
+            console.log("Tortoise: " + tortoise);
+            console.log("Hare: " + hare);
+            console.log("---");
 
-            if (tortoise.p.eq(hare.p) && !tortoise.eq(hare)) {
+            if (tortoise.current.eq(hare.current) && !tortoise.eq(hare)) {
                 return tortoise.u.sub(hare.u).div(hare.v.sub(tortoise.v)).value();
             }
         }
@@ -278,8 +257,8 @@ var PollardRho;
 })(PollardRho || (PollardRho = {}));
 
 // Gets the value of the input with the specified name, as a number
-function numberValue(elemName) {
-    return document.getElementById(elemName).valueAsNumber;
+function intValue(elemName) {
+    return parseInt(document.getElementById(elemName).value, 10);
 }
 
 window.onload = function () {
@@ -287,11 +266,11 @@ window.onload = function () {
     var content = document.getElementById("content");
 
     btn.onclick = function (_) {
-        var a = numberValue("a"), b = numberValue("b"), n = numberValue("order");
-        var gx = numberValue("gx"), gy = numberValue("gy");
-        var hx = numberValue("hx"), hy = numberValue("hy");
+        var a = intValue("a"), b = intValue("b"), n = intValue("order");
+        var gx = intValue("gx"), gy = intValue("gy");
+        var hx = intValue("hx"), hy = intValue("hy");
 
-        Debug.clear();
+        console.clear();
 
         var m = PollardRho.solve(gx, gy, hx, hy, a, b, n);
         content.textContent = (m || "Error").toString();
