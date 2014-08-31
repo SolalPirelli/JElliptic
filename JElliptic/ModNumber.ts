@@ -20,6 +20,10 @@ class ModNumber {
     }
 
 
+    negate(): ModNumber {
+        return new ModNumber(-this.value, this.n);
+    }
+
     add(other: ModNumber): ModNumber {
         ModNumber.ensureCompatible(this, other);
 

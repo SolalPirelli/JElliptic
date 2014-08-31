@@ -1,7 +1,7 @@
 ﻿define(["require", "exports", "ModNumber", "ModPoint", "ModCurve"], function(require, exports, ModNumber, ModPoint, ModCurve) {
     var CurveWalk = (function () {
         function CurveWalk(problem, u, v) {
-            u = u || new ModNumber(1, problem.Curve.N);
+            u = u || new ModNumber(0, problem.Curve.N);
             v = v || new ModNumber(0, problem.Curve.N);
 
             this.problem = problem;
@@ -37,13 +37,13 @@
             var u, v;
             switch (this.current.partition(3)) {
                 case 0:
-                    u = this.u.mulNum(2);
-                    v = this.v.mulNum(2);
+                    u = this.u.addNum(1);
+                    v = this.v;
                     break;
 
                 case 1:
-                    u = this.u.addNum(1);
-                    v = this.v;
+                    u = this.u.mulNum(2);
+                    v = this.v.mulNum(2);
                     break;
 
                 case 2:
@@ -53,10 +53,6 @@
             }
 
             return new CurveWalk(this.problem, u, v);
-        };
-
-        CurveWalk.prototype.eq = function (other) {
-            return this.v.eq(other.v) && this.u.eq(other.u);
         };
 
         CurveWalk.prototype.toString = function () {
@@ -95,6 +91,7 @@
             configurable: true
         });
 
+        // based on the description in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
         DiscreteLogProblem.prototype.solve = function () {
             var tortoise = new CurveWalk(this);
             var hare = new CurveWalk(this);
@@ -104,15 +101,21 @@
 
                 hare = hare.step().step();
 
-                console.log("Step: " + step);
+                console.log("# Step " + step);
                 console.log("Tortoise: " + tortoise);
-                console.log("Hare: " + hare);
-                console.log("---");
+                console.log("Hare    : " + hare);
+                console.log(" ");
 
-                if (tortoise.Current.eq(hare.Current) && !tortoise.eq(hare)) {
-                    return tortoise.U.sub(hare.U).div(hare.V.sub(tortoise.V)).Value;
+                if (tortoise.Current.eq(hare.Current) && !tortoise.V.eq(hare.V)) {
+                    var result = tortoise.U.sub(hare.U).div(hare.V.sub(tortoise.V));
+                    var actualTarget = this.generator.mul(result);
+                    if (!this.target.eq(actualTarget)) {
+                        throw "Incorrect result found.";
+                    }
+                    return result.Value;
                 }
             }
+            throw "No result found.";
         };
         return DiscreteLogProblem;
     })();

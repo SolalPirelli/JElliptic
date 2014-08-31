@@ -10,7 +10,7 @@ class CurveWalk {
 
 
     constructor(problem: DiscreteLogProblem, u?: ModNumber, v?: ModNumber) {
-        u = u || new ModNumber(1, problem.Curve.N);
+        u = u || new ModNumber(0, problem.Curve.N);
         v = v || new ModNumber(0, problem.Curve.N);
 
         this.problem = problem;
@@ -37,13 +37,13 @@ class CurveWalk {
         var u: ModNumber, v: ModNumber;
         switch (this.current.partition(3)) {
             case 0:
-                u = this.u.mulNum(2);
-                v = this.v.mulNum(2);
+                u = this.u.addNum(1);
+                v = this.v;
                 break;
 
             case 1:
-                u = this.u.addNum(1);
-                v = this.v;
+                u = this.u.mulNum(2);
+                v = this.v.mulNum(2);
                 break;
 
             case 2:
@@ -55,13 +55,9 @@ class CurveWalk {
         return new CurveWalk(this.problem, u, v);
     }
 
-    eq(other: CurveWalk): boolean {
-        return this.v.eq(other.v) && this.u.eq(other.u);
-    }
-
 
     toString(): string {
-        return "[" + this.u.Value + "·" + this.problem.Generator + " + " + this.v.Value + "·" + this.problem.Target + " = " + this.current + " on " + this.problem.Curve+ "]";
+        return "[" + this.u.Value + "·" + this.problem.Generator + " + " + this.v.Value + "·" + this.problem.Target + " = " + this.current + " on " + this.problem.Curve + "]";
     }
 }
 
@@ -69,6 +65,7 @@ class DiscreteLogProblem {
     private curve: ModCurve;
     private generator: ModPoint;
     private target: ModPoint;
+
 
     constructor(gx: number, gy: number, hx: number, hy: number, a: number, b: number, n: number) {
         this.curve = new ModCurve(a, b, n);
@@ -90,6 +87,7 @@ class DiscreteLogProblem {
     }
 
 
+    // based on the description in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
     solve(): number {
         var tortoise = new CurveWalk(this);
         var hare = new CurveWalk(this);
@@ -99,15 +97,21 @@ class DiscreteLogProblem {
 
             hare = hare.step().step();
 
-            console.log("Step: " + step);
+            console.log("# Step " + step);
             console.log("Tortoise: " + tortoise);
-            console.log("Hare: " + hare);
-            console.log("---");
+            console.log("Hare    : " + hare);
+            console.log(" ");
 
-            if (tortoise.Current.eq(hare.Current) && !tortoise.eq(hare)) {
-                return tortoise.U.sub(hare.U).div(hare.V.sub(tortoise.V)).Value;
+            if (tortoise.Current.eq(hare.Current) && !tortoise.V.eq(hare.V)) {
+                var result = tortoise.U.sub(hare.U).div(hare.V.sub(tortoise.V));
+                var actualTarget = this.generator.mul(result);
+                if (!this.target.eq(actualTarget)) {
+                    throw "Incorrect result found.";
+                }
+                return result.Value;
             }
         }
+        throw "No result found.";
     }
 }
 

@@ -20,6 +20,10 @@
             configurable: true
         });
 
+        ModNumber.prototype.negate = function () {
+            return new ModNumber(-this.value, this.n);
+        };
+
         ModNumber.prototype.add = function (other) {
             ModNumber.ensureCompatible(this, other);
 

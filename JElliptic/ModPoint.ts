@@ -2,7 +2,7 @@
 import ModCurve = require("ModCurve");
 
 class ModPoint {
-    private static ZERO = new ModPoint();
+    private static INFINITY = new ModPoint();
 
     private x: ModNumber;
     private y: ModNumber;
@@ -10,11 +10,6 @@ class ModPoint {
 
     public static create(x: number, y: number, curve: ModCurve) {
         return ModPoint.createNum(new ModNumber(x, curve.N), new ModNumber(y, curve.N), curve);
-    }
-
-
-    static get Zero() {
-        return ModPoint.ZERO;
     }
 
 
@@ -32,19 +27,27 @@ class ModPoint {
 
 
     add(other: ModPoint): ModPoint {
-        if (this == ModPoint.ZERO) {
+        // Case 1: One of the points is infinity -> return the other
+        if (this == ModPoint.INFINITY) {
             return other;
         }
-        if (other == ModPoint.ZERO) {
+        if (other == ModPoint.INFINITY) {
             return this;
+        }
+
+        // Case 2: The points are vertically symmetric -> return infinity
+        if (this.x.eq(other.x) && this.y.eq(other.y.negate())) {
+            return ModPoint.INFINITY;
         }
 
         var lambda: ModNumber;
         if (this.eq(other)) {
+            // Case 3: The points are equal -> double the current point
             var num = this.x.pow(2).mulNum(3).add(this.curve.A);
             var denom = this.y.mulNum(2);
             lambda = num.div(denom);
         } else {
+            // Case 4: Add the two points
             var num = other.y.sub(this.y);
             var denom = other.x.sub(this.x);
             lambda = num.div(denom);
@@ -57,7 +60,7 @@ class ModPoint {
     }
 
     mul(n: ModNumber): ModPoint {
-        var g = ModPoint.ZERO;
+        var g = ModPoint.INFINITY;
         for (var _ = 0; _ < n.Value; _++) {
             g = g.add(this);
         }
@@ -65,6 +68,9 @@ class ModPoint {
     }
 
     partition(count: number): number {
+        if (this == ModPoint.INFINITY) {
+            return 0;
+        }
         return this.x.Value % count;
     }
 
@@ -74,6 +80,9 @@ class ModPoint {
 
 
     toString(): string {
+        if (this == ModPoint.INFINITY) {
+            return "Zero";
+        }
         return "(" + this.x.Value + ", " + this.y.Value + ")";
     }
 
