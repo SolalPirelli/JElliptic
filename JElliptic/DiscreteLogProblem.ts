@@ -103,12 +103,14 @@ class DiscreteLogProblem {
             console.log(" ");
 
             if (tortoise.Current.eq(hare.Current) && !tortoise.V.eq(hare.V)) {
-                var result = tortoise.U.sub(hare.U).div(hare.V.sub(tortoise.V));
-                var actualTarget = this.generator.mul(result);
+                var log = tortoise.U.sub(hare.U).div(hare.V.sub(tortoise.V));
+                var actualTarget = this.generator.mul(log);
+
                 if (!this.target.eq(actualTarget)) {
                     throw "Incorrect result found.";
                 }
-                return result.Value;
+
+                return log.Value;
             }
         }
         throw "No result found.";
