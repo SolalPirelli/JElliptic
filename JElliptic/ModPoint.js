@@ -1,11 +1,16 @@
 ﻿define(["require", "exports", "ModNumber"], function(require, exports, ModNumber) {
     var ModPoint = (function () {
-        function ModPoint() {
-        }
-        ModPoint.create = function (x, y, curve) {
-            return ModPoint.createNum(new ModNumber(x, curve.N), new ModNumber(y, curve.N), curve);
-        };
+        function ModPoint(x, y, curve) {
+            if (curve == null) {
+                return;
+            }
 
+            this.x = new ModNumber(x, curve.N);
+            this.y = new ModNumber(y, curve.N);
+            this.curve = curve;
+
+            this.ensureValid();
+        }
         Object.defineProperty(ModPoint.prototype, "X", {
             get: function () {
                 return this.x;
@@ -60,7 +65,7 @@
             var x = lambda.pow(2).sub(this.x).sub(other.x);
             var y = lambda.mul(this.x.sub(x)).sub(this.y);
 
-            return ModPoint.createNum(x, y, this.curve);
+            return new ModPoint(x.Value, y.Value, this.curve);
         };
 
         ModPoint.prototype.mul = function (n) {
@@ -84,28 +89,17 @@
 
         ModPoint.prototype.toString = function () {
             if (this == ModPoint.INFINITY) {
-                return "Zero";
+                return "Infinity";
             }
             return "(" + this.x.Value + ", " + this.y.Value + ")";
         };
 
-        ModPoint.createNum = function (x, y, curve) {
-            var p = new ModPoint();
-            p.x = x;
-            p.y = y;
-            p.curve = curve;
-
-            if (!p.isInCurve(curve)) {
-                throw (p + " is not a valid point.");
+        ModPoint.prototype.ensureValid = function () {
+            if (!this.y.pow(2).eq(this.x.pow(3).add(this.curve.A.mul(this.x)).add(this.curve.B))) {
+                throw (this + " is not a valid point.");
             }
-
-            return p;
         };
-
-        ModPoint.prototype.isInCurve = function (curve) {
-            return this.y.pow(2).eq(this.x.pow(3).add(curve.A.mul(this.x)).add(curve.B));
-        };
-        ModPoint.INFINITY = new ModPoint();
+        ModPoint.INFINITY = new ModPoint(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, null);
         return ModPoint;
     })();
 

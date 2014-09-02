@@ -30,6 +30,7 @@
     <TypeScriptCompile Include="ModMath.ts" />
     <TypeScriptCompile Include="ModNumber.ts" />
     <TypeScriptCompile Include="ModPoint.ts" />
+    <TypeScriptCompile Include="PollardRho.ts" />
   </ItemGroup>
   <ItemGroup>
     <None Include="web.Debug.config">

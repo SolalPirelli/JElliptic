@@ -25,7 +25,7 @@ class ModNumber {
     }
 
     add(other: ModNumber): ModNumber {
-        ModNumber.ensureCompatible(this, other);
+        this.ensureCompatible(other);
 
         return new ModNumber(this.value + other.value, this.n);
     }
@@ -35,13 +35,13 @@ class ModNumber {
     }
 
     sub(other: ModNumber): ModNumber {
-        ModNumber.ensureCompatible(this, other);
+        this.ensureCompatible(other);
 
         return new ModNumber(this.value - other.value, this.n);
     }
 
     mul(other: ModNumber): ModNumber {
-        ModNumber.ensureCompatible(this, other);
+        this.ensureCompatible(other);
 
         return new ModNumber(this.value * other.value, this.n);
     }
@@ -51,21 +51,21 @@ class ModNumber {
     }
 
     div(other: ModNumber): ModNumber {
-        ModNumber.ensureCompatible(this, other);
+        this.ensureCompatible(other);
 
         return new ModNumber(this.value * ModMath.modInverse(other.value, this.n), this.n);
     }
 
     pow(n: number): ModNumber {
-        var result = this;
-        for (var _ = 1; _ < n; _++) {
+        var result = new ModNumber(1, this.N);
+        for (var _ = 0; _ < n; _++) {
             result = result.mul(this);
         }
         return result;
     }
 
     eq(other: ModNumber): boolean {
-        ModNumber.ensureCompatible(this, other);
+        this.ensureCompatible(other);
 
         return this.value == other.value;
     }
@@ -76,8 +76,8 @@ class ModNumber {
     }
 
 
-    private static ensureCompatible(a: ModNumber, b: ModNumber): void {
-        if (a.n != b.n) {
+    private ensureCompatible(other: ModNumber): void {
+        if (this.n != other.n) {
             throw "Incompatible ModNums";
         }
     }

@@ -2,14 +2,22 @@
 import ModCurve = require("ModCurve");
 
 class ModPoint {
-    private static INFINITY = new ModPoint();
+    private static INFINITY = new ModPoint(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, null);
 
     private x: ModNumber;
     private y: ModNumber;
     private curve: ModCurve;
 
-    public static create(x: number, y: number, curve: ModCurve) {
-        return ModPoint.createNum(new ModNumber(x, curve.N), new ModNumber(y, curve.N), curve);
+    constructor(x: number, y: number, curve: ModCurve) {
+        if (curve == null) {
+            return; // hack-y
+        }
+
+        this.x = new ModNumber(x, curve.N);
+        this.y = new ModNumber(y, curve.N);
+        this.curve = curve;
+
+        this.ensureValid();
     }
 
 
@@ -56,7 +64,7 @@ class ModPoint {
         var x = lambda.pow(2).sub(this.x).sub(other.x);
         var y = lambda.mul(this.x.sub(x)).sub(this.y);
 
-        return ModPoint.createNum(x, y, this.curve);
+        return new ModPoint(x.Value, y.Value, this.curve);
     }
 
     mul(n: ModNumber): ModPoint {
@@ -81,27 +89,16 @@ class ModPoint {
 
     toString(): string {
         if (this == ModPoint.INFINITY) {
-            return "Zero";
+            return "Infinity";
         }
         return "(" + this.x.Value + ", " + this.y.Value + ")";
     }
 
 
-    private static createNum(x: ModNumber, y: ModNumber, curve: ModCurve) {
-        var p = new ModPoint();
-        p.x = x;
-        p.y = y;
-        p.curve = curve;
-
-        if (!p.isInCurve(curve)) {
-            throw (p + " is not a valid point.");
+    private ensureValid(): void {
+        if (!this.y.pow(2).eq(this.x.pow(3).add(this.curve.A.mul(this.x)).add(this.curve.B))) {
+            throw (this + " is not a valid point.");
         }
-
-        return p;
-    }
-
-    private isInCurve(curve: ModCurve) {
-        return this.y.pow(2).eq(this.x.pow(3).add(curve.A.mul(this.x)).add(curve.B));
     }
 }
 

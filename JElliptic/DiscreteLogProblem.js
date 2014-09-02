@@ -1,71 +1,9 @@
-﻿define(["require", "exports", "ModNumber", "ModPoint", "ModCurve"], function(require, exports, ModNumber, ModPoint, ModCurve) {
-    var CurveWalk = (function () {
-        function CurveWalk(problem, u, v) {
-            u = u || new ModNumber(0, problem.Curve.N);
-            v = v || new ModNumber(0, problem.Curve.N);
-
-            this.problem = problem;
-            this.u = u;
-            this.v = v;
-            this.current = problem.Generator.mul(u).add(problem.Target.mul(v));
-        }
-        Object.defineProperty(CurveWalk.prototype, "U", {
-            get: function () {
-                return this.u;
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-        Object.defineProperty(CurveWalk.prototype, "V", {
-            get: function () {
-                return this.v;
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-        Object.defineProperty(CurveWalk.prototype, "Current", {
-            get: function () {
-                return this.current;
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-        CurveWalk.prototype.step = function () {
-            var u, v;
-            switch (this.current.partition(3)) {
-                case 0:
-                    u = this.u.addNum(1);
-                    v = this.v;
-                    break;
-
-                case 1:
-                    u = this.u.mulNum(2);
-                    v = this.v.mulNum(2);
-                    break;
-
-                case 2:
-                    u = this.u;
-                    v = this.v.addNum(1);
-                    break;
-            }
-
-            return new CurveWalk(this.problem, u, v);
-        };
-
-        CurveWalk.prototype.toString = function () {
-            return "[" + this.u.Value + "·" + this.problem.Generator + " + " + this.v.Value + "·" + this.problem.Target + " = " + this.current + " on " + this.problem.Curve + "]";
-        };
-        return CurveWalk;
-    })();
-
+﻿define(["require", "exports", "ModPoint", "ModCurve"], function(require, exports, ModPoint, ModCurve) {
     var DiscreteLogProblem = (function () {
         function DiscreteLogProblem(gx, gy, hx, hy, a, b, n) {
             this.curve = new ModCurve(a, b, n);
-            this.generator = ModPoint.create(gx, gy, this.curve);
-            this.target = ModPoint.create(hx, hy, this.curve);
+            this.generator = new ModPoint(gx, gy, this.curve);
+            this.target = new ModPoint(hx, hy, this.curve);
         }
         Object.defineProperty(DiscreteLogProblem.prototype, "Generator", {
             get: function () {
@@ -90,35 +28,6 @@
             enumerable: true,
             configurable: true
         });
-
-        // based on the description in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
-        DiscreteLogProblem.prototype.solve = function () {
-            var tortoise = new CurveWalk(this);
-            var hare = new CurveWalk(this);
-
-            for (var step = 1; step < this.curve.N; step++) {
-                tortoise = tortoise.step();
-
-                hare = hare.step().step();
-
-                console.log("# Step " + step);
-                console.log("Tortoise: " + tortoise);
-                console.log("Hare    : " + hare);
-                console.log(" ");
-
-                if (tortoise.Current.eq(hare.Current) && !tortoise.V.eq(hare.V)) {
-                    var log = tortoise.U.sub(hare.U).div(hare.V.sub(tortoise.V));
-                    var actualTarget = this.generator.mul(log);
-
-                    if (!this.target.eq(actualTarget)) {
-                        throw "Incorrect result found.";
-                    }
-
-                    return log.Value;
-                }
-            }
-            throw "No result found.";
-        };
         return DiscreteLogProblem;
     })();
 

@@ -1,5 +1,5 @@
 ﻿/// <reference path="lib/require.d.ts" />
-define(["require", "exports", "DiscreteLogProblem"], function(require, exports, DiscreteLogProblem) {
+define(["require", "exports", "DiscreteLogProblem", "PollardRho"], function(require, exports, DiscreteLogProblem, PollardRho) {
     function intValue(elemName) {
         return parseInt(document.getElementById(elemName).value, 10);
     }
@@ -13,10 +13,15 @@ define(["require", "exports", "DiscreteLogProblem"], function(require, exports, 
             var gx = intValue("gx"), gy = intValue("gy");
             var hx = intValue("hx"), hy = intValue("hy");
 
-            console.clear();
-
             var problem = new DiscreteLogProblem(gx, gy, hx, hy, a, b, n);
-            var result = problem.solve();
+
+            var result;
+            try  {
+                result = PollardRho.solve(problem);
+            } catch (exn) {
+                result = exn;
+            }
+
             content.textContent = (result || "Error").toString();
         };
     });
