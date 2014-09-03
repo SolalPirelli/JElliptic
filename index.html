@@ -3,18 +3,31 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>Pollard Rho test</title>
-    <script src="app.js"></script>
+    <title>JElliptic v0.000001</title>
+    <script data-main="app" type="text/javascript" src="lib/require.js"></script>
 </head>
 <body>
-    Alpha: <input id="alpha" type="number" value="2" />
-    Beta: <input id="beta" type="number" value="5" />
-    Group order: <input id="order" type="number" value="1018" />
+    Curve: 
+    y²
+  = x³
+  + <input id="a" type="number" value="9" /> · x 
+  + <input id="b" type="number" value="17" /> 
+  (mod <input id="order" type="number" value="23" />)
+
+    <br />
+
+    G: <input id="gx" type="number" value="16" />, <input id="gy" type="number" value="5" />
+
+    <br />
+
+    H: <input id="hx" type="number" value="4" />, <input id="hy" type="number" value="5" />
+
+    <br />
+
     <button id="button">Start Pollard Rho</button>
-    <br /><br />
-    <b>Result: </b><span id="content"></span>
-    <br /><br />
-    <b>Log:</b>
-    <div id="log"></div>
+
+    <br />
+
+    H = G·<b><span id="content"></span></b>
 </body>
 </html>
