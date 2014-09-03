@@ -15,13 +15,7 @@ define(["require", "exports", "DiscreteLogProblem", "PollardRho"], function(requ
 
             var problem = new DiscreteLogProblem(gx, gy, hx, hy, a, b, n);
 
-            var result;
-            try  {
-                result = PollardRho.solve(problem);
-            } catch (exn) {
-                result = exn;
-            }
-
+            var result = PollardRho.solve(problem);
             content.textContent = (result || "Error").toString();
         };
     });

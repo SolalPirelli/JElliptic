@@ -18,13 +18,7 @@ requirejs([], () => {
 
         var problem = new DiscreteLogProblem(gx, gy, hx, hy, a, b, n);
 
-        var result: any;
-        try {
-            result = PollardRho.solve(problem);
-        } catch (exn) {
-            result = exn;
-        }
-
+        var result = PollardRho.solve(problem);
         content.textContent = (result || "Error").toString();
     };
 });

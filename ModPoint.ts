@@ -82,8 +82,27 @@ class ModPoint {
         return this.x.Value % count;
     }
 
+    getOrder(): number {
+        var point: ModPoint = ModPoint.INFINITY;
+        for (var order = 1; ; order++) {
+            point = point.add(this);
+            if (point.eq(ModPoint.INFINITY)) {
+                return order;
+            }
+        }
+
+        throw "No order found.";
+    }
+
     eq(other: ModPoint): boolean {
-        return this == other || (this.x.eq(other.x) && this.y.eq(other.y));
+        if (this == ModPoint.INFINITY) {
+            return other == ModPoint.INFINITY;
+        }
+        if (other == ModPoint.INFINITY) {
+            return false;
+        }
+
+        return this.x.eq(other.x) && this.y.eq(other.y);
     }
 
 
