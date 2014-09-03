@@ -35,8 +35,10 @@
 
         var CurveWalk = (function () {
             function CurveWalk(problem, a, b) {
-                a = a || new ModNumber(0, problem.Curve.N);
-                b = b || new ModNumber(0, problem.Curve.N);
+                var order = problem.Generator.getOrder();
+
+                a = a || new ModNumber(0, order);
+                b = b || new ModNumber(0, order);
 
                 this.problem = problem;
                 this.a = a;

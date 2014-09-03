@@ -4,6 +4,7 @@ import DiscreteLogProblem = require("DiscreteLogProblem");
 
 module PollardRho {
     // based on the description in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
+    // as well as http://www.hyperelliptic.org/tanja/SHARCS/slides09/03-bos.pdf
     export function solve(problem: DiscreteLogProblem): number {
         var tortoise = new CurveWalk(problem);
         var hare = new CurveWalk(problem);
@@ -42,8 +43,10 @@ module PollardRho {
 
 
         constructor(problem: DiscreteLogProblem, a?: ModNumber, b?: ModNumber) {
-            a = a || new ModNumber(0, problem.Curve.N);
-            b = b || new ModNumber(0, problem.Curve.N);
+            var order = problem.Generator.getOrder();
+
+            a = a || new ModNumber(0, order);
+            b = b || new ModNumber(0, order);
 
             this.problem = problem;
             this.a = a;

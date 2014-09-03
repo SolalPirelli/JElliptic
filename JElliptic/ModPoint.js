@@ -83,8 +83,27 @@
             return this.x.Value % count;
         };
 
+        ModPoint.prototype.getOrder = function () {
+            var point = ModPoint.INFINITY;
+            for (var order = 1; ; order++) {
+                point = point.add(this);
+                if (point.eq(ModPoint.INFINITY)) {
+                    return order;
+                }
+            }
+
+            throw "No order found.";
+        };
+
         ModPoint.prototype.eq = function (other) {
-            return this == other || (this.x.eq(other.x) && this.y.eq(other.y));
+            if (this == ModPoint.INFINITY) {
+                return other == ModPoint.INFINITY;
+            }
+            if (other == ModPoint.INFINITY) {
+                return false;
+            }
+
+            return this.x.eq(other.x) && this.y.eq(other.y);
         };
 
         ModPoint.prototype.toString = function () {
