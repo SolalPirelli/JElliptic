@@ -23,6 +23,7 @@
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="AdditionTable.ts" />
     <TypeScriptCompile Include="app.ts" />
     <TypeScriptCompile Include="Config.ts" />
     <TypeScriptCompile Include="lib\require.d.ts" />

@@ -33,6 +33,10 @@ class ModPoint {
         return this.curve;
     }
 
+    static get Infinity(): ModPoint {
+        return ModPoint.INFINITY;
+    }
+
 
     add(other: ModPoint): ModPoint {
         // Case 1: One of the points is infinity -> return the other
@@ -67,9 +71,9 @@ class ModPoint {
         return new ModPoint(x.Value, y.Value, this.curve);
     }
 
-    mul(n: ModNumber): ModPoint {
+    mulNum(n: number): ModPoint {
         var g = ModPoint.INFINITY;
-        for (var _ = 0; _ < n.Value; _++) {
+        for (var _ = 0; _ < n; _++) {
             g = g.add(this);
         }
         return g;

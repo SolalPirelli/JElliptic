@@ -35,6 +35,14 @@
             configurable: true
         });
 
+        Object.defineProperty(ModPoint, "Infinity", {
+            get: function () {
+                return ModPoint.INFINITY;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         ModPoint.prototype.add = function (other) {
             // Case 1: One of the points is infinity -> return the other
             if (this == ModPoint.INFINITY) {
@@ -68,9 +76,9 @@
             return new ModPoint(x.Value, y.Value, this.curve);
         };
 
-        ModPoint.prototype.mul = function (n) {
+        ModPoint.prototype.mulNum = function (n) {
             var g = ModPoint.INFINITY;
-            for (var _ = 0; _ < n.Value; _++) {
+            for (var _ = 0; _ < n; _++) {
                 g = g.add(this);
             }
             return g;
