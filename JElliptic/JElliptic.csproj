@@ -26,7 +26,6 @@
     <TypeScriptCompile Include="app.ts" />
     <TypeScriptCompile Include="Config.ts" />
     <TypeScriptCompile Include="lib\require.d.ts" />
-    <TypeScriptCompile Include="DiscreteLogProblem.ts" />
     <TypeScriptCompile Include="ModCurve.ts" />
     <TypeScriptCompile Include="ModMath.ts" />
     <TypeScriptCompile Include="ModNumber.ts" />

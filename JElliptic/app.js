@@ -1,5 +1,5 @@
 ﻿/// <reference path="lib/require.d.ts" />
-define(["require", "exports", "DiscreteLogProblem", "PollardRho"], function(require, exports, DiscreteLogProblem, PollardRho) {
+define(["require", "exports", "ModCurve", "PollardRho"], function(require, exports, ModCurve, PollardRho) {
     function intValue(elemName) {
         return parseInt(document.getElementById(elemName).value, 10);
     }
@@ -13,17 +13,16 @@ define(["require", "exports", "DiscreteLogProblem", "PollardRho"], function(requ
             var gx = intValue("gx"), gy = intValue("gy");
             var hx = intValue("hx"), hy = intValue("hy");
 
-            var problem = new DiscreteLogProblem(gx, gy, hx, hy, a, b, n);
-
             var config = {
-                additionTableSeed: 1,
-                additionTableLength: 1024,
-                parrallelWalksCount: 10,
-                useNegationMap: true,
-                distinguishedPointsZeroBitsCount: 10
+                Curve: new ModCurve(a, b, n),
+                AdditionTableSeed: 1,
+                AdditionTableLength: 1024,
+                ParrallelWalksCount: 10,
+                UseNegationMap: true,
+                DistinguishedPointsZeroBitsCount: 10
             };
 
-            var result = PollardRho.solve(problem, config);
+            var result = PollardRho.solve(gx, gy, hx, hy, config);
             content.textContent = (result || "Error").toString();
         };
     });

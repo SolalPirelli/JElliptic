@@ -1,18 +1,21 @@
 ﻿import ModNumber = require("ModNumber");
 import ModPoint = require("ModPoint");
 import Config = require("Config");
-import DiscreteLogProblem = require("DiscreteLogProblem");
 
 module PollardRho {
     // based on the description in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
     // as well as http://www.hyperelliptic.org/tanja/SHARCS/slides09/03-bos.pdf
-    export function solve(problem: DiscreteLogProblem, config: Config): number {
-        var tortoise = new CurveWalk(problem);
-        var hare = new CurveWalk(problem);
+    export function solve(gx: number, gy: number, hx: number, hy: number, config: Config): number {
+        var generator = new ModPoint(gx, gy, config.Curve);
+        var target = new ModPoint(hx, hy, config.Curve);
+        var table = getAddingTable(generator, config);
+
+        var tortoise = new CurveWalk(generator, target, table);
+        var hare = new CurveWalk(generator, target, table);
 
         console.clear();
 
-        for (var step = 0; step < problem.Curve.N; step++) {
+        for (var step = 0; step < config.Curve.N; step++) {
             tortoise = tortoise.step();
 
             hare = hare.step().step();
@@ -24,9 +27,9 @@ module PollardRho {
 
             if (tortoise.Current.eq(hare.Current) && !tortoise.B.eq(hare.B)) {
                 var log = tortoise.A.sub(hare.A).div(hare.B.sub(tortoise.B));
-                var actualTarget = problem.Generator.mul(log);
 
-                if (!problem.Target.eq(actualTarget)) {
+                var actualTarget = generator.mul(log);
+                if (!target.eq(actualTarget)) {
                     throw "Incorrect result found. (" + log + ")";
                 }
 
@@ -36,23 +39,49 @@ module PollardRho {
         throw "No result found.";
     }
 
+    // Generate a random table according to the config
+    function getAddingTable(generator: ModPoint, config: Config): ModPoint[] {
+        setRandomSeed(config.AdditionTableSeed);
+        var table = new Array<ModPoint>(config.AdditionTableLength);
+        for (var n = 0; n < table.length; n++) {
+            var multiplier = new ModNumber(Math.round(Math.random() * (table.length - 1)), config.Curve.N);
+            table[n] = generator.mul(multiplier);
+            console.log("table[" + n + "] = " + table[n]);
+        }
+        return table;
+    }
+
+    // Very simple seeded RNG, from http://stackoverflow.com/a/23304189
+    function setRandomSeed(seed: number): void {
+        Math.random = function () {
+            seed = Math.sin(seed) * 10000;
+            return seed - Math.floor(seed);
+        };
+    };
+
+    // Walk over a problem.
     class CurveWalk {
-        private problem: DiscreteLogProblem;
+        private generator: ModPoint;
+        private target: ModPoint;
+        private table: ModPoint[];
+
         private a: ModNumber;
         private b: ModNumber;
         private current: ModPoint;
 
 
-        constructor(problem: DiscreteLogProblem, a?: ModNumber, b?: ModNumber) {
-            var order = problem.Generator.getOrder();
+        constructor(generator: ModPoint, target: ModPoint, table: ModPoint[], a?: ModNumber, b?: ModNumber) {
+            var order = generator.getOrder();
 
             a = a || new ModNumber(0, order);
             b = b || new ModNumber(0, order);
 
-            this.problem = problem;
+            this.generator = generator;
+            this.target = target;
+            this.table = table;
             this.a = a;
             this.b = b;
-            this.current = problem.Generator.mul(a).add(problem.Target.mul(b));
+            this.current = generator.mul(a).add(target.mul(b));
         }
 
 
@@ -70,30 +99,19 @@ module PollardRho {
 
 
         step(): CurveWalk {
-            var a: ModNumber, b: ModNumber;
-            switch (this.current.partition(3)) {
-                case 0:
-                    a = this.a.addNum(1);
-                    b = this.b;
-                    break;
-
-                case 1:
-                    a = this.a.mulNum(2);
-                    b = this.b.mulNum(2);
-                    break;
-
-                case 2:
-                    a = this.a;
-                    b = this.b.addNum(1);
-                    break;
-            }
-            
-            return new CurveWalk(this.problem, a, b);
+            var index = this.current.partition(this.table.length);
+            var point = this.table[index];
+            return this.cloneWith(this.a.addNum(point.X.Value), this.b.addNum(point.Y.Value));
         }
 
 
         toString(): string {
-            return "[" + this.a.Value + "·" + this.problem.Generator + " + " + this.b.Value + "·" + this.problem.Target + " = " + this.current + " on " + this.problem.Curve + "]";
+            return "[" + this.a.Value + "·" + this.generator + " + " + this.b.Value + "·" + this.target + " = " + this.current + "]";
+        }
+
+
+        private cloneWith(a: ModNumber, b: ModNumber): CurveWalk {
+            return new CurveWalk(this.generator, this.target, this.table, a, b);
         }
     }
 }

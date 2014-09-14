@@ -1,7 +1,7 @@
 ﻿/// <reference path="lib/require.d.ts" />
 
+import ModCurve = require("ModCurve");
 import Config = require("Config");
-import DiscreteLogProblem = require("DiscreteLogProblem");
 import PollardRho = require("PollardRho");
 
 function intValue(elemName: string): number {
@@ -17,17 +17,16 @@ requirejs([], () => {
         var gx = intValue("gx"), gy = intValue("gy");
         var hx = intValue("hx"), hy = intValue("hy");
 
-        var problem = new DiscreteLogProblem(gx, gy, hx, hy, a, b, n);
-
         var config: Config = {
-            additionTableSeed: 1,
-            additionTableLength: 1024,
-            parrallelWalksCount: 10,
-            useNegationMap: true,
-            distinguishedPointsZeroBitsCount: 10
+            Curve: new ModCurve(a, b, n),
+            AdditionTableSeed: 1,
+            AdditionTableLength: 1024,
+            ParrallelWalksCount: 10,
+            UseNegationMap: true,
+            DistinguishedPointsZeroBitsCount: 10
         };
 
-        var result = PollardRho.solve(problem, config);
+        var result = PollardRho.solve(gx, gy, hx, hy, config);
         content.textContent = (result || "Error").toString();
     };
 });

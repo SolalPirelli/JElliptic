@@ -1,4 +1,5 @@
 ﻿import ModNumber = require("ModNumber");
+import ModPoint = require("ModPoint");
 
 class ModCurve {
     private a: ModNumber;
