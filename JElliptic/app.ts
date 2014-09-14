@@ -1,5 +1,6 @@
 ﻿/// <reference path="lib/require.d.ts" />
 
+import Config = require("Config");
 import DiscreteLogProblem = require("DiscreteLogProblem");
 import PollardRho = require("PollardRho");
 
@@ -18,7 +19,15 @@ requirejs([], () => {
 
         var problem = new DiscreteLogProblem(gx, gy, hx, hy, a, b, n);
 
-        var result = PollardRho.solve(problem);
+        var config: Config = {
+            additionTableSeed: 1,
+            additionTableLength: 1024,
+            parrallelWalksCount: 10,
+            useNegationMap: true,
+            distinguishedPointsZeroBitsCount: 10
+        };
+
+        var result = PollardRho.solve(problem, config);
         content.textContent = (result || "Error").toString();
     };
 });

@@ -2,7 +2,8 @@
     var PollardRho;
     (function (PollardRho) {
         // based on the description in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
-        function solve(problem) {
+        // as well as http://www.hyperelliptic.org/tanja/SHARCS/slides09/03-bos.pdf
+        function solve(problem, config) {
             var tortoise = new CurveWalk(problem);
             var hare = new CurveWalk(problem);
 

@@ -15,7 +15,15 @@ define(["require", "exports", "DiscreteLogProblem", "PollardRho"], function(requ
 
             var problem = new DiscreteLogProblem(gx, gy, hx, hy, a, b, n);
 
-            var result = PollardRho.solve(problem);
+            var config = {
+                additionTableSeed: 1,
+                additionTableLength: 1024,
+                parrallelWalksCount: 10,
+                useNegationMap: true,
+                distinguishedPointsZeroBitsCount: 10
+            };
+
+            var result = PollardRho.solve(problem, config);
             content.textContent = (result || "Error").toString();
         };
     });

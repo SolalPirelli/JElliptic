@@ -1,11 +1,12 @@
 ﻿import ModNumber = require("ModNumber");
 import ModPoint = require("ModPoint");
+import Config = require("Config");
 import DiscreteLogProblem = require("DiscreteLogProblem");
 
 module PollardRho {
     // based on the description in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
     // as well as http://www.hyperelliptic.org/tanja/SHARCS/slides09/03-bos.pdf
-    export function solve(problem: DiscreteLogProblem): number {
+    export function solve(problem: DiscreteLogProblem, config: Config): number {
         var tortoise = new CurveWalk(problem);
         var hare = new CurveWalk(problem);
 
