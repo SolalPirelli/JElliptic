@@ -12,8 +12,8 @@ module PollardRho {
 
         var table = new Addition.Table(generator, target, config);
 
-        var tortoise = new CurveWalk(generator, table);
-        var hare = new CurveWalk(generator,table);
+        var tortoise = new CurveWalk(table);
+        var hare = new CurveWalk(table);
 
         console.clear();
 
@@ -45,30 +45,29 @@ module PollardRho {
 
     // Walk over a problem. (mutable)
     class CurveWalk {
-        private order: number;
         private table: Addition.Table;
 
-        private u: number;
-        private v: number;
+        private u: ModNumber;
+        private v: ModNumber;
         private current: ModPoint;
 
 
-        constructor(generator: ModPoint, table: Addition.Table) {
-            this.order = generator.getOrder();
+        constructor(table: Addition.Table) {
             this.table = table;
 
-            this.u = 0;
-            this.v = 0;
-            this.current = ModPoint.Infinity;
+            var entry = table.at(0);
+            this.u = entry.U;
+            this.v = entry.V;
+            this.current = entry.P;
         }
 
 
         get U(): ModNumber {
-            return new ModNumber(this.u, this.order);
+            return this.u;
         }
 
         get V(): ModNumber {
-            return new ModNumber(this.v, this.order);
+            return this.v;
         }
 
         get Current(): ModPoint {
@@ -79,8 +78,8 @@ module PollardRho {
         step(): void {
             var index = this.current.partition(this.table.Length);
             var entry = this.table.at(index);
-            this.u += entry.U;
-            this.v += entry.V;
+            this.u=this.u.add(entry.U);
+            this.v =this.v.add( entry.V);
             this.current = this.current.add(entry.P);
         }
 

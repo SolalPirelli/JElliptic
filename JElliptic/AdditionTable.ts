@@ -9,12 +9,13 @@ export class Table {
     constructor(generator: ModPoint, target: ModPoint, config: Config) {
         this.entries = new Array(config.AdditionTableLength);
 
+        var order = generator.getOrder();
         var rng = Table.getRng(config.AdditionTableSeed);
 
         for (var n = 0; n < this.entries.length; n++) {
-            var u = Math.round(rng() * (this.entries.length - 1));
-            var v = Math.round(rng() * (this.entries.length - 1));
-            var p = generator.mulNum(u).add(target.mulNum(v));
+            var u = new ModNumber(rng(this.entries.length), order);
+            var v = new ModNumber(rng(this.entries.length), order);
+            var p = generator.mulNum(u.Value).add(target.mulNum(v.Value));
             this.entries[n] = new TableEntry(u, v, p);
         }
     }
@@ -30,30 +31,30 @@ export class Table {
 
 
     // Very simple seeded RNG, from http://stackoverflow.com/a/23304189
-    private static getRng(seed: number): () => number {
-        return function () {
+    private static getRng(seed: number): (exclusiveMax: number) => number {
+        return function (exclusiveMax) {
             seed = Math.sin(seed) * 10000;
-            return seed - Math.floor(seed);
+            return Math.round((seed - Math.floor(seed)) * (exclusiveMax - 1));
         };
     }
 }
 
 export class TableEntry {
-    private u: number;
-    private v: number;
+    private u: ModNumber;
+    private v: ModNumber;
     private p: ModPoint;
 
-    constructor(u: number, v: number, p: ModPoint) {
+    constructor(u: ModNumber, v: ModNumber, p: ModPoint) {
         this.u = u;
         this.v = v;
         this.p = p;
     }
 
-    get U(): number {
+    get U(): ModNumber {
         return this.u;
     }
 
-    get V(): number {
+    get V(): ModNumber {
         return this.v;
     }
 

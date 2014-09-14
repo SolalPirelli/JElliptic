@@ -1,4 +1,4 @@
-﻿define(["require", "exports", "ModNumber", "ModPoint", "AdditionTable"], function(require, exports, ModNumber, ModPoint, Addition) {
+﻿define(["require", "exports", "ModPoint", "AdditionTable"], function(require, exports, ModPoint, Addition) {
     var PollardRho;
     (function (PollardRho) {
         // based on the description in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
@@ -9,8 +9,8 @@
 
             var table = new Addition.Table(generator, target, config);
 
-            var tortoise = new CurveWalk(generator, table);
-            var hare = new CurveWalk(generator, table);
+            var tortoise = new CurveWalk(table);
+            var hare = new CurveWalk(table);
 
             console.clear();
 
@@ -42,17 +42,17 @@
 
         // Walk over a problem. (mutable)
         var CurveWalk = (function () {
-            function CurveWalk(generator, table) {
-                this.order = generator.getOrder();
+            function CurveWalk(table) {
                 this.table = table;
 
-                this.u = 0;
-                this.v = 0;
-                this.current = ModPoint.Infinity;
+                var entry = table.at(0);
+                this.u = entry.U;
+                this.v = entry.V;
+                this.current = entry.P;
             }
             Object.defineProperty(CurveWalk.prototype, "U", {
                 get: function () {
-                    return new ModNumber(this.u, this.order);
+                    return this.u;
                 },
                 enumerable: true,
                 configurable: true
@@ -60,7 +60,7 @@
 
             Object.defineProperty(CurveWalk.prototype, "V", {
                 get: function () {
-                    return new ModNumber(this.v, this.order);
+                    return this.v;
                 },
                 enumerable: true,
                 configurable: true
@@ -77,8 +77,8 @@
             CurveWalk.prototype.step = function () {
                 var index = this.current.partition(this.table.Length);
                 var entry = this.table.at(index);
-                this.u += entry.U;
-                this.v += entry.V;
+                this.u = this.u.add(entry.U);
+                this.v = this.v.add(entry.V);
                 this.current = this.current.add(entry.P);
             };
 
