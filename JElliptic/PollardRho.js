@@ -1,4 +1,4 @@
-﻿define(["require", "exports", "ModPoint", "AdditionTable"], function(require, exports, ModPoint, Addition) {
+﻿define(["require", "exports", "ModNumber", "ModPoint", "AdditionTable"], function(require, exports, ModNumber, ModPoint, Addition) {
     var PollardRho;
     (function (PollardRho) {
         // based on the description in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
@@ -9,8 +9,8 @@
 
             var table = new Addition.Table(generator, target, config);
 
-            var tortoise = new CurveWalk(table);
-            var hare = new CurveWalk(table);
+            var tortoise = new CurveWalk(generator, table);
+            var hare = new CurveWalk(generator, table);
 
             console.clear();
 
@@ -25,17 +25,25 @@
                 console.log("Hare    : " + hare);
                 console.log(" ");
 
-                if (tortoise.Current.eq(hare.Current)) {
-                    return 0;
+                if (tortoise.Current.eq(hare.Current) && !tortoise.V.eq(hare.V)) {
+                    var log = tortoise.U.sub(hare.U).div(hare.V.sub(tortoise.V));
+
+                    var actualTarget = generator.mulNum(log.Value);
+                    if (!target.eq(actualTarget)) {
+                        throw "Incorrect result found. (" + log + ")";
+                    }
+
+                    return log.Value;
                 }
             }
             throw "No result found.";
         }
         PollardRho.solve = solve;
 
-        // Walk over a problem.
+        // Walk over a problem. (mutable)
         var CurveWalk = (function () {
-            function CurveWalk(table) {
+            function CurveWalk(generator, table) {
+                this.order = generator.getOrder();
                 this.table = table;
 
                 this.u = 0;
@@ -44,7 +52,7 @@
             }
             Object.defineProperty(CurveWalk.prototype, "U", {
                 get: function () {
-                    return this.u;
+                    return new ModNumber(this.u, this.order);
                 },
                 enumerable: true,
                 configurable: true
@@ -52,7 +60,7 @@
 
             Object.defineProperty(CurveWalk.prototype, "V", {
                 get: function () {
-                    return this.v;
+                    return new ModNumber(this.v, this.order);
                 },
                 enumerable: true,
                 configurable: true

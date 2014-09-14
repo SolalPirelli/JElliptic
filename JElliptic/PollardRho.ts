@@ -12,8 +12,8 @@ module PollardRho {
 
         var table = new Addition.Table(generator, target, config);
 
-        var tortoise = new CurveWalk( table);
-        var hare = new CurveWalk(table);
+        var tortoise = new CurveWalk(generator, table);
+        var hare = new CurveWalk(generator,table);
 
         console.clear();
 
@@ -28,15 +28,24 @@ module PollardRho {
             console.log("Hare    : " + hare);
             console.log(" ");
 
-            if (tortoise.Current.eq(hare.Current)) {
-                return 0; // TODO
+            if (tortoise.Current.eq(hare.Current) && !tortoise.V.eq(hare.V)) {
+                var log = tortoise.U.sub(hare.U).div(hare.V.sub(tortoise.V));
+
+                var actualTarget = generator.mulNum(log.Value);
+                if (!target.eq(actualTarget)) {
+                    throw "Incorrect result found. (" + log + ")";
+                }
+
+                return log.Value;
             }
         }
         throw "No result found.";
     }
 
-    // Walk over a problem.
+
+    // Walk over a problem. (mutable)
     class CurveWalk {
+        private order: number;
         private table: Addition.Table;
 
         private u: number;
@@ -44,7 +53,8 @@ module PollardRho {
         private current: ModPoint;
 
 
-        constructor(table: Addition.Table) {
+        constructor(generator: ModPoint, table: Addition.Table) {
+            this.order = generator.getOrder();
             this.table = table;
 
             this.u = 0;
@@ -53,12 +63,12 @@ module PollardRho {
         }
 
 
-        get U(): number {
-            return this.u;
+        get U(): ModNumber {
+            return new ModNumber(this.u, this.order);
         }
 
-        get V(): number {
-            return this.v;
+        get V(): ModNumber {
+            return new ModNumber(this.v, this.order);
         }
 
         get Current(): ModPoint {
