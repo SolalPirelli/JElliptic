@@ -15,11 +15,11 @@ define(["require", "exports", "ModCurve", "PollardRho"], function(require, expor
 
             var config = {
                 Curve: new ModCurve(a, b, n),
-                AdditionTableSeed: 1,
-                AdditionTableLength: 1024,
+                AdditionTableSeed: 0,
+                AdditionTableLength: 128,
                 ParrallelWalksCount: 10,
                 UseNegationMap: true,
-                DistinguishedPointsZeroBitsCount: 10
+                DistinguishedPointMask: 0x00
             };
 
             var result = PollardRho.solve(gx, gy, hx, hy, config);

@@ -6,7 +6,7 @@ interface Config {
     AdditionTableLength: number;
     ParrallelWalksCount: number;
     UseNegationMap: boolean;
-    DistinguishedPointsZeroBitsCount: number;
+    DistinguishedPointMask: number;
 }
 
 export = Config;

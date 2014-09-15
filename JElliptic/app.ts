@@ -19,11 +19,11 @@ requirejs([], () => {
 
         var config: Config = {
             Curve: new ModCurve(a, b, n),
-            AdditionTableSeed: 1,
-            AdditionTableLength: 1024,
-            ParrallelWalksCount: 10,
-            UseNegationMap: true,
-            DistinguishedPointsZeroBitsCount: 10
+            AdditionTableSeed: 0,
+            AdditionTableLength: 128,
+            ParrallelWalksCount: 10, // TODO
+            UseNegationMap: true, // TODO
+            DistinguishedPointMask: 0x00 // TODO
         };
 
         var result = PollardRho.solve(gx, gy, hx, hy, config);

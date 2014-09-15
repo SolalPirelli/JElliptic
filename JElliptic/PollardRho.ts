@@ -2,46 +2,33 @@
 import ModPoint = require("ModPoint");
 import Config = require("Config");
 import Addition = require("AdditionTable");
+import Server = require("Server");
 
 module PollardRho {
     // based on the description in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
     // as well as http://www.hyperelliptic.org/tanja/SHARCS/slides09/03-bos.pdf
-    export function solve(gx: number, gy: number, hx: number, hy: number, config: Config): number {
+    export function solve(gx: number, gy: number, hx: number, hy: number, config: Config): void {
         var generator = new ModPoint(gx, gy, config.Curve);
         var target = new ModPoint(hx, hy, config.Curve);
 
         var table = new Addition.Table(generator, target, config);
 
-        var tortoise = new CurveWalk(table);
-        var hare = new CurveWalk(table);
+        var walk = new CurveWalk(table);
 
         console.clear();
 
         for (var step = 0; step < config.Curve.N; step++) {
-            tortoise.step();
+            walk.step();
 
-            hare.step();
-            hare.step();
-
-            console.log("Step " + step);
-            console.log("Tortoise: " + tortoise);
-            console.log("Hare    : " + hare);
-            console.log(" ");
-
-            if (tortoise.Current.eq(hare.Current) && !tortoise.V.eq(hare.V)) {
-                var log = tortoise.U.sub(hare.U).div(hare.V.sub(tortoise.V));
-
-                var actualTarget = generator.mulNum(log.Value);
-                if (!target.eq(actualTarget)) {
-                    throw "Incorrect result found. (" + log + ")";
-                }
-
-                return log.Value;
+            if (isDistinguished(walk.Current, config)) {
+                Server.send(walk.U, walk.V, walk.Current);
             }
         }
-        throw "No result found.";
     }
 
+    function isDistinguished(point: ModPoint, config: Config): boolean {
+        return (point.X.Value & config.DistinguishedPointMask) == 0;
+    }
 
     // Walk over a problem. (mutable)
     class CurveWalk {

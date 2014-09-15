@@ -1,4 +1,4 @@
-﻿define(["require", "exports", "ModPoint", "AdditionTable"], function(require, exports, ModPoint, Addition) {
+﻿define(["require", "exports", "ModPoint", "AdditionTable", "Server"], function(require, exports, ModPoint, Addition, Server) {
     var PollardRho;
     (function (PollardRho) {
         // based on the description in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
@@ -9,36 +9,23 @@
 
             var table = new Addition.Table(generator, target, config);
 
-            var tortoise = new CurveWalk(table);
-            var hare = new CurveWalk(table);
+            var walk = new CurveWalk(table);
 
             console.clear();
 
             for (var step = 0; step < config.Curve.N; step++) {
-                tortoise.step();
+                walk.step();
 
-                hare.step();
-                hare.step();
-
-                console.log("Step " + step);
-                console.log("Tortoise: " + tortoise);
-                console.log("Hare    : " + hare);
-                console.log(" ");
-
-                if (tortoise.Current.eq(hare.Current) && !tortoise.V.eq(hare.V)) {
-                    var log = tortoise.U.sub(hare.U).div(hare.V.sub(tortoise.V));
-
-                    var actualTarget = generator.mulNum(log.Value);
-                    if (!target.eq(actualTarget)) {
-                        throw "Incorrect result found. (" + log + ")";
-                    }
-
-                    return log.Value;
+                if (isDistinguished(walk.Current, config)) {
+                    Server.send(walk.U, walk.V, walk.Current);
                 }
             }
-            throw "No result found.";
         }
         PollardRho.solve = solve;
+
+        function isDistinguished(point, config) {
+            return (point.X.Value & config.DistinguishedPointMask) == 0;
+        }
 
         // Walk over a problem. (mutable)
         var CurveWalk = (function () {
