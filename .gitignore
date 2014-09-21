@@ -7,10 +7,3 @@
 [Rr]elease/
 [Bb]in/
 [Oo]bj/
-
-# MSTest results
-[Tt]est[Rr]esult*/
-[Bb]uild[Ll]og.*
-
-# Nuget build results
-*.nupkg
