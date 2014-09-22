@@ -1,7 +1,7 @@
 ﻿class BigInteger {
-    private static MAX_INT = 9007199254740991; // 2^53-1, where 53 is the mantissa size of IEEE-754 double-precision floating point numbers (what JS uses)
-    private static BASE = 1000000000000000; // largest representable power of 10
-    private static DIGIT_LENGTH = 15; // number of base-10 digits allowed in our own digits
+    private static MAX_SAFE_INT = 9007199254740991; // 2^53-1, where 53 is the mantissa size of IEEE-754 double-precision floating point numbers (what JS uses)
+    private static BASE_TENDIGIT_COUNT = 7; // number of base-10 digits allowed in our own digits; 7 so that two digits can be multiplied in the safe int space
+    private static BASE = Math.pow(10, BigInteger.BASE_TENDIGIT_COUNT);
 
 
     private sign: number; // -1 or 1; zero always has 1 as a sign
@@ -13,23 +13,24 @@
 
 
     static fromInt(n: number): BigInteger {
-        if (n > BigInteger.MAX_INT) {
+        if (n > BigInteger.MAX_SAFE_INT) {
             throw "BigInteger.fromInt(number) cannot be called with inexact integers.";
         }
 
         var sign = n >= 0 ? 1 : -1;
-        n = Math.abs(n);
-        var lo = n % BigInteger.BASE;
-        var hi = n / BigInteger.BASE;
+        var digits: number[] = [];
 
-        var bi = new BigInteger();
-        bi.sign = sign;
-        if (hi > 0) {
-            bi.digits = [hi, lo];
-        } else {
-            bi.digits = [lo];
-        }
-        return bi;
+        n = Math.abs(n);
+
+        do {
+            var rem = n % BigInteger.BASE;
+            n = Math.floor(n / BigInteger.BASE);
+
+            digits.push(rem);
+
+        } while (n != 0);
+
+        return BigInteger.create(sign, digits);
     }
 
     static parse(str: string): BigInteger {
@@ -39,15 +40,22 @@
             str = str.substring(1);
         }
 
-        var chunksLength = Math.ceil(str.length / BigInteger.DIGIT_LENGTH);
+        // trim leading 0s
+        var begin = 0;
+        while (str[begin] == "0") {
+            begin++;
+        }
+        str = str.substring(begin);
+
+        var chunksLength = Math.ceil(str.length / BigInteger.BASE_TENDIGIT_COUNT);
         var chunks: string[] = [];
 
         for (var n = 0; n < chunksLength; n++) {
-            var begin = n * BigInteger.DIGIT_LENGTH;
-            chunks[n] = str.substring(begin, Math.min(BigInteger.DIGIT_LENGTH, str.length - begin));
+            var end = str.length - n * BigInteger.BASE_TENDIGIT_COUNT;
+            chunks[n] = str.substring(Math.max(0, end - BigInteger.BASE_TENDIGIT_COUNT), end);
         }
 
-        return BigInteger.create(sign, chunks.map(parseInt));
+        return BigInteger.create(sign, chunks.map(Number));
     }
 
 
@@ -101,14 +109,13 @@
     // http://en.wikipedia.org/wiki/Karatsuba_algorithm
     mul(other: BigInteger): BigInteger {
         // this function assumes num1 and num2 are both >0
-        var MAX_FOR_BUILTIN_MUL = Math.pow(10, BigInteger.DIGIT_LENGTH / 2);
-        function karatsuba(num1: BigInteger, num2: BigInteger): BigInteger {
-            if (num1.digits.length == 1 && num1.digits[0] < MAX_FOR_BUILTIN_MUL && num2.digits.length == 1 && num2.digits[0] < MAX_FOR_BUILTIN_MUL) {
-                return BigInteger.create(num1.sign * num2.sign, [num1.digits[0] * num2.digits[0]]);
+        var karatsuba = function (num1: BigInteger, num2: BigInteger): BigInteger {
+            if (num1.digits.length == 1 && num2.digits.length == 1) {
+                return BigInteger.fromInt(num1.digits[0] * num2.digits[0]);
             }
 
             var m = Math.max(num1.digits.length, num2.digits.length);
-            var m2 = m / 2;
+            var m2 = Math.ceil(m / 2);
 
             var lo1 = BigInteger.create(1, num1.digits.slice(0, m2));
             var hi1 = BigInteger.create(1, num1.digits.slice(m2, num1.digits.length));
@@ -119,7 +126,7 @@
             var z1 = karatsuba(lo1.add(hi1), lo2.add(hi2));
             var z2 = karatsuba(hi1, hi2);
 
-            var r1 = z2.leftShift(m2);
+            var r1 = z2.leftShift(2 * m2);
             var r2 = z1.sub(z2).sub(z0).leftShift(m2);
 
             return r1.add(r2).add(z0);
@@ -177,14 +184,23 @@
 
 
     toString(): string {
-        var result = "";
-
-        if (this.sign == -1) {
-            result += "-";
+        var padNum = function (n: number, len: number): string {
+            var str = n.toString();
+            while (str.length < len) {
+                str = '0' + str;
+            }
+            return str;
         }
 
-        for (var digit in this.digits) {
-            result += digit.toString();
+        var result = "";
+
+        for (var n = 0; n < this.digits.length - 1; n++) {
+            result = padNum(this.digits[n], BigInteger.BASE_TENDIGIT_COUNT) + result;
+        }
+        result = this.digits[this.digits.length - 1].toString() + result;
+
+        if (this.sign == -1) {
+            result = "-" + result;
         }
 
         return result;
@@ -194,7 +210,7 @@
     private static create(sign: number, digits: number[]): BigInteger {
         var bi = new BigInteger();
         bi.sign = sign;
-        bi.digits = digits;
+        bi.digits = digits.length > 0 ? digits : [0];
         return bi;
     }
 }

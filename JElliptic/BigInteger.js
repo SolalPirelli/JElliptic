@@ -3,23 +3,23 @@
         function BigInteger() {
         }
         BigInteger.fromInt = function (n) {
-            if (n > BigInteger.MAX_INT) {
+            if (n > BigInteger.MAX_SAFE_INT) {
                 throw "BigInteger.fromInt(number) cannot be called with inexact integers.";
             }
 
             var sign = n >= 0 ? 1 : -1;
-            n = Math.abs(n);
-            var lo = n % BigInteger.BASE;
-            var hi = n / BigInteger.BASE;
+            var digits = [];
 
-            var bi = new BigInteger();
-            bi.sign = sign;
-            if (hi > 0) {
-                bi.digits = [hi, lo];
-            } else {
-                bi.digits = [lo];
-            }
-            return bi;
+            n = Math.abs(n);
+
+            do {
+                var rem = n % BigInteger.BASE;
+                n = Math.floor(n / BigInteger.BASE);
+
+                digits.push(rem);
+            } while(n != 0);
+
+            return BigInteger.create(sign, digits);
         };
 
         BigInteger.parse = function (str) {
@@ -29,15 +29,22 @@
                 str = str.substring(1);
             }
 
-            var chunksLength = Math.ceil(str.length / BigInteger.DIGIT_LENGTH);
+            // trim leading 0s
+            var begin = 0;
+            while (str[begin] == "0") {
+                begin++;
+            }
+            str = str.substring(begin);
+
+            var chunksLength = Math.ceil(str.length / BigInteger.BASE_TENDIGIT_COUNT);
             var chunks = [];
 
             for (var n = 0; n < chunksLength; n++) {
-                var begin = n * BigInteger.DIGIT_LENGTH;
-                chunks[n] = str.substring(begin, Math.min(BigInteger.DIGIT_LENGTH, str.length - begin));
+                var end = str.length - n * BigInteger.BASE_TENDIGIT_COUNT;
+                chunks[n] = str.substring(Math.max(0, end - BigInteger.BASE_TENDIGIT_COUNT), end);
             }
 
-            return BigInteger.create(sign, chunks.map(parseInt));
+            return BigInteger.create(sign, chunks.map(Number));
         };
 
         BigInteger.prototype.negate = function () {
@@ -89,14 +96,13 @@
         // http://en.wikipedia.org/wiki/Karatsuba_algorithm
         BigInteger.prototype.mul = function (other) {
             // this function assumes num1 and num2 are both >0
-            var MAX_FOR_BUILTIN_MUL = Math.pow(10, BigInteger.DIGIT_LENGTH / 2);
-            function karatsuba(num1, num2) {
-                if (num1.digits.length == 1 && num1.digits[0] < MAX_FOR_BUILTIN_MUL && num2.digits.length == 1 && num2.digits[0] < MAX_FOR_BUILTIN_MUL) {
-                    return BigInteger.create(num1.sign * num2.sign, [num1.digits[0] * num2.digits[0]]);
+            var karatsuba = function (num1, num2) {
+                if (num1.digits.length == 1 && num2.digits.length == 1) {
+                    return BigInteger.fromInt(num1.digits[0] * num2.digits[0]);
                 }
 
                 var m = Math.max(num1.digits.length, num2.digits.length);
-                var m2 = m / 2;
+                var m2 = Math.ceil(m / 2);
 
                 var lo1 = BigInteger.create(1, num1.digits.slice(0, m2));
                 var hi1 = BigInteger.create(1, num1.digits.slice(m2, num1.digits.length));
@@ -107,11 +113,11 @@
                 var z1 = karatsuba(lo1.add(hi1), lo2.add(hi2));
                 var z2 = karatsuba(hi1, hi2);
 
-                var r1 = z2.leftShift(m2);
+                var r1 = z2.leftShift(2 * m2);
                 var r2 = z1.sub(z2).sub(z0).leftShift(m2);
 
                 return r1.add(r2).add(z0);
-            }
+            };
 
             return BigInteger.create(this.sign * other.sign, karatsuba(this.abs(), other.abs()).digits);
         };
@@ -164,14 +170,23 @@
         };
 
         BigInteger.prototype.toString = function () {
+            var padNum = function (n, len) {
+                var str = n.toString();
+                while (str.length < len) {
+                    str = '0' + str;
+                }
+                return str;
+            };
+
             var result = "";
 
-            if (this.sign == -1) {
-                result += "-";
+            for (var n = 0; n < this.digits.length - 1; n++) {
+                result = padNum(this.digits[n], BigInteger.BASE_TENDIGIT_COUNT) + result;
             }
+            result = this.digits[this.digits.length - 1].toString() + result;
 
-            for (var digit in this.digits) {
-                result += digit.toString();
+            if (this.sign == -1) {
+                result = "-" + result;
             }
 
             return result;
@@ -180,12 +195,12 @@
         BigInteger.create = function (sign, digits) {
             var bi = new BigInteger();
             bi.sign = sign;
-            bi.digits = digits;
+            bi.digits = digits.length > 0 ? digits : [0];
             return bi;
         };
-        BigInteger.MAX_INT = 9007199254740991;
-        BigInteger.BASE = 1000000000000000;
-        BigInteger.DIGIT_LENGTH = 15;
+        BigInteger.MAX_SAFE_INT = 9007199254740991;
+        BigInteger.BASE_TENDIGIT_COUNT = 7;
+        BigInteger.BASE = Math.pow(10, BigInteger.BASE_TENDIGIT_COUNT);
 
         BigInteger.Zero = BigInteger.create(1, [0]);
         BigInteger.One = BigInteger.create(1, [1]);
