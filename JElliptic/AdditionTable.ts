@@ -1,4 +1,5 @@
-﻿import ModNumber = require("ModNumber");
+﻿import BigInteger = require("BigInteger");
+import ModNumber = require("ModNumber");
 import ModPoint = require("ModPoint");
 import Config = require("Config");
 
@@ -9,7 +10,7 @@ export class Table {
     constructor(generator: ModPoint, target: ModPoint, config: Config) {
         this.entries = new Array(config.AdditionTableLength);
 
-        var order = generator.getOrder();
+        var order = BigInteger.fromInt(generator.getOrder());
         var rng = Table.getRng(config.AdditionTableSeed);
 
         for (var n = 0; n < this.entries.length; n++) {
@@ -31,10 +32,10 @@ export class Table {
 
 
     // Very simple seeded RNG, from http://stackoverflow.com/a/23304189
-    private static getRng(seed: number): (exclusiveMax: number) => number {
+    private static getRng(seed: number): (exclusiveMax: number) => BigInteger {
         return function (exclusiveMax) {
-            seed = Math.sin(seed) * 10000;
-            return Math.round((seed - Math.floor(seed)) * (exclusiveMax - 1));
+            // TODO
+            return BigInteger.fromInt(42);
         };
     }
 }

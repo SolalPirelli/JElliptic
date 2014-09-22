@@ -135,20 +135,63 @@
             return result;
         };
 
-        BigInteger.prototype.mod = function (other) {
+        BigInteger.prototype.mod = function (n) {
             var result = this;
 
             if (this.sign == 1) {
-                while (result.gte(other)) {
-                    result = result.sub(other);
+                while (result.gte(n)) {
+                    result = result.sub(n);
                 }
             } else {
                 while (BigInteger.Zero.gte(result)) {
-                    result = result.add(other);
+                    result = result.add(n);
                 }
             }
 
             return result;
+        };
+
+        BigInteger.prototype.modInverse = function (n) {
+            var t = BigInteger.Zero, newt = BigInteger.One;
+            var r = n, newr = this;
+            while (!newr.eq(BigInteger.Zero)) {
+                var quotient = r.div(newr);
+
+                var oldt = t;
+                t = newt;
+                newt = oldt.sub(quotient.mul(newt));
+
+                var oldr = r;
+                r = newr;
+                newr = oldr.sub(quotient.mul(newr));
+            }
+            if (r.gt(BigInteger.One)) {
+                throw (this + " is not invertible");
+            }
+            if (t.sign == -1) {
+                t = t.add(n);
+            }
+            return t;
+        };
+
+        BigInteger.prototype.lte = function (other) {
+            if (this.digits.length > other.digits.length) {
+                return true;
+            }
+            if (other.digits.length > this.digits.length) {
+                return false;
+            }
+            return this.digits[this.digits.length - 1] <= other.digits[other.digits.length - 1];
+        };
+
+        BigInteger.prototype.lt = function (other) {
+            if (this.digits.length > other.digits.length) {
+                return true;
+            }
+            if (other.digits.length > this.digits.length) {
+                return false;
+            }
+            return this.digits[this.digits.length - 1] < other.digits[other.digits.length - 1];
         };
 
         BigInteger.prototype.gte = function (other) {
@@ -161,12 +204,62 @@
             return this.digits[this.digits.length - 1] >= other.digits[other.digits.length - 1];
         };
 
+        BigInteger.prototype.gt = function (other) {
+            if (this.digits.length > other.digits.length) {
+                return true;
+            }
+            if (other.digits.length > this.digits.length) {
+                return false;
+            }
+            return this.digits[this.digits.length - 1] > other.digits[other.digits.length - 1];
+        };
+
         BigInteger.prototype.leftShift = function (n) {
             var digits = this.digits.slice(0);
             for (var _ = 0; _ < n; _++) {
                 digits.unshift(0);
             }
             return BigInteger.create(this.sign, digits);
+        };
+
+        BigInteger.prototype.and = function (other) {
+            var digits = [];
+
+            for (var n = 0; n < this.digits.length || n < other.digits.length; n++) {
+                digits.push((this.digits[n] || 0) & (other.digits[n] || 0));
+            }
+
+            // TODO: what about the sign ?
+            return BigInteger.create(1, digits);
+        };
+
+        BigInteger.prototype.eq = function (other) {
+            var arrayEquals = function (a, b) {
+                if (a == b) {
+                    return true;
+                }
+                if (a.length != b.length) {
+                    return false;
+                }
+
+                for (var i = 0; i < a.length; ++i) {
+                    if (a[i] != b[i]) {
+                        return false;
+                    }
+                }
+                return true;
+            };
+
+            return this.sign == other.sign && arrayEquals(this.digits, other.digits);
+        };
+
+        BigInteger.prototype.toInt = function () {
+            // TODO make this work with ones up to max_safe_int
+            if (this.digits.length > 1) {
+                throw "toInt can only work with small BigIntegers.";
+            }
+
+            return this.digits[0] * this.sign;
         };
 
         BigInteger.prototype.toString = function () {

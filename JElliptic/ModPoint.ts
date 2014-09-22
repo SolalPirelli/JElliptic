@@ -1,14 +1,15 @@
-﻿import ModNumber = require("ModNumber");
+﻿import BigInteger = require("BigInteger");
+import ModNumber = require("ModNumber");
 import ModCurve = require("ModCurve");
 
 class ModPoint {
-    private static INFINITY = new ModPoint(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, null);
+    private static INFINITY = new ModPoint(BigInteger.Zero, BigInteger.Zero, null);
 
     private x: ModNumber;
     private y: ModNumber;
     private curve: ModCurve;
 
-    constructor(x: number, y: number, curve: ModCurve) {
+    constructor(x: BigInteger, y: BigInteger, curve: ModCurve) {
         if (curve == null) {
             return; // hack-y
         }
@@ -71,9 +72,9 @@ class ModPoint {
         return new ModPoint(x.Value, y.Value, this.curve);
     }
 
-    mulNum(n: number): ModPoint {
+    mulNum(n: BigInteger): ModPoint {
         var g = ModPoint.INFINITY;
-        for (var _ = 0; _ < n; _++) {
+        for (var _ = BigInteger.Zero; _.lt(n); _ = _.add(BigInteger.One)) {
             g = g.add(this);
         }
         return g;
@@ -83,7 +84,7 @@ class ModPoint {
         if (this == ModPoint.INFINITY) {
             return 0;
         }
-        return this.x.Value % count;
+        return this.x.Value.mod(BigInteger.fromInt(count)).toInt();
     }
 
     getOrder(): number {

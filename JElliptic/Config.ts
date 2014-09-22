@@ -1,4 +1,5 @@
-﻿import ModCurve = require("ModCurve");
+﻿import BigInteger = require("BigInteger");
+import ModCurve = require("ModCurve");
 
 interface Config {
     Curve: ModCurve;
@@ -6,7 +7,7 @@ interface Config {
     AdditionTableLength: number;
     ParrallelWalksCount: number;
     UseNegationMap: boolean;
-    DistinguishedPointMask: number;
+    DistinguishedPointMask: BigInteger;
 }
 
 export = Config;

@@ -29,7 +29,6 @@
     <TypeScriptCompile Include="Config.ts" />
     <TypeScriptCompile Include="lib\require.d.ts" />
     <TypeScriptCompile Include="ModCurve.ts" />
-    <TypeScriptCompile Include="ModMath.ts" />
     <TypeScriptCompile Include="ModNumber.ts" />
     <TypeScriptCompile Include="ModPoint.ts" />
     <TypeScriptCompile Include="PollardRho.ts" />

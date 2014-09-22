@@ -1,12 +1,13 @@
-﻿import ModNumber = require("ModNumber");
+﻿import BigInteger = require("BigInteger");
+import ModNumber = require("ModNumber");
 import ModPoint = require("ModPoint");
 
 class ModCurve {
     private a: ModNumber;
     private b: ModNumber;
-    private n: number;
+    private n: BigInteger;
 
-    constructor(a: number, b: number, n: number) {
+    constructor(a: BigInteger, b: BigInteger, n: BigInteger) {
         this.a = new ModNumber(a, n);
         this.b = new ModNumber(b, n);
         this.n = n;
@@ -20,7 +21,7 @@ class ModCurve {
         return this.b;
     }
 
-    get N(): number {
+    get N(): BigInteger {
         return this.n;
     }
 

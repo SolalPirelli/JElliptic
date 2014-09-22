@@ -1,9 +1,9 @@
-﻿define(["require", "exports", "ModNumber"], function(require, exports, ModNumber) {
+﻿define(["require", "exports", "BigInteger", "ModNumber"], function(require, exports, BigInteger, ModNumber) {
     var Table = (function () {
         function Table(generator, target, config) {
             this.entries = new Array(config.AdditionTableLength);
 
-            var order = generator.getOrder();
+            var order = BigInteger.fromInt(generator.getOrder());
             var rng = Table.getRng(config.AdditionTableSeed);
 
             for (var n = 0; n < this.entries.length; n++) {
@@ -28,8 +28,8 @@
         // Very simple seeded RNG, from http://stackoverflow.com/a/23304189
         Table.getRng = function (seed) {
             return function (exclusiveMax) {
-                seed = Math.sin(seed) * 10000;
-                return Math.round((seed - Math.floor(seed)) * (exclusiveMax - 1));
+                // TODO
+                return BigInteger.fromInt(42);
             };
         };
         return Table;

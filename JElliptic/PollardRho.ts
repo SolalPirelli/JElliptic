@@ -1,4 +1,5 @@
-﻿import ModNumber = require("ModNumber");
+﻿import BigInteger = require("BigInteger");
+import ModNumber = require("ModNumber");
 import ModPoint = require("ModPoint");
 import Config = require("Config");
 import Addition = require("AdditionTable");
@@ -7,7 +8,7 @@ import Server = require("Server");
 module PollardRho {
     // based on the description in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
     // as well as http://www.hyperelliptic.org/tanja/SHARCS/slides09/03-bos.pdf
-    export function solve(gx: number, gy: number, hx: number, hy: number, config: Config): void {
+    export function solve(gx: BigInteger, gy: BigInteger, hx: BigInteger, hy: BigInteger, config: Config): void {
         var generator = new ModPoint(gx, gy, config.Curve);
         var target = new ModPoint(hx, hy, config.Curve);
 
@@ -17,7 +18,7 @@ module PollardRho {
 
         console.clear();
 
-        for (var step = 0; step < config.Curve.N; step++) {
+        for (var step = BigInteger.Zero; step.lt( config.Curve.N); step = step.add(BigInteger.One)) {
             walk.step();
 
             if (isDistinguished(walk.Current, config)) {
@@ -27,7 +28,7 @@ module PollardRho {
     }
 
     function isDistinguished(point: ModPoint, config: Config): boolean {
-        return (point.X.Value & config.DistinguishedPointMask) == 0;
+        return (point.X.Value.and(config.DistinguishedPointMask)).eq(BigInteger.Zero);
     }
 
     // Walk over a problem. (mutable)

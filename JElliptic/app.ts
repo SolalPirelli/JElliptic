@@ -1,11 +1,12 @@
 ﻿/// <reference path="lib/require.d.ts" />
 
+import BigInteger = require("BigInteger");
 import ModCurve = require("ModCurve");
 import Config = require("Config");
 import PollardRho = require("PollardRho");
 
-function intValue(elemName: string): number {
-    return parseInt((<HTMLInputElement> document.getElementById(elemName)).value, 10);
+function bigintValue(elemName: string): BigInteger {
+    return BigInteger.parse((<HTMLInputElement> document.getElementById(elemName)).value);
 }
 
 requirejs([], () => {
@@ -13,9 +14,9 @@ requirejs([], () => {
     var content = document.getElementById("content");
 
     btn.onclick = _ => {
-        var a = intValue("a"), b = intValue("b"), n = intValue("order");
-        var gx = intValue("gx"), gy = intValue("gy");
-        var hx = intValue("hx"), hy = intValue("hy");
+        var a = bigintValue("a"), b = bigintValue("b"), n = bigintValue("order");
+        var gx = bigintValue("gx"), gy = bigintValue("gy");
+        var hx = bigintValue("hx"), hy = bigintValue("hy");
 
         var config: Config = {
             Curve: new ModCurve(a, b, n),
@@ -23,7 +24,7 @@ requirejs([], () => {
             AdditionTableLength: 128,
             ParrallelWalksCount: 10, // TODO
             UseNegationMap: true, // TODO
-            DistinguishedPointMask: 0x00 // TODO
+            DistinguishedPointMask: BigInteger.fromInt(0xFF) // TODO
         };
 
         var result = PollardRho.solve(gx, gy, hx, hy, config);

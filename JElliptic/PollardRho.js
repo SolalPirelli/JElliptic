@@ -1,4 +1,4 @@
-﻿define(["require", "exports", "ModPoint", "AdditionTable", "Server"], function(require, exports, ModPoint, Addition, Server) {
+﻿define(["require", "exports", "BigInteger", "ModPoint", "AdditionTable", "Server"], function(require, exports, BigInteger, ModPoint, Addition, Server) {
     var PollardRho;
     (function (PollardRho) {
         // based on the description in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
@@ -13,7 +13,7 @@
 
             console.clear();
 
-            for (var step = 0; step < config.Curve.N; step++) {
+            for (var step = BigInteger.Zero; step.lt(config.Curve.N); step = step.add(BigInteger.One)) {
                 walk.step();
 
                 if (isDistinguished(walk.Current, config)) {
@@ -24,7 +24,7 @@
         PollardRho.solve = solve;
 
         function isDistinguished(point, config) {
-            return (point.X.Value & config.DistinguishedPointMask) == 0;
+            return (point.X.Value.and(config.DistinguishedPointMask)).eq(BigInteger.Zero);
         }
 
         // Walk over a problem. (mutable)

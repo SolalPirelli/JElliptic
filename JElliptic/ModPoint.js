@@ -1,4 +1,4 @@
-﻿define(["require", "exports", "ModNumber"], function(require, exports, ModNumber) {
+﻿define(["require", "exports", "BigInteger", "ModNumber"], function(require, exports, BigInteger, ModNumber) {
     var ModPoint = (function () {
         function ModPoint(x, y, curve) {
             if (curve == null) {
@@ -78,7 +78,7 @@
 
         ModPoint.prototype.mulNum = function (n) {
             var g = ModPoint.INFINITY;
-            for (var _ = 0; _ < n; _++) {
+            for (var _ = BigInteger.Zero; _.lt(n); _ = _.add(BigInteger.One)) {
                 g = g.add(this);
             }
             return g;
@@ -88,7 +88,7 @@
             if (this == ModPoint.INFINITY) {
                 return 0;
             }
-            return this.x.Value % count;
+            return this.x.Value.mod(BigInteger.fromInt(count)).toInt();
         };
 
         ModPoint.prototype.getOrder = function () {
@@ -126,7 +126,7 @@
                 throw (this + " is not a valid point.");
             }
         };
-        ModPoint.INFINITY = new ModPoint(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, null);
+        ModPoint.INFINITY = new ModPoint(BigInteger.Zero, BigInteger.Zero, null);
         return ModPoint;
     })();
 

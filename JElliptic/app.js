@@ -1,7 +1,7 @@
 ﻿/// <reference path="lib/require.d.ts" />
-define(["require", "exports", "ModCurve", "PollardRho"], function(require, exports, ModCurve, PollardRho) {
-    function intValue(elemName) {
-        return parseInt(document.getElementById(elemName).value, 10);
+define(["require", "exports", "BigInteger", "ModCurve", "PollardRho"], function(require, exports, BigInteger, ModCurve, PollardRho) {
+    function bigintValue(elemName) {
+        return BigInteger.parse(document.getElementById(elemName).value);
     }
 
     requirejs([], function () {
@@ -9,9 +9,9 @@ define(["require", "exports", "ModCurve", "PollardRho"], function(require, expor
         var content = document.getElementById("content");
 
         btn.onclick = function (_) {
-            var a = intValue("a"), b = intValue("b"), n = intValue("order");
-            var gx = intValue("gx"), gy = intValue("gy");
-            var hx = intValue("hx"), hy = intValue("hy");
+            var a = bigintValue("a"), b = bigintValue("b"), n = bigintValue("order");
+            var gx = bigintValue("gx"), gy = bigintValue("gy");
+            var hx = bigintValue("hx"), hy = bigintValue("hy");
 
             var config = {
                 Curve: new ModCurve(a, b, n),
@@ -19,7 +19,7 @@ define(["require", "exports", "ModCurve", "PollardRho"], function(require, expor
                 AdditionTableLength: 128,
                 ParrallelWalksCount: 10,
                 UseNegationMap: true,
-                DistinguishedPointMask: 0x00
+                DistinguishedPointMask: BigInteger.fromInt(0xFF)
             };
 
             var result = PollardRho.solve(gx, gy, hx, hy, config);

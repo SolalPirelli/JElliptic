@@ -1,63 +1,63 @@
-﻿import ModMath = require("ModMath");
+﻿import BigInteger = require("BigInteger");
 
 class ModNumber {
-    private value: number;
-    private n: number;
+    private value: BigInteger;
+    private n: BigInteger;
 
 
-    constructor(value: number, n: number) {
-        this.value = ModMath.mod(value, n);
+    constructor(value: BigInteger, n: BigInteger) {
+        this.value = value.mod(n);
         this.n = n;
     }
 
 
-    get Value(): number {
+    get Value(): BigInteger {
         return this.value;
     }
 
-    get N(): number {
+    get N(): BigInteger {
         return this.n;
     }
 
 
     negate(): ModNumber {
-        return new ModNumber(-this.value, this.n);
+        return new ModNumber(this.value.negate(), this.n);
     }
 
     add(other: ModNumber): ModNumber {
         this.ensureCompatible(other);
 
-        return new ModNumber(this.value + other.value, this.n);
+        return new ModNumber(this.value.add(other.value), this.n);
     }
 
     addNum(n: number): ModNumber {
-        return new ModNumber(this.value + n, this.n);
+        return new ModNumber(this.value.add(BigInteger.fromInt(n)), this.n);
     }
 
     sub(other: ModNumber): ModNumber {
         this.ensureCompatible(other);
 
-        return new ModNumber(this.value - other.value, this.n);
+        return new ModNumber(this.value.sub(other.value), this.n);
     }
 
     mul(other: ModNumber): ModNumber {
         this.ensureCompatible(other);
 
-        return new ModNumber(this.value * other.value, this.n);
+        return new ModNumber(this.value.mul(other.value), this.n);
     }
 
     mulNum(n: number): ModNumber {
-        return new ModNumber(n * this.value, this.n);
+        return new ModNumber(this.value.mul(BigInteger.fromInt(n)), this.n);
     }
 
     div(other: ModNumber): ModNumber {
         this.ensureCompatible(other);
 
-        return new ModNumber(this.value * ModMath.modInverse(other.value, this.n), this.n);
+        return new ModNumber(this.value.mul(other.value.modInverse(this.n)), this.n);
     }
 
     pow(n: number): ModNumber {
-        var result = new ModNumber(1, this.N);
+        var result = new ModNumber(BigInteger.One, this.N);
         for (var _ = 0; _ < n; _++) {
             result = result.mul(this);
         }
@@ -77,7 +77,7 @@ class ModNumber {
 
 
     private ensureCompatible(other: ModNumber): void {
-        if (this.n != other.n) {
+        if (!this.n.eq(other.n)) {
             throw "Incompatible ModNums";
         }
     }
