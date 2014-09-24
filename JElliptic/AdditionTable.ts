@@ -31,10 +31,10 @@ export class Table {
     }
 
 
-    // Very simple seeded RNG, from http://stackoverflow.com/a/23304189
+    // Very simple seeded RNG, based on http://stackoverflow.com/a/23304189
     private static getRng(seed: number): (exclusiveMax: number) => BigInteger {
         return function (exclusiveMax) {
-            seed = Math.sin(seed + 0.01) * 10000;
+            seed = Math.cos(seed) * 10000;
             return BigInteger.fromInt(Math.round((seed - Math.floor(seed)) * (exclusiveMax - 1)));
         };
     }

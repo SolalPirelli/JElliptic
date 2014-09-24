@@ -19,7 +19,7 @@ define(["require", "exports", "BigInteger", "ModCurve", "PollardRho"], function(
                 AdditionTableLength: 128,
                 ParrallelWalksCount: 10,
                 UseNegationMap: true,
-                DistinguishedPointMask: BigInteger.fromInt(0xFF)
+                DistinguishedPointMask: BigInteger.fromInt(3)
             };
 
             PollardRho.run(gx, gy, hx, hy, config);

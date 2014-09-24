@@ -24,7 +24,7 @@ requirejs([], () => {
             AdditionTableLength: 128,
             ParrallelWalksCount: 10, // TODO
             UseNegationMap: true, // TODO
-            DistinguishedPointMask: BigInteger.fromInt(0xFF) // TODO
+            DistinguishedPointMask: BigInteger.fromInt(3) // TODO
         };
 
         PollardRho.run(gx, gy, hx, hy, config);

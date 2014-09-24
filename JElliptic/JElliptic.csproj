@@ -19,6 +19,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="index.html" />
+    <Content Include="lib\jquery.min.js" />
     <Content Include="lib\require.js" />
     <Content Include="web.config" />
   </ItemGroup>
@@ -27,6 +28,7 @@
     <TypeScriptCompile Include="app.ts" />
     <TypeScriptCompile Include="BigInteger.ts" />
     <TypeScriptCompile Include="Config.ts" />
+    <TypeScriptCompile Include="lib\jquery.d.ts" />
     <TypeScriptCompile Include="lib\require.d.ts" />
     <TypeScriptCompile Include="ModCurve.ts" />
     <TypeScriptCompile Include="ModNumber.ts" />

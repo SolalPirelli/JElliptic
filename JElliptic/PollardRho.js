@@ -24,7 +24,7 @@
         PollardRho.run = run;
 
         function isDistinguished(point, config) {
-            return (point.X.Value.and(config.DistinguishedPointMask)).eq(BigInteger.Zero);
+            return (point.X.Value.and(config.DistinguishedPointMask)).eq(config.DistinguishedPointMask);
         }
 
         // Walk over a problem. (mutable)
@@ -67,9 +67,6 @@
                 this.u = this.u.add(entry.U);
                 this.v = this.v.add(entry.V);
                 this.current = this.current.add(entry.P);
-
-                // Debugging
-                console.log(this.u + " " + this.v + " " + this.current);
             };
 
             CurveWalk.prototype.toString = function () {
