@@ -67,7 +67,7 @@ class ModNumber {
     eq(other: ModNumber): boolean {
         this.ensureCompatible(other);
 
-        return this.value == other.value;
+        return this.value.eq(other.value);
     }
 
 

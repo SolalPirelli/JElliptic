@@ -67,7 +67,7 @@
         ModNumber.prototype.eq = function (other) {
             this.ensureCompatible(other);
 
-            return this.value == other.value;
+            return this.value.eq(other.value);
         };
 
         ModNumber.prototype.toString = function () {

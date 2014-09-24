@@ -179,40 +179,64 @@
         };
 
         BigInteger.prototype.lte = function (other) {
-            if (this.digits.length > other.digits.length) {
+            if (this.sign < other.sign) {
                 return true;
             }
-            if (other.digits.length > this.digits.length) {
+            if (this.sign > other.sign) {
+                return false;
+            }
+            if (this.digits.length < other.digits.length) {
+                return true;
+            }
+            if (this.digits.length > other.digits.length) {
                 return false;
             }
             return this.digits[this.digits.length - 1] <= other.digits[other.digits.length - 1];
         };
 
         BigInteger.prototype.lt = function (other) {
-            if (this.digits.length > other.digits.length) {
+            if (this.sign < other.sign) {
                 return true;
             }
-            if (other.digits.length > this.digits.length) {
+            if (this.sign > other.sign) {
+                return false;
+            }
+            if (this.digits.length < other.digits.length) {
+                return true;
+            }
+            if (this.digits.length > other.digits.length) {
                 return false;
             }
             return this.digits[this.digits.length - 1] < other.digits[other.digits.length - 1];
         };
 
         BigInteger.prototype.gte = function (other) {
+            if (this.sign > other.sign) {
+                return true;
+            }
+            if (this.sign < other.sign) {
+                return false;
+            }
             if (this.digits.length > other.digits.length) {
                 return true;
             }
-            if (other.digits.length > this.digits.length) {
+            if (this.digits.length < other.digits.length) {
                 return false;
             }
             return this.digits[this.digits.length - 1] >= other.digits[other.digits.length - 1];
         };
 
         BigInteger.prototype.gt = function (other) {
+            if (this.sign > other.sign) {
+                return true;
+            }
+            if (this.sign < other.sign) {
+                return false;
+            }
             if (this.digits.length > other.digits.length) {
                 return true;
             }
-            if (other.digits.length > this.digits.length) {
+            if (this.digits.length < other.digits.length) {
                 return false;
             }
             return this.digits[this.digits.length - 1] > other.digits[other.digits.length - 1];

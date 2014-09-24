@@ -192,40 +192,64 @@
     }
 
     lte(other: BigInteger): boolean {
-        if (this.digits.length > other.digits.length) {
+        if (this.sign < other.sign) {
             return true;
         }
-        if (other.digits.length > this.digits.length) {
+        if (this.sign > other.sign) {
+            return false;
+        }
+        if (this.digits.length < other.digits.length) {
+            return true;
+        }
+        if (this.digits.length > other.digits.length) {
             return false;
         }
         return this.digits[this.digits.length - 1] <= other.digits[other.digits.length - 1];
     }
 
     lt(other: BigInteger): boolean {
-        if (this.digits.length > other.digits.length) {
+        if (this.sign < other.sign) {
             return true;
         }
-        if (other.digits.length > this.digits.length) {
+        if (this.sign > other.sign) {
+            return false;
+        }
+        if (this.digits.length < other.digits.length) {
+            return true;
+        }
+        if (this.digits.length > other.digits.length) {
             return false;
         }
         return this.digits[this.digits.length - 1] < other.digits[other.digits.length - 1];
     }
 
     gte(other: BigInteger): boolean {
+        if (this.sign > other.sign) {
+            return true;
+        }
+        if (this.sign < other.sign) {
+            return false;
+        }
         if (this.digits.length > other.digits.length) {
             return true;
         }
-        if (other.digits.length > this.digits.length) {
+        if (this.digits.length < other.digits.length) {
             return false;
         }
         return this.digits[this.digits.length - 1] >= other.digits[other.digits.length - 1];
     }
 
     gt(other: BigInteger): boolean {
+        if (this.sign > other.sign) {
+            return true;
+        }
+        if (this.sign < other.sign) {
+            return false;
+        }
         if (this.digits.length > other.digits.length) {
             return true;
         }
-        if (other.digits.length > this.digits.length) {
+        if (this.digits.length < other.digits.length) {
             return false;
         }
         return this.digits[this.digits.length - 1] > other.digits[other.digits.length - 1];

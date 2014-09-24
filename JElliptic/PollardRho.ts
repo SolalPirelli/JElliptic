@@ -69,6 +69,9 @@ module PollardRho {
             this.u = this.u.add(entry.U);
             this.v = this.v.add(entry.V);
             this.current = this.current.add(entry.P);
+
+            // Debugging
+            console.log(this.u + " " + this.v + " " + this.current);
         }
 
 
