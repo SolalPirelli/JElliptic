@@ -11,17 +11,16 @@ namespace JElliptic.Web.Controllers
         private static readonly ISet<CurvePoint> _points = new HashSet<CurvePoint>();
         private static readonly IList<Tuple<CurvePoint, CurvePoint>> _collisions = new List<Tuple<CurvePoint, CurvePoint>>();
 
-        // GET api/values
+        // GET api/Values
         public IEnumerable<string> Get()
         {
             return _collisions.Select( t => "Collision: " + t.Item1 + " / " + t.Item2 )
                               .Concat( _points.Select( p => p.ToString() ) );
         }
 
-        // POST api/values
-        public void Post( string x, string y, string u, string v )
+        // POST api/Values
+        public CurvePoint Post( CurvePoint point )
         {
-            var point = new CurvePoint( x, y, u, v );
             if ( _points.Contains( point ) ) // collision, not the same U/V
             {
                 var existing = _points.First( p => p.Equals( point ) );
@@ -35,9 +34,11 @@ namespace JElliptic.Web.Controllers
             {
                 _points.Add( point );
             }
+
+            return point;
         }
 
-        // DELETE api/values
+        // DELETE api/Values
         public string Delete()
         {
             _points.Clear();
@@ -45,7 +46,7 @@ namespace JElliptic.Web.Controllers
             return "OK!";
         }
 
-        private sealed class CurvePoint
+        public sealed class CurvePoint
         {
             public readonly BigInteger X;
             public readonly BigInteger Y;
