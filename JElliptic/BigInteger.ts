@@ -60,11 +60,15 @@
 
 
     negate(): BigInteger {
-        return BigInteger.create(-this.sign, this.digits);
+        return BigInteger.create(-this.sign, this.digits.slice(0));
     }
 
     abs(): BigInteger {
-        return BigInteger.create(1, this.digits);
+        return BigInteger.create(1, this.digits.slice(0));
+    }
+
+    clone(): BigInteger {
+        return BigInteger.create(this.sign, this.digits.slice(0));
     }
 
 
@@ -228,7 +232,7 @@
     }
 
     leftShift(n: number): BigInteger {
-        var digits = this.digits.slice(0); // slice(0) creates a clone
+        var digits = this.digits.slice(0);
         for (var _ = 0; _ < n; _++) {
             digits.unshift(0);
         }
@@ -236,7 +240,7 @@
     }
 
     and(other: BigInteger): BigInteger {
-        var digits:number[] = [];
+        var digits: number[] = [];
 
         for (var n = 0; n < this.digits.length || n < other.digits.length; n++) {
             digits.push((this.digits[n] || 0) & (other.digits[n] || 0));

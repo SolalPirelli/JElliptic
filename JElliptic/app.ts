@@ -27,7 +27,6 @@ requirejs([], () => {
             DistinguishedPointMask: BigInteger.fromInt(0xFF) // TODO
         };
 
-        var result = PollardRho.solve(gx, gy, hx, hy, config);
-        content.textContent = (result || "Error").toString();
+        PollardRho.run(gx, gy, hx, hy, config);
     };
 });

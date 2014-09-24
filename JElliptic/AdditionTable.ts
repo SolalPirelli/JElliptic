@@ -34,8 +34,8 @@ export class Table {
     // Very simple seeded RNG, from http://stackoverflow.com/a/23304189
     private static getRng(seed: number): (exclusiveMax: number) => BigInteger {
         return function (exclusiveMax) {
-            // TODO
-            return BigInteger.fromInt(42);
+            seed = Math.sin(seed) * 10000;
+            return BigInteger.fromInt(Math.round((seed - Math.floor(seed)) * (exclusiveMax - 1)));
         };
     }
 }

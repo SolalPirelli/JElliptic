@@ -3,7 +3,7 @@
     (function (PollardRho) {
         // based on the description in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
         // as well as http://www.hyperelliptic.org/tanja/SHARCS/slides09/03-bos.pdf
-        function solve(gx, gy, hx, hy, config) {
+        function run(gx, gy, hx, hy, config) {
             var generator = new ModPoint(gx, gy, config.Curve);
             var target = new ModPoint(hx, hy, config.Curve);
 
@@ -21,7 +21,7 @@
                 }
             }
         }
-        PollardRho.solve = solve;
+        PollardRho.run = run;
 
         function isDistinguished(point, config) {
             return (point.X.Value.and(config.DistinguishedPointMask)).eq(BigInteger.Zero);

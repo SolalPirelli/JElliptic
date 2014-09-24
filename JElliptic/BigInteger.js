@@ -48,11 +48,15 @@
         };
 
         BigInteger.prototype.negate = function () {
-            return BigInteger.create(-this.sign, this.digits);
+            return BigInteger.create(-this.sign, this.digits.slice(0));
         };
 
         BigInteger.prototype.abs = function () {
-            return BigInteger.create(1, this.digits);
+            return BigInteger.create(1, this.digits.slice(0));
+        };
+
+        BigInteger.prototype.clone = function () {
+            return BigInteger.create(this.sign, this.digits.slice(0));
         };
 
         BigInteger.prototype.add = function (other) {

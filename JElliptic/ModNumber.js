@@ -2,7 +2,7 @@
     var ModNumber = (function () {
         function ModNumber(value, n) {
             this.value = value.mod(n);
-            this.n = n;
+            this.n = n.clone();
         }
         Object.defineProperty(ModNumber.prototype, "Value", {
             get: function () {

@@ -8,7 +8,7 @@ import Server = require("Server");
 module PollardRho {
     // based on the description in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
     // as well as http://www.hyperelliptic.org/tanja/SHARCS/slides09/03-bos.pdf
-    export function solve(gx: BigInteger, gy: BigInteger, hx: BigInteger, hy: BigInteger, config: Config): void {
+    export function run(gx: BigInteger, gy: BigInteger, hx: BigInteger, hy: BigInteger, config: Config): void {
         var generator = new ModPoint(gx, gy, config.Curve);
         var target = new ModPoint(hx, hy, config.Curve);
 
@@ -18,7 +18,7 @@ module PollardRho {
 
         console.clear();
 
-        for (var step = BigInteger.Zero; step.lt( config.Curve.N); step = step.add(BigInteger.One)) {
+        for (var step = BigInteger.Zero; step.lt(config.Curve.N); step = step.add(BigInteger.One)) {
             walk.step();
 
             if (isDistinguished(walk.Current, config)) {
@@ -66,8 +66,8 @@ module PollardRho {
         step(): void {
             var index = this.current.partition(this.table.Length);
             var entry = this.table.at(index);
-            this.u=this.u.add(entry.U);
-            this.v =this.v.add( entry.V);
+            this.u = this.u.add(entry.U);
+            this.v = this.v.add(entry.V);
             this.current = this.current.add(entry.P);
         }
 

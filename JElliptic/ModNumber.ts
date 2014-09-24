@@ -7,7 +7,7 @@ class ModNumber {
 
     constructor(value: BigInteger, n: BigInteger) {
         this.value = value.mod(n);
-        this.n = n;
+        this.n = n.clone();
     }
 
 
