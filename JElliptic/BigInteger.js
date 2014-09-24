@@ -60,7 +60,7 @@
         };
 
         BigInteger.prototype.add = function (other) {
-            var thisIsGreater = this.gte(other);
+            var thisIsGreater = this.abs().gte(other.abs());
             var hi = thisIsGreater ? this : other;
             var lo = thisIsGreater ? other : this;
 
@@ -85,7 +85,6 @@
                 digits[n] = current;
             }
 
-            // at the end carry is always >= 0
             if (carry != 0) {
                 digits[hi.digits.length] = carry;
             }
