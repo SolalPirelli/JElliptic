@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Web.Http;
+using System.Web.Http.Cors;
 
 namespace JElliptic.Web.Controllers
 {
+    [EnableCors( "*", "*", "*" )]
     public class ValuesController : ApiController
     {
         private static readonly ISet<CurvePoint> _points = new HashSet<CurvePoint>();

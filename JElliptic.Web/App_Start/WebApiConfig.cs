@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web.Http;
+﻿using System.Web.Http;
 
 namespace JElliptic.Web
 {
@@ -10,6 +7,8 @@ namespace JElliptic.Web
         public static void Register( HttpConfiguration config )
         {
             // Web API configuration and services
+
+            config.EnableCors();
 
             // Web API routes
             config.MapHttpAttributeRoutes();
