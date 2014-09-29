@@ -11,18 +11,24 @@ module PollardRho {
     export function run(gx: BigInteger, gy: BigInteger, hx: BigInteger, hy: BigInteger, config: Config): void {
         var generator = new ModPoint(gx, gy, config.Curve);
         var target = new ModPoint(hx, hy, config.Curve);
-
         var table = new Addition.Table(generator, target, config);
 
-        var walk = new CurveWalk(table);
+        var walks: CurveWalk[] = [];
+
+        for (var n = 0; n < config.ParrallelWalksCount; n++) {
+            walks[n] = new CurveWalk(table);
+        }
 
         console.clear();
 
         for (var step = BigInteger.Zero; step.lt(config.Curve.N); step = step.add(BigInteger.One)) {
-            walk.step();
 
-            if (isDistinguished(walk.Current, config)) {
-                Server.send(walk.U, walk.V, walk.Current);
+            for (var n = 0; n < config.ParrallelWalksCount; n++) {
+                walks[n].step();
+
+                if (isDistinguished(walks[n].Current, config)) {
+                    Server.send(walks[n].U, walks[n].V, walks[n].Current);
+                }
             }
         }
     }

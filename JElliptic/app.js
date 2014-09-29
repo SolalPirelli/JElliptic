@@ -6,7 +6,6 @@ define(["require", "exports", "BigInteger", "ModCurve", "PollardRho"], function(
 
     requirejs([], function () {
         var btn = document.getElementById("button");
-        var content = document.getElementById("content");
 
         btn.onclick = function (_) {
             var a = bigintValue("a"), b = bigintValue("b"), n = bigintValue("order");

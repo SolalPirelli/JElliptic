@@ -11,7 +11,6 @@ function bigintValue(elemName: string): BigInteger {
 
 requirejs([], () => {
     var btn = document.getElementById("button");
-    var content = document.getElementById("content");
 
     btn.onclick = _ => {
         var a = bigintValue("a"), b = bigintValue("b"), n = bigintValue("order");
@@ -24,7 +23,7 @@ requirejs([], () => {
             AdditionTableLength: 128,
             ParrallelWalksCount: 10, // TODO
             UseNegationMap: true, // TODO
-            DistinguishedPointMask: BigInteger.fromInt(3) // TODO
+            DistinguishedPointMask: BigInteger.fromInt(3)
         };
 
         PollardRho.run(gx, gy, hx, hy, config);

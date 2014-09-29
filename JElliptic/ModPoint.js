@@ -57,18 +57,18 @@
                 return ModPoint.INFINITY;
             }
 
-            var lambda;
+            var num, denom;
             if (this.eq(other)) {
                 // Case 3: The points are equal -> double the current point
-                var num = this.x.pow(2).mulNum(3).add(this.curve.A);
-                var denom = this.y.mulNum(2);
-                lambda = num.div(denom);
+                num = this.x.pow(2).mulNum(3).add(this.curve.A);
+                denom = this.y.mulNum(2);
             } else {
                 // Case 4: Add the two points
-                var num = other.y.sub(this.y);
-                var denom = other.x.sub(this.x);
-                lambda = num.div(denom);
+                num = other.y.sub(this.y);
+                denom = other.x.sub(this.x);
             }
+
+            var lambda = num.div(denom);
 
             var x = lambda.pow(2).sub(this.x).sub(other.x);
             var y = lambda.mul(this.x.sub(x)).sub(this.y);

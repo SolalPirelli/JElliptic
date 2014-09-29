@@ -112,7 +112,7 @@
     // http://en.wikipedia.org/wiki/Karatsuba_algorithm
     mul(other: BigInteger): BigInteger {
         // this function assumes num1 and num2 are both >0
-        var karatsuba = function (num1: BigInteger, num2: BigInteger): BigInteger {
+        var karatsuba = (num1: BigInteger, num2: BigInteger): BigInteger => {
             if (num1.digits.length == 1 && num2.digits.length == 1) {
                 return BigInteger.fromInt(num1.digits[0] * num2.digits[0]);
             }
@@ -275,7 +275,7 @@
 
 
     eq(other: BigInteger) {
-        var arrayEquals = function (a: number[], b: number[]): boolean {
+        var arrayEquals = (a: number[], b: number[]): boolean => {
             if (a == b) {
                 return true;
             }
@@ -305,7 +305,7 @@
     }
 
     toString(): string {
-        var padNum = function (n: number, len: number): string {
+        var padNum = (n: number, len: number): string => {
             var str = n.toString();
             while (str.length < len) {
                 str = '0' + str;

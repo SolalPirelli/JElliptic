@@ -6,18 +6,23 @@
         function run(gx, gy, hx, hy, config) {
             var generator = new ModPoint(gx, gy, config.Curve);
             var target = new ModPoint(hx, hy, config.Curve);
-
             var table = new Addition.Table(generator, target, config);
 
-            var walk = new CurveWalk(table);
+            var walks = [];
+
+            for (var n = 0; n < config.ParrallelWalksCount; n++) {
+                walks[n] = new CurveWalk(table);
+            }
 
             console.clear();
 
             for (var step = BigInteger.Zero; step.lt(config.Curve.N); step = step.add(BigInteger.One)) {
-                walk.step();
+                for (var n = 0; n < config.ParrallelWalksCount; n++) {
+                    walks[n].step();
 
-                if (isDistinguished(walk.Current, config)) {
-                    Server.send(walk.U, walk.V, walk.Current);
+                    if (isDistinguished(walks[n].Current, config)) {
+                        Server.send(walks[n].U, walks[n].V, walks[n].Current);
+                    }
                 }
             }
         }
