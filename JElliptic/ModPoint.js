@@ -1,4 +1,4 @@
-﻿define(["require", "exports", "BigInteger", "ModNumber"], function(require, exports, BigInteger, ModNumber) {
+﻿define(["require", "exports", "BigInteger", "ModNumber", "ModPointAddPartialResult"], function(require, exports, BigInteger, ModNumber, ModPointAddPartialResult) {
     var ModPoint = (function () {
         function ModPoint(x, y, curve) {
             if (curve == null) {
@@ -70,6 +70,41 @@
 
             var lambda = num.div(denom);
 
+            var x = lambda.pow(2).sub(this.x).sub(other.x);
+            var y = lambda.mul(this.x.sub(x)).sub(this.y);
+
+            return new ModPoint(x.Value, y.Value, this.curve);
+        };
+
+        ModPoint.prototype.beginAdd = function (other) {
+            // Case 1: One of the points is infinity -> return the other
+            if (this == ModPoint.INFINITY) {
+                return ModPointAddPartialResult.fromResult(other);
+            }
+            if (other == ModPoint.INFINITY) {
+                return ModPointAddPartialResult.fromResult(this);
+            }
+
+            // Case 2: The points are vertically symmetric -> return infinity
+            if (this.x.eq(other.x) && this.y.eq(other.y.negate())) {
+                return ModPointAddPartialResult.fromResult(ModPoint.INFINITY);
+            }
+
+            var num, denom;
+            if (this.eq(other)) {
+                // Case 3: The points are equal -> double the current point
+                num = this.x.pow(2).mulNum(3).add(this.curve.A);
+                denom = this.y.mulNum(2);
+            } else {
+                // Case 4: Add the two points
+                num = other.y.sub(this.y);
+                denom = other.x.sub(this.x);
+            }
+
+            return ModPointAddPartialResult.fromDivision(num, denom);
+        };
+
+        ModPoint.prototype.endAdd = function (other, lambda) {
             var x = lambda.pow(2).sub(this.x).sub(other.x);
             var y = lambda.mul(this.x.sub(x)).sub(this.y);
 

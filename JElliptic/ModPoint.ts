@@ -1,6 +1,7 @@
 ﻿import BigInteger = require("BigInteger");
 import ModNumber = require("ModNumber");
 import ModCurve = require("ModCurve");
+import ModPointAddPartialResult = require("ModPointAddPartialResult");
 
 class ModPoint {
     private static INFINITY = new ModPoint(BigInteger.Zero, BigInteger.Zero, null);
@@ -57,7 +58,7 @@ class ModPoint {
         if (this.eq(other)) {
             // Case 3: The points are equal -> double the current point
             num = this.x.pow(2).mulNum(3).add(this.curve.A);
-            denom = this.y.mulNum(2);         
+            denom = this.y.mulNum(2);
         } else {
             // Case 4: Add the two points
             num = other.y.sub(this.y);
@@ -66,6 +67,41 @@ class ModPoint {
 
         var lambda = num.div(denom);
 
+        var x = lambda.pow(2).sub(this.x).sub(other.x);
+        var y = lambda.mul(this.x.sub(x)).sub(this.y);
+
+        return new ModPoint(x.Value, y.Value, this.curve);
+    }
+
+    beginAdd(other: ModPoint): ModPointAddPartialResult {
+        // Case 1: One of the points is infinity -> return the other
+        if (this == ModPoint.INFINITY) {
+            return ModPointAddPartialResult.fromResult(other);
+        }
+        if (other == ModPoint.INFINITY) {
+            return ModPointAddPartialResult.fromResult(this);
+        }
+
+        // Case 2: The points are vertically symmetric -> return infinity
+        if (this.x.eq(other.x) && this.y.eq(other.y.negate())) {
+            return ModPointAddPartialResult.fromResult(ModPoint.INFINITY);
+        }
+
+        var num: ModNumber, denom: ModNumber;
+        if (this.eq(other)) {
+            // Case 3: The points are equal -> double the current point
+            num = this.x.pow(2).mulNum(3).add(this.curve.A);
+            denom = this.y.mulNum(2);
+        } else {
+            // Case 4: Add the two points
+            num = other.y.sub(this.y);
+            denom = other.x.sub(this.x);
+        }
+
+        return ModPointAddPartialResult.fromDivision(num, denom);
+    }
+
+    endAdd(other: ModPoint, lambda: ModNumber): ModPoint {
         var x = lambda.pow(2).sub(this.x).sub(other.x);
         var y = lambda.mul(this.x.sub(x)).sub(this.y);
 

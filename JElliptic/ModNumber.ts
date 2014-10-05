@@ -24,6 +24,10 @@ class ModNumber {
         return new ModNumber(this.value.negate(), this.n);
     }
 
+    invert(): ModNumber {
+        return new ModNumber(this.value.modInverse(this.n), this.n);
+    }
+
     add(other: ModNumber): ModNumber {
         this.ensureCompatible(other);
 

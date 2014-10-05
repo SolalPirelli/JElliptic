@@ -24,6 +24,10 @@
             return new ModNumber(this.value.negate(), this.n);
         };
 
+        ModNumber.prototype.invert = function () {
+            return new ModNumber(this.value.modInverse(this.n), this.n);
+        };
+
         ModNumber.prototype.add = function (other) {
             this.ensureCompatible(other);
 

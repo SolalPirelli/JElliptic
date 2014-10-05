@@ -8,7 +8,7 @@
             var target = new ModPoint(hx, hy, config.Curve);
             var table = new Addition.Table(generator, target, config);
 
-            var walks = [];
+            var walks = Array();
 
             for (var n = 0; n < config.ParrallelWalksCount; n++) {
                 walks[n] = new CurveWalk(table);
@@ -17,8 +17,33 @@
             console.clear();
 
             for (var step = BigInteger.Zero; step.lt(config.Curve.N); step = step.add(BigInteger.One)) {
+                var N = config.ParrallelWalksCount;
+
+                var x = Array(N);
+
+                for (var n = 0; n < N; n++) {
+                    x[n] = walks[n].beginStep();
+                }
+
+                var a = Array(N);
+                a[0] = x[0].Denominator;
+                for (var n = 1; n < N; n++) {
+                    a[n] = a[n - 1].mul(x[n].Denominator);
+                }
+
+                var xinv = Array();
+                var ainv = Array();
+                ainv[N - 1] = a[N - 1].invert();
+                for (var n = N - 1; n > 0; n--) {
+                    xinv[n] = ainv[n].mul(a[n - 1]);
+                    ainv[n - 1] = ainv[n].mul(x[n].Denominator);
+                }
+                xinv[0] = ainv[0];
+
                 for (var n = 0; n < config.ParrallelWalksCount; n++) {
-                    walks[n].step();
+                    var lambda = x[n].Numerator.mul(xinv[n]);
+
+                    walks[n].endStep(lambda);
 
                     if (isDistinguished(walks[n].Current, config)) {
                         Server.send(walks[n].U, walks[n].V, walks[n].Current);
@@ -66,12 +91,16 @@
                 configurable: true
             });
 
-            CurveWalk.prototype.step = function () {
+            CurveWalk.prototype.beginStep = function () {
                 var index = this.current.partition(this.table.Length);
-                var entry = this.table.at(index);
-                this.u = this.u.add(entry.U);
-                this.v = this.v.add(entry.V);
-                this.current = this.current.add(entry.P);
+                this.currentEntry = this.table.at(index);
+                this.u = this.u.add(this.currentEntry.U);
+                this.v = this.v.add(this.currentEntry.V);
+                return this.current.beginAdd(this.currentEntry.P);
+            };
+
+            CurveWalk.prototype.endStep = function (lambda) {
+                this.current = this.current.endAdd(this.currentEntry.P, lambda);
             };
 
             CurveWalk.prototype.toString = function () {
