@@ -57,7 +57,7 @@
             return (point.X.Value.and(config.DistinguishedPointMask)).eq(config.DistinguishedPointMask);
         }
 
-        // Walk over a problem. (mutable)
+        // Walk over a problem.
         var CurveWalk = (function () {
             function CurveWalk(table) {
                 this.table = table;

@@ -21,7 +21,7 @@ requirejs([], () => {
             Curve: new ModCurve(a, b, n),
             AdditionTableSeed: 0,
             AdditionTableLength: 128,
-            ParrallelWalksCount: 10, // TODO
+            ParrallelWalksCount: 10,
             UseNegationMap: true, // TODO
             DistinguishedPointMask: BigInteger.fromInt(3)
         };

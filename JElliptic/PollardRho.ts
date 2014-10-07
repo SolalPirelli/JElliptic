@@ -62,7 +62,7 @@ module PollardRho {
         return (point.X.Value.and(config.DistinguishedPointMask)).eq(config.DistinguishedPointMask);
     }
 
-    // Walk over a problem. (mutable)
+    // Walk over a problem.
     class CurveWalk {
         private table: Addition.Table;
 
