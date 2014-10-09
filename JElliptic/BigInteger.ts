@@ -73,11 +73,13 @@
 
 
     add(other: BigInteger): BigInteger {
-        var thisIsGreater = this.abs().gte(other.abs());
+        var thisAbs = this.abs();
+        var otherAbs = other.abs();
+        var thisIsGreater = thisAbs.gt(otherAbs) || thisAbs.eq(otherAbs) && this.sign == 1;
         var hi = thisIsGreater ? this : other;
         var lo = thisIsGreater ? other : this;
 
-        var digits: number[] = [];
+        var digits = Array<number>();
         var loSign = hi.sign == lo.sign ? 1 : -1;
 
         var carry: number = 0;
@@ -97,6 +99,17 @@
 
             digits[n] = current;
         }
+
+        // Remove useless digits
+        var uselessDigitsCount = 0;
+        for (var n = digits.length - 1; n > 0; n--) {
+            if (digits[n] == 0) {
+                uselessDigitsCount++;
+            } else {
+                break;
+            }
+        }
+        digits = digits.slice(0, digits.length - uselessDigitsCount);
 
         if (carry != 0) {
             digits[hi.digits.length] = carry;
@@ -269,7 +282,6 @@
             digits.push((this.digits[n] || 0) & (other.digits[n] || 0));
         }
 
-        // TODO: what about the sign ?
         return BigInteger.create(1, digits);
     }
 
@@ -296,12 +308,14 @@
 
 
     toInt(): number {
-        // TODO make this work with ones up to max_safe_int
-        if (this.digits.length > 1) {
+        // Hack-y, but simple
+        var str = this.toString();
+        var n = parseInt(str);
+        if (n > BigInteger.MAX_SAFE_INT) {
             throw "toInt can only work with small BigIntegers.";
         }
 
-        return this.digits[0] * this.sign;
+        return n;
     }
 
     toString(): string {

@@ -1,0 +1,11 @@
+﻿{
+   "Framework": "qunit",
+   "TestHarnessReferenceMode": "AMD",
+   "TestHarnessLocationMode": "SettingsFileAdjacent",
+   "TypeScriptModuleKind": "AMD",
+   "References" : [
+      { "Path": "lib/require.js" },
+      { "Path": "lib/require.d.ts", "IncludeInTestHarness": "false" },
+      { "Path": "test/lib/qunit.d.ts", "IncludeInTestHarness": "false" }
+    ]
+}
