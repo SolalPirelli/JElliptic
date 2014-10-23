@@ -3,12 +3,12 @@
         function BigInteger() {
         }
         BigInteger.fromInt = function (n) {
-            if (n > BigInteger.MAX_SAFE_INT) {
-                throw "BigInteger.fromInt(number) cannot be called with inexact integers.";
+            if (Math.abs(n) > BigInteger.MAX_SAFE_INT) {
+                throw "BigInteger.fromInt cannot be called with inexact integers.";
             }
 
             var sign = n >= 0 ? 1 : -1;
-            var digits = [];
+            var digits = Array();
 
             n = Math.abs(n);
 
@@ -22,6 +22,7 @@
             return BigInteger.create(sign, digits);
         };
 
+        // This is a bit too complex for bases that are powers of ten, but it works with any base
         BigInteger.parse = function (str) {
             var sign = 1;
             if (str[0] == "-") {
@@ -29,22 +30,31 @@
                 str = str.substring(1);
             }
 
-            // trim leading 0s
-            var begin = 0;
-            while (str[begin] == "0") {
-                begin++;
+            var digits = Array();
+            var currentDigit = 0;
+            var currentMul = 1;
+
+            for (var n = str.length - 1; n >= 0; n--) {
+                currentDigit += parseInt(str[n], 10) * currentMul;
+                currentMul *= 10;
+
+                if (currentMul >= BigInteger.BASE) {
+                    var nextDigit = Math.floor(currentDigit / BigInteger.BASE);
+                    currentDigit %= BigInteger.BASE;
+
+                    digits.push(currentDigit);
+
+                    currentDigit = nextDigit;
+                    currentMul = 1;
+                }
             }
-            str = str.substring(begin);
 
-            var chunksLength = Math.ceil(str.length / BigInteger.BASE_TENDIGIT_COUNT);
-            var chunks = [];
-
-            for (var n = 0; n < chunksLength; n++) {
-                var end = str.length - n * BigInteger.BASE_TENDIGIT_COUNT;
-                chunks[n] = str.substring(Math.max(0, end - BigInteger.BASE_TENDIGIT_COUNT), end);
+            if (currentDigit != 0) {
+                digits.push(currentDigit % BigInteger.BASE);
+                digits.push(Math.floor(currentDigit / BigInteger.BASE));
             }
 
-            return BigInteger.create(sign, chunks.map(Number));
+            return BigInteger.create(sign, digits);
         };
 
         BigInteger.prototype.negate = function () {
@@ -52,6 +62,9 @@
         };
 
         BigInteger.prototype.abs = function () {
+            if (this.sign == 1) {
+                return this;
+            }
             return BigInteger.create(1, this.digits.slice(0));
         };
 
@@ -87,17 +100,6 @@
                 digits[n] = current;
             }
 
-            // Remove useless digits
-            var uselessDigitsCount = 0;
-            for (var n = digits.length - 1; n > 0; n--) {
-                if (digits[n] == 0) {
-                    uselessDigitsCount++;
-                } else {
-                    break;
-                }
-            }
-            digits = digits.slice(0, digits.length - uselessDigitsCount);
-
             if (carry != 0) {
                 digits[hi.digits.length] = carry;
             }
@@ -111,31 +113,49 @@
 
         // http://en.wikipedia.org/wiki/Karatsuba_algorithm
         BigInteger.prototype.mul = function (other) {
-            // this function assumes num1 and num2 are both >0
-            var karatsuba = function (num1, num2) {
-                if (num1.digits.length == 1 && num2.digits.length == 1) {
-                    return BigInteger.fromInt(num1.digits[0] * num2.digits[0]);
+            function singleDigitMul(bi, mul, mulSign) {
+                var digits = Array();
+                var carry = 0;
+                for (var n = 0; n < bi.digits.length; n++) {
+                    var digit = bi.digits[n] * mul + carry;
+                    carry = Math.floor(digit / BigInteger.BASE);
+                    digit %= BigInteger.BASE;
+                    digits.push(digit);
+                }
+                if (carry != 0) {
+                    digits.push(carry);
                 }
 
-                var m = Math.max(num1.digits.length, num2.digits.length);
-                var m2 = Math.ceil(m / 2);
+                return BigInteger.create(mulSign * bi.sign, digits);
+            }
 
-                var lo1 = BigInteger.create(1, num1.digits.slice(0, m2));
-                var hi1 = BigInteger.create(1, num1.digits.slice(m2, num1.digits.length));
-                var lo2 = BigInteger.create(1, num2.digits.slice(0, m2));
-                var hi2 = BigInteger.create(1, num2.digits.slice(m2, num2.digits.length));
+            if (this.digits.length == 1) {
+                return singleDigitMul(other, this.digits[0], this.sign);
+            }
 
-                var z0 = karatsuba(lo1, lo2);
-                var z1 = karatsuba(lo1.add(hi1), lo2.add(hi2));
-                var z2 = karatsuba(hi1, hi2);
+            if (other.digits.length == 1) {
+                return singleDigitMul(this, other.digits[0], other.sign);
+            }
 
-                var r1 = z2.leftShift(2 * m2);
-                var r2 = z1.sub(z2).sub(z0).leftShift(m2);
+            var m = Math.max(this.digits.length, other.digits.length);
+            var m2 = Math.ceil(m / 2);
 
-                return r1.add(r2).add(z0);
-            };
+            var lo1 = BigInteger.create(this.sign, this.digits.slice(0, m2));
+            var hi1 = BigInteger.create(this.sign, this.digits.slice(m2));
+            var lo2 = BigInteger.create(other.sign, other.digits.slice(0, m2));
+            var hi2 = BigInteger.create(other.sign, other.digits.slice(m2));
 
-            return BigInteger.create(this.sign * other.sign, karatsuba(this.abs(), other.abs()).digits);
+            var z0 = lo1.mul(lo2);
+            var z1 = lo1.add(hi1).mul(lo2.add(hi2));
+            var z2 = hi1.mul(hi2);
+
+            //return (z2.leftShift(m2 * 2)).add(z1.sub(z2).sub(z0).leftShift(m2)).add(z0);
+            var aaa0 = (z2.leftShift(m2 * 2));
+            var aaaaaa0 = z1.sub(z2).sub(z0);
+            var aaaaaa1 = aaaaaa0.leftShift(m2);
+            var aaa1 = aaa0.add(aaaaaa1);
+            var aaa2 = aaa1.add(z0);
+            return aaa2;
         };
 
         // Simple long division, sufficient for now
@@ -198,28 +218,24 @@
                 return false;
             }
             if (this.digits.length < other.digits.length) {
-                return true;
+                return this.sign == 1;
             }
             if (this.digits.length > other.digits.length) {
-                return false;
+                return this.sign == -1;
             }
-            return this.digits[this.digits.length - 1] <= other.digits[other.digits.length - 1];
+            for (var n = this.digits.length - 1; n >= 0; n--) {
+                if (this.digits[n] < other.digits[n]) {
+                    return this.sign == 1;
+                }
+                if (this.digits[n] > other.digits[n]) {
+                    return this.sign == -1;
+                }
+            }
+            return true;
         };
 
         BigInteger.prototype.lt = function (other) {
-            if (this.sign < other.sign) {
-                return true;
-            }
-            if (this.sign > other.sign) {
-                return false;
-            }
-            if (this.digits.length < other.digits.length) {
-                return true;
-            }
-            if (this.digits.length > other.digits.length) {
-                return false;
-            }
-            return this.digits[this.digits.length - 1] < other.digits[other.digits.length - 1];
+            return !this.gte(other);
         };
 
         BigInteger.prototype.gte = function (other) {
@@ -230,28 +246,24 @@
                 return false;
             }
             if (this.digits.length > other.digits.length) {
-                return true;
+                return this.sign == 1;
             }
             if (this.digits.length < other.digits.length) {
-                return false;
+                return this.sign == -1;
             }
-            return this.digits[this.digits.length - 1] >= other.digits[other.digits.length - 1];
+            for (var n = this.digits.length - 1; n >= 0; n--) {
+                if (this.digits[n] > other.digits[n]) {
+                    return this.sign == 1;
+                }
+                if (this.digits[n] < other.digits[n]) {
+                    return this.sign == -1;
+                }
+            }
+            return true;
         };
 
         BigInteger.prototype.gt = function (other) {
-            if (this.sign > other.sign) {
-                return true;
-            }
-            if (this.sign < other.sign) {
-                return false;
-            }
-            if (this.digits.length > other.digits.length) {
-                return true;
-            }
-            if (this.digits.length < other.digits.length) {
-                return false;
-            }
-            return this.digits[this.digits.length - 1] > other.digits[other.digits.length - 1];
+            return !this.lte(other);
         };
 
         BigInteger.prototype.leftShift = function (n) {
@@ -315,7 +327,7 @@
             var result = "";
 
             for (var n = 0; n < this.digits.length - 1; n++) {
-                result = padNum(this.digits[n], BigInteger.BASE_TENDIGIT_COUNT) + result;
+                result = padNum(this.digits[n], BigInteger.BASE_LOG10) + result;
             }
             result = this.digits[this.digits.length - 1].toString() + result;
 
@@ -327,17 +339,34 @@
         };
 
         BigInteger.create = function (sign, digits) {
+            // Remove useless digits
+            var actualLength = digits.length;
+            while (actualLength > 0 && digits[actualLength - 1] == 0) {
+                actualLength--;
+            }
+
+            if (actualLength == 0) {
+                return BigInteger.Zero;
+            }
+
             var bi = new BigInteger();
             bi.sign = sign;
-            bi.digits = digits.length > 0 ? digits : [0];
+            bi.digits = digits.slice(0, actualLength);
+            return bi;
+        };
+
+        BigInteger.uncheckedCreate = function (sign, digits) {
+            var bi = new BigInteger();
+            bi.sign = sign;
+            bi.digits = digits;
             return bi;
         };
         BigInteger.MAX_SAFE_INT = 9007199254740991;
-        BigInteger.BASE_TENDIGIT_COUNT = 7;
-        BigInteger.BASE = Math.pow(10, BigInteger.BASE_TENDIGIT_COUNT);
+        BigInteger.BASE = 10000000;
+        BigInteger.BASE_LOG10 = Math.floor(Math.log(BigInteger.BASE) / Math.log(10));
 
-        BigInteger.Zero = BigInteger.create(1, [0]);
-        BigInteger.One = BigInteger.create(1, [1]);
+        BigInteger.Zero = BigInteger.uncheckedCreate(1, [0]);
+        BigInteger.One = BigInteger.uncheckedCreate(1, [1]);
         return BigInteger;
     })();
 
