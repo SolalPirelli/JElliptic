@@ -2,7 +2,7 @@
 
 import BigInteger = require("BigInteger");
 import ModCurve = require("ModCurve");
-import Config = require("Config");
+import IConfig = require("IConfig");
 import PollardRho = require("PollardRho");
 
 function bigintValue(elemName: string): BigInteger {
@@ -17,13 +17,13 @@ requirejs([], () => {
         var gx = bigintValue("gx"), gy = bigintValue("gy");
         var hx = bigintValue("hx"), hy = bigintValue("hy");
 
-        var config: Config = {
-            Curve: new ModCurve(a, b, n),
-            AdditionTableSeed: 0,
-            AdditionTableLength: 128,
-            ParrallelWalksCount: 10,
-            UseNegationMap: true, // TODO
-            DistinguishedPointMask: BigInteger.fromInt(3)
+        var config: IConfig = {
+            curve: new ModCurve(a, b, n),
+            additionTableSeed: 0,
+            additionTableLength: 128,
+            parrallelWalksCount: 10,
+            useNegationMap: true, // TODO
+            distinguishedPointMask: BigInteger.fromInt(3)
         };
 
         PollardRho.run(gx, gy, hx, hy, config);

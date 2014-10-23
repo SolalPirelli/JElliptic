@@ -5,36 +5,36 @@
         }
         ModPointAddPartialResult.fromDivision = function (num, denom) {
             var res = new ModPointAddPartialResult();
-            res.num = num;
-            res.denom = denom;
+            res._num = num;
+            res._denom = denom;
             return res;
         };
 
         ModPointAddPartialResult.fromResult = function (result) {
             var res = new ModPointAddPartialResult();
-            res.result = result;
+            res._res = result;
             return res;
         };
 
-        Object.defineProperty(ModPointAddPartialResult.prototype, "Numerator", {
+        Object.defineProperty(ModPointAddPartialResult.prototype, "numerator", {
             get: function () {
-                return this.num;
+                return this._num;
             },
             enumerable: true,
             configurable: true
         });
 
-        Object.defineProperty(ModPointAddPartialResult.prototype, "Denominator", {
+        Object.defineProperty(ModPointAddPartialResult.prototype, "denominator", {
             get: function () {
-                return this.denom;
+                return this._denom;
             },
             enumerable: true,
             configurable: true
         });
 
-        Object.defineProperty(ModPointAddPartialResult.prototype, "Result", {
+        Object.defineProperty(ModPointAddPartialResult.prototype, "result", {
             get: function () {
-                return this.result;
+                return this._res;
             },
             enumerable: true,
             configurable: true

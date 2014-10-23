@@ -4,10 +4,10 @@ define(["require", "exports"], function(require, exports) {
     (function (Server) {
         function send(u, v, p) {
             var point = {
-                U: u.Value.toString(),
-                V: v.Value.toString(),
-                X: p.X.Value.toString(),
-                Y: p.Y.Value.toString()
+                U: u.value.toString(),
+                V: v.value.toString(),
+                X: p.x.value.toString(),
+                Y: p.y.value.toString()
             };
 
             $.ajax({

@@ -4,12 +4,12 @@
     private static BASE_LOG10 = Math.floor(Math.log(BigInteger.BASE) / Math.log(10));
 
 
-    private sign: number; // -1 or 1; zero always has 1 as a sign
-    private digits: number[]; // base BASE
+    private _sign: number; // -1 or 1; zero always has 1 as a sign
+    private _digits: number[]; // base BASE
 
 
-    static Zero = BigInteger.uncheckedCreate(1, [0]);
-    static One = BigInteger.uncheckedCreate(1, [1]);
+    static ZERO = BigInteger.uncheckedCreate(1, [0]);
+    static ONE = BigInteger.uncheckedCreate(1, [1]);
 
 
     static fromInt(n: number): BigInteger {
@@ -69,35 +69,35 @@
 
 
     negate(): BigInteger {
-        return BigInteger.create(-this.sign, this.digits.slice(0));
+        return BigInteger.create(-this._sign, this._digits.slice(0));
     }
 
     abs(): BigInteger {
-        if (this.sign == 1) {
+        if (this._sign == 1) {
             return this;
         }
-        return BigInteger.create(1, this.digits.slice(0));
+        return BigInteger.create(1, this._digits.slice(0));
     }
 
     clone(): BigInteger {
-        return BigInteger.create(this.sign, this.digits.slice(0));
+        return BigInteger.create(this._sign, this._digits.slice(0));
     }
 
 
     add(other: BigInteger): BigInteger {
         var thisAbs = this.abs();
         var otherAbs = other.abs();
-        var thisIsGreater = thisAbs.gt(otherAbs) || thisAbs.eq(otherAbs) && this.sign == 1;
+        var thisIsGreater = thisAbs.gt(otherAbs) || thisAbs.eq(otherAbs) && this._sign == 1;
         var hi = thisIsGreater ? this : other;
         var lo = thisIsGreater ? other : this;
 
         var digits = Array<number>();
-        var loSign = hi.sign == lo.sign ? 1 : -1;
+        var loSign = hi._sign == lo._sign ? 1 : -1;
 
         var carry: number = 0;
 
-        for (var n = 0; n < hi.digits.length; n++) {
-            var current = hi.digits[n] + loSign * (lo.digits[n] || 0) + carry;
+        for (var n = 0; n < hi._digits.length; n++) {
+            var current = hi._digits[n] + loSign * (lo._digits[n] || 0) + carry;
 
             if (current >= BigInteger.BASE) {
                 carry = 1;
@@ -113,10 +113,10 @@
         }
 
         if (carry != 0) {
-            digits[hi.digits.length] = carry;
+            digits[hi._digits.length] = carry;
         }
 
-        return BigInteger.create(hi.sign, digits);
+        return BigInteger.create(hi._sign, digits);
     }
 
     sub(other: BigInteger): BigInteger {
@@ -128,8 +128,8 @@
         function singleDigitMul(bi: BigInteger, mul: number, mulSign: number): BigInteger {
             var digits = Array<number>();
             var carry = 0;
-            for (var n = 0; n < bi.digits.length; n++) {
-                var digit = bi.digits[n] * mul + carry;
+            for (var n = 0; n < bi._digits.length; n++) {
+                var digit = bi._digits[n] * mul + carry;
                 carry = Math.floor(digit / BigInteger.BASE);
                 digit %= BigInteger.BASE;
                 digits.push(digit);
@@ -138,24 +138,24 @@
                 digits.push(carry);
             }
 
-            return BigInteger.create(mulSign * bi.sign, digits);
+            return BigInteger.create(mulSign * bi._sign, digits);
         }
 
-        if (this.digits.length == 1) {
-            return singleDigitMul(other, this.digits[0], this.sign);
+        if (this._digits.length == 1) {
+            return singleDigitMul(other, this._digits[0], this._sign);
         }
 
-        if (other.digits.length == 1) {
-            return singleDigitMul(this, other.digits[0], other.sign);
+        if (other._digits.length == 1) {
+            return singleDigitMul(this, other._digits[0], other._sign);
         }
 
-        var m = Math.max(this.digits.length, other.digits.length);
+        var m = Math.max(this._digits.length, other._digits.length);
         var m2 = Math.ceil(m / 2);
 
-        var lo1 = BigInteger.create(this.sign, this.digits.slice(0, m2));
-        var hi1 = BigInteger.create(this.sign, this.digits.slice(m2));
-        var lo2 = BigInteger.create(other.sign, other.digits.slice(0, m2));
-        var hi2 = BigInteger.create(other.sign, other.digits.slice(m2));
+        var lo1 = BigInteger.create(this._sign, this._digits.slice(0, m2));
+        var hi1 = BigInteger.create(this._sign, this._digits.slice(m2));
+        var lo2 = BigInteger.create(other._sign, other._digits.slice(0, m2));
+        var hi2 = BigInteger.create(other._sign, other._digits.slice(m2));
 
         var z0 = lo1.mul(lo2);
         var z1 = lo1.add(hi1).mul(lo2.add(hi2));
@@ -173,11 +173,11 @@
     // Simple long division, sufficient for now
     div(other: BigInteger): BigInteger {
         var quotient = this;
-        var result = BigInteger.Zero;
+        var result = BigInteger.ZERO;
 
         while (quotient.gte(other)) {
             quotient = quotient.sub(other);
-            result = result.add(BigInteger.One);
+            result = result.add(BigInteger.ONE);
         }
 
         return result;
@@ -186,12 +186,12 @@
     mod(n: BigInteger): BigInteger {
         var result = this;
 
-        if (this.sign == 1) {
+        if (this._sign == 1) {
             while (result.gte(n)) {
                 result = result.sub(n);
             }
         } else {
-            while (BigInteger.Zero.gte(result)) {
+            while (BigInteger.ZERO.gte(result)) {
                 result = result.add(n);
             }
         }
@@ -200,9 +200,9 @@
     }
 
     modInverse(n: BigInteger): BigInteger {
-        var t = BigInteger.Zero, newt = BigInteger.One;
+        var t = BigInteger.ZERO, newt = BigInteger.ONE;
         var r = n, newr = this;
-        while (!newr.eq(BigInteger.Zero)) {
+        while (!newr.eq(BigInteger.ZERO)) {
             var quotient = r.div(newr);
 
             var oldt = t;
@@ -213,34 +213,34 @@
             r = newr;
             newr = oldr.sub(quotient.mul(newr));
         }
-        if (r.gt(BigInteger.One)) {
+        if (r.gt(BigInteger.ONE)) {
             throw (this + " is not invertible");
         }
-        if (t.sign == -1) {
+        if (t._sign == -1) {
             t = t.add(n);
         }
         return t;
     }
 
     lte(other: BigInteger): boolean {
-        if (this.sign < other.sign) {
+        if (this._sign < other._sign) {
             return true;
         }
-        if (this.sign > other.sign) {
+        if (this._sign > other._sign) {
             return false;
         }
-        if (this.digits.length < other.digits.length) {
-            return this.sign == 1;
+        if (this._digits.length < other._digits.length) {
+            return this._sign == 1;
         }
-        if (this.digits.length > other.digits.length) {
-            return this.sign == -1;
+        if (this._digits.length > other._digits.length) {
+            return this._sign == -1;
         }
-        for (var n = this.digits.length - 1; n >= 0; n--) {
-            if (this.digits[n] < other.digits[n]) {
-                return this.sign == 1;
+        for (var n = this._digits.length - 1; n >= 0; n--) {
+            if (this._digits[n] < other._digits[n]) {
+                return this._sign == 1;
             }
-            if (this.digits[n] > other.digits[n]) {
-                return this.sign == -1;
+            if (this._digits[n] > other._digits[n]) {
+                return this._sign == -1;
             }
         }
         return true;
@@ -251,24 +251,24 @@
     }
 
     gte(other: BigInteger): boolean {
-        if (this.sign > other.sign) {
+        if (this._sign > other._sign) {
             return true;
         }
-        if (this.sign < other.sign) {
+        if (this._sign < other._sign) {
             return false;
         }
-        if (this.digits.length > other.digits.length) {
-            return this.sign == 1;
+        if (this._digits.length > other._digits.length) {
+            return this._sign == 1;
         }
-        if (this.digits.length < other.digits.length) {
-            return this.sign == -1;
+        if (this._digits.length < other._digits.length) {
+            return this._sign == -1;
         }
-        for (var n = this.digits.length - 1; n >= 0; n--) {
-            if (this.digits[n] > other.digits[n]) {
-                return this.sign == 1;
+        for (var n = this._digits.length - 1; n >= 0; n--) {
+            if (this._digits[n] > other._digits[n]) {
+                return this._sign == 1;
             }
-            if (this.digits[n] < other.digits[n]) {
-                return this.sign == -1;
+            if (this._digits[n] < other._digits[n]) {
+                return this._sign == -1;
             }
         }
         return true;
@@ -279,18 +279,18 @@
     }
 
     leftShift(n: number): BigInteger {
-        var digits = this.digits.slice(0);
+        var digits = this._digits.slice(0);
         for (var _ = 0; _ < n; _++) {
             digits.unshift(0);
         }
-        return BigInteger.create(this.sign, digits);
+        return BigInteger.create(this._sign, digits);
     }
 
     and(other: BigInteger): BigInteger {
         var digits: number[] = [];
 
-        for (var n = 0; n < this.digits.length || n < other.digits.length; n++) {
-            digits.push((this.digits[n] || 0) & (other.digits[n] || 0));
+        for (var n = 0; n < this._digits.length || n < other._digits.length; n++) {
+            digits.push((this._digits[n] || 0) & (other._digits[n] || 0));
         }
 
         return BigInteger.create(1, digits);
@@ -314,7 +314,7 @@
             return true;
         }
 
-        return this.sign == other.sign && arrayEquals(this.digits, other.digits);
+        return this._sign == other._sign && arrayEquals(this._digits, other._digits);
     }
 
 
@@ -340,12 +340,12 @@
 
         var result = "";
 
-        for (var n = 0; n < this.digits.length - 1; n++) {
-            result = padNum(this.digits[n], BigInteger.BASE_LOG10) + result;
+        for (var n = 0; n < this._digits.length - 1; n++) {
+            result = padNum(this._digits[n], BigInteger.BASE_LOG10) + result;
         }
-        result = this.digits[this.digits.length - 1].toString() + result;
+        result = this._digits[this._digits.length - 1].toString() + result;
 
-        if (this.sign == -1) {
+        if (this._sign == -1) {
             result = "-" + result;
         }
 
@@ -361,19 +361,19 @@
         }
 
         if (actualLength == 0) {
-            return BigInteger.Zero;
+            return BigInteger.ZERO;
         }
 
         var bi = new BigInteger();
-        bi.sign = sign;
-        bi.digits = digits.slice(0, actualLength);
+        bi._sign = sign;
+        bi._digits = digits.slice(0, actualLength);
         return bi;
     }
 
     private static uncheckedCreate(sign: number, digits: number[]): BigInteger {
         var bi = new BigInteger();
-        bi.sign = sign;
-        bi.digits = digits;
+        bi._sign = sign;
+        bi._digits = digits;
         return bi;
     }
 }

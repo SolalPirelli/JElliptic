@@ -29,7 +29,7 @@
     <TypeScriptCompile Include="BigInteger.ts" />
     <TypeScriptCompile Include="ModPointAddPartialResult.ts" />
     <TypeScriptCompile Include="tests\BigInteger.tests.ts" />
-    <TypeScriptCompile Include="Config.ts" />
+    <TypeScriptCompile Include="IConfig.ts" />
     <TypeScriptCompile Include="lib\jquery.d.ts" />
     <TypeScriptCompile Include="tests\lib\qunit.d.ts" />
     <TypeScriptCompile Include="lib\require.d.ts" />

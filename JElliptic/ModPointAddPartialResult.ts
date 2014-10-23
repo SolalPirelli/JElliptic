@@ -3,35 +3,35 @@ import ModPoint = require("ModPoint");
 
 // either num and denom are set, or result is set
 class ModPointAddPartialResult {
-    private num: ModNumber;
-    private denom: ModNumber;
-    private result: ModPoint;
+    private _num: ModNumber;
+    private _denom: ModNumber;
+    private _res: ModPoint;
 
 
     static fromDivision(num: ModNumber, denom: ModNumber): ModPointAddPartialResult {
         var res = new ModPointAddPartialResult();
-        res.num = num;
-        res.denom = denom;
+        res._num = num;
+        res._denom = denom;
         return res;
     }
 
     static fromResult(result: ModPoint): ModPointAddPartialResult {
         var res = new ModPointAddPartialResult();
-        res.result = result;
+        res._res = result;
         return res;
     }
 
 
-    get Numerator(): ModNumber {
-        return this.num;
+    get numerator(): ModNumber {
+        return this._num;
     }
 
-    get Denominator(): ModNumber {
-        return this.denom;
+    get denominator(): ModNumber {
+        return this._denom;
     }
 
-    get Result(): ModPoint {
-        return this.result;
+    get result(): ModPoint {
+        return this._res;
     }
 }
 

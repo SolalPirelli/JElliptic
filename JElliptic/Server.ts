@@ -6,10 +6,10 @@ import ModPoint = require("ModPoint");
 module Server {
     export function send(u: ModNumber, v: ModNumber, p: ModPoint): void {
         var point = {
-            U: u.Value.toString(),
-            V: v.Value.toString(),
-            X: p.X.Value.toString(),
-            Y: p.Y.Value.toString()
+            U: u.value.toString(),
+            V: v.value.toString(),
+            X: p.x.value.toString(),
+            Y: p.y.value.toString()
         };
 
         $.ajax({

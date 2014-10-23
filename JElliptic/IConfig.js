@@ -1,4 +1,4 @@
 ﻿define(["require", "exports"], function(require, exports) {
     
 });
-//# sourceMappingURL=Config.js.map
+//# sourceMappingURL=IConfig.js.map

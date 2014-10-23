@@ -3,31 +3,31 @@ import ModNumber = require("ModNumber");
 import ModPoint = require("ModPoint");
 
 class ModCurve {
-    private a: ModNumber;
-    private b: ModNumber;
-    private n: BigInteger;
+    private _a: ModNumber;
+    private _b: ModNumber;
+    private _n: BigInteger;
 
     constructor(a: BigInteger, b: BigInteger, n: BigInteger) {
-        this.a = new ModNumber(a, n);
-        this.b = new ModNumber(b, n);
-        this.n = n;
+        this._a = new ModNumber(a, n);
+        this._b = new ModNumber(b, n);
+        this._n = n;
     }
 
-    get A(): ModNumber {
-        return this.a;
+    get a(): ModNumber {
+        return this._a;
     }
 
-    get B(): ModNumber {
-        return this.b;
+    get b(): ModNumber {
+        return this._b;
     }
 
-    get N(): BigInteger {
-        return this.n;
+    get n(): BigInteger {
+        return this._n;
     }
 
 
     toString(): string {
-        return "y² = x³ + " + this.a.Value + "x + " + this.b.Value + " (mod " + this.n + ")";
+        return "y² = x³ + " + this._a.value + "x + " + this._b.value + " (mod " + this._n + ")";
     }
 }
 

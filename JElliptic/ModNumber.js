@@ -1,67 +1,67 @@
 ﻿define(["require", "exports", "BigInteger"], function(require, exports, BigInteger) {
     var ModNumber = (function () {
         function ModNumber(value, n) {
-            this.value = value.mod(n);
-            this.n = n.clone();
+            this._value = value.mod(n);
+            this._n = n.clone();
         }
-        Object.defineProperty(ModNumber.prototype, "Value", {
+        Object.defineProperty(ModNumber.prototype, "value", {
             get: function () {
-                return this.value;
+                return this._value;
             },
             enumerable: true,
             configurable: true
         });
 
-        Object.defineProperty(ModNumber.prototype, "N", {
+        Object.defineProperty(ModNumber.prototype, "n", {
             get: function () {
-                return this.n;
+                return this._n;
             },
             enumerable: true,
             configurable: true
         });
 
         ModNumber.prototype.negate = function () {
-            return new ModNumber(this.value.negate(), this.n);
+            return new ModNumber(this._value.negate(), this._n);
         };
 
         ModNumber.prototype.invert = function () {
-            return new ModNumber(this.value.modInverse(this.n), this.n);
+            return new ModNumber(this._value.modInverse(this._n), this._n);
         };
 
         ModNumber.prototype.add = function (other) {
             this.ensureCompatible(other);
 
-            return new ModNumber(this.value.add(other.value), this.n);
+            return new ModNumber(this._value.add(other._value), this._n);
         };
 
         ModNumber.prototype.addNum = function (n) {
-            return new ModNumber(this.value.add(BigInteger.fromInt(n)), this.n);
+            return new ModNumber(this._value.add(BigInteger.fromInt(n)), this._n);
         };
 
         ModNumber.prototype.sub = function (other) {
             this.ensureCompatible(other);
 
-            return new ModNumber(this.value.sub(other.value), this.n);
+            return new ModNumber(this._value.sub(other._value), this._n);
         };
 
         ModNumber.prototype.mul = function (other) {
             this.ensureCompatible(other);
 
-            return new ModNumber(this.value.mul(other.value), this.n);
+            return new ModNumber(this._value.mul(other._value), this._n);
         };
 
         ModNumber.prototype.mulNum = function (n) {
-            return new ModNumber(this.value.mul(BigInteger.fromInt(n)), this.n);
+            return new ModNumber(this._value.mul(BigInteger.fromInt(n)), this._n);
         };
 
         ModNumber.prototype.div = function (other) {
             this.ensureCompatible(other);
 
-            return new ModNumber(this.value.mul(other.value.modInverse(this.n)), this.n);
+            return new ModNumber(this._value.mul(other._value.modInverse(this._n)), this._n);
         };
 
         ModNumber.prototype.pow = function (n) {
-            var result = new ModNumber(BigInteger.One, this.N);
+            var result = new ModNumber(BigInteger.ONE, this.n);
             for (var _ = 0; _ < n; _++) {
                 result = result.mul(this);
             }
@@ -71,15 +71,15 @@
         ModNumber.prototype.eq = function (other) {
             this.ensureCompatible(other);
 
-            return this.value.eq(other.value);
+            return this._value.eq(other._value);
         };
 
         ModNumber.prototype.toString = function () {
-            return this.value + " mod " + this.n;
+            return this._value + " mod " + this._n;
         };
 
         ModNumber.prototype.ensureCompatible = function (other) {
-            if (!this.n.eq(other.n)) {
+            if (!this._n.eq(other._n)) {
                 throw "Incompatible ModNums";
             }
         };

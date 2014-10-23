@@ -1,25 +1,25 @@
 ﻿define(["require", "exports", "BigInteger", "ModNumber"], function(require, exports, BigInteger, ModNumber) {
     var Table = (function () {
         function Table(generator, target, config) {
-            this.entries = new Array(config.AdditionTableLength);
+            this._entries = new Array(config.additionTableLength);
 
             var order = BigInteger.fromInt(generator.getOrder());
-            var rng = Table.getRng(config.AdditionTableSeed);
+            var rng = Table.getRng(config.additionTableSeed);
 
-            for (var n = 0; n < this.entries.length; n++) {
-                var u = new ModNumber(rng(this.entries.length), order);
-                var v = new ModNumber(rng(this.entries.length), order);
-                var p = generator.mulNum(u.Value).add(target.mulNum(v.Value));
-                this.entries[n] = new TableEntry(u, v, p);
+            for (var n = 0; n < this._entries.length; n++) {
+                var u = new ModNumber(rng(this._entries.length), order);
+                var v = new ModNumber(rng(this._entries.length), order);
+                var p = generator.mulNum(u.value).add(target.mulNum(v.value));
+                this._entries[n] = new TableEntry(u, v, p);
             }
         }
         Table.prototype.at = function (index) {
-            return this.entries[index];
+            return this._entries[index];
         };
 
-        Object.defineProperty(Table.prototype, "Length", {
+        Object.defineProperty(Table.prototype, "length", {
             get: function () {
-                return this.entries.length;
+                return this._entries.length;
             },
             enumerable: true,
             configurable: true
@@ -38,29 +38,29 @@
 
     var TableEntry = (function () {
         function TableEntry(u, v, p) {
-            this.u = u;
-            this.v = v;
-            this.p = p;
+            this._u = u;
+            this._v = v;
+            this._p = p;
         }
-        Object.defineProperty(TableEntry.prototype, "U", {
+        Object.defineProperty(TableEntry.prototype, "u", {
             get: function () {
-                return this.u;
+                return this._u;
             },
             enumerable: true,
             configurable: true
         });
 
-        Object.defineProperty(TableEntry.prototype, "V", {
+        Object.defineProperty(TableEntry.prototype, "v", {
             get: function () {
-                return this.v;
+                return this._v;
             },
             enumerable: true,
             configurable: true
         });
 
-        Object.defineProperty(TableEntry.prototype, "P", {
+        Object.defineProperty(TableEntry.prototype, "p", {
             get: function () {
-                return this.p;
+                return this._p;
             },
             enumerable: true,
             configurable: true

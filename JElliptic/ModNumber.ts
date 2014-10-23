@@ -1,67 +1,67 @@
 ﻿import BigInteger = require("BigInteger");
 
 class ModNumber {
-    private value: BigInteger;
-    private n: BigInteger;
+    private _value: BigInteger;
+    private _n: BigInteger;
 
 
     constructor(value: BigInteger, n: BigInteger) {
-        this.value = value.mod(n);
-        this.n = n.clone();
+        this._value = value.mod(n);
+        this._n = n.clone();
     }
 
 
-    get Value(): BigInteger {
-        return this.value;
+    get value(): BigInteger {
+        return this._value;
     }
 
-    get N(): BigInteger {
-        return this.n;
+    get n(): BigInteger {
+        return this._n;
     }
 
 
     negate(): ModNumber {
-        return new ModNumber(this.value.negate(), this.n);
+        return new ModNumber(this._value.negate(), this._n);
     }
 
     invert(): ModNumber {
-        return new ModNumber(this.value.modInverse(this.n), this.n);
+        return new ModNumber(this._value.modInverse(this._n), this._n);
     }
 
     add(other: ModNumber): ModNumber {
         this.ensureCompatible(other);
 
-        return new ModNumber(this.value.add(other.value), this.n);
+        return new ModNumber(this._value.add(other._value), this._n);
     }
 
     addNum(n: number): ModNumber {
-        return new ModNumber(this.value.add(BigInteger.fromInt(n)), this.n);
+        return new ModNumber(this._value.add(BigInteger.fromInt(n)), this._n);
     }
 
     sub(other: ModNumber): ModNumber {
         this.ensureCompatible(other);
 
-        return new ModNumber(this.value.sub(other.value), this.n);
+        return new ModNumber(this._value.sub(other._value), this._n);
     }
 
     mul(other: ModNumber): ModNumber {
         this.ensureCompatible(other);
 
-        return new ModNumber(this.value.mul(other.value), this.n);
+        return new ModNumber(this._value.mul(other._value), this._n);
     }
 
     mulNum(n: number): ModNumber {
-        return new ModNumber(this.value.mul(BigInteger.fromInt(n)), this.n);
+        return new ModNumber(this._value.mul(BigInteger.fromInt(n)), this._n);
     }
 
     div(other: ModNumber): ModNumber {
         this.ensureCompatible(other);
 
-        return new ModNumber(this.value.mul(other.value.modInverse(this.n)), this.n);
+        return new ModNumber(this._value.mul(other._value.modInverse(this._n)), this._n);
     }
 
     pow(n: number): ModNumber {
-        var result = new ModNumber(BigInteger.One, this.N);
+        var result = new ModNumber(BigInteger.ONE, this.n);
         for (var _ = 0; _ < n; _++) {
             result = result.mul(this);
         }
@@ -71,17 +71,17 @@ class ModNumber {
     eq(other: ModNumber): boolean {
         this.ensureCompatible(other);
 
-        return this.value.eq(other.value);
+        return this._value.eq(other._value);
     }
 
 
     toString(): string {
-        return this.value + " mod " + this.n;
+        return this._value + " mod " + this._n;
     }
 
 
     private ensureCompatible(other: ModNumber): void {
-        if (!this.n.eq(other.n)) {
+        if (!this._n.eq(other._n)) {
             throw "Incompatible ModNums";
         }
     }

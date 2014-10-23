@@ -1,33 +1,33 @@
 ﻿import BigInteger = require("BigInteger");
 import ModNumber = require("ModNumber");
 import ModPoint = require("ModPoint");
-import Config = require("Config");
+import IConfig = require("IConfig");
 
 export class Table {
-    private entries: TableEntry[];
+    private _entries: TableEntry[];
 
 
-    constructor(generator: ModPoint, target: ModPoint, config: Config) {
-        this.entries = new Array(config.AdditionTableLength);
+    constructor(generator: ModPoint, target: ModPoint, config: IConfig) {
+        this._entries = new Array(config.additionTableLength);
 
         var order = BigInteger.fromInt(generator.getOrder());
-        var rng = Table.getRng(config.AdditionTableSeed);
+        var rng = Table.getRng(config.additionTableSeed);
 
-        for (var n = 0; n < this.entries.length; n++) {
-            var u = new ModNumber(rng(this.entries.length), order);
-            var v = new ModNumber(rng(this.entries.length), order);
-            var p = generator.mulNum(u.Value).add(target.mulNum(v.Value));
-            this.entries[n] = new TableEntry(u, v, p);
+        for (var n = 0; n < this._entries.length; n++) {
+            var u = new ModNumber(rng(this._entries.length), order);
+            var v = new ModNumber(rng(this._entries.length), order);
+            var p = generator.mulNum(u.value).add(target.mulNum(v.value));
+            this._entries[n] = new TableEntry(u, v, p);
         }
     }
 
 
     public at(index: number): TableEntry {
-        return this.entries[index];
+        return this._entries[index];
     }
 
-    get Length(): number {
-        return this.entries.length;
+    get length(): number {
+        return this._entries.length;
     }
 
 
@@ -41,25 +41,25 @@ export class Table {
 }
 
 export class TableEntry {
-    private u: ModNumber;
-    private v: ModNumber;
-    private p: ModPoint;
+    private _u: ModNumber;
+    private _v: ModNumber;
+    private _p: ModPoint;
 
     constructor(u: ModNumber, v: ModNumber, p: ModPoint) {
-        this.u = u;
-        this.v = v;
-        this.p = p;
+        this._u = u;
+        this._v = v;
+        this._p = p;
     }
 
-    get U(): ModNumber {
-        return this.u;
+    get u(): ModNumber {
+        return this._u;
     }
 
-    get V(): ModNumber {
-        return this.v;
+    get v(): ModNumber {
+        return this._v;
     }
 
-    get P(): ModPoint {
-        return this.p;
+    get p(): ModPoint {
+        return this._p;
     }
 }

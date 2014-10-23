@@ -13,12 +13,12 @@ define(["require", "exports", "BigInteger", "ModCurve", "PollardRho"], function(
             var hx = bigintValue("hx"), hy = bigintValue("hy");
 
             var config = {
-                Curve: new ModCurve(a, b, n),
-                AdditionTableSeed: 0,
-                AdditionTableLength: 128,
-                ParrallelWalksCount: 10,
-                UseNegationMap: true,
-                DistinguishedPointMask: BigInteger.fromInt(3)
+                curve: new ModCurve(a, b, n),
+                additionTableSeed: 0,
+                additionTableLength: 128,
+                parrallelWalksCount: 10,
+                useNegationMap: true,
+                distinguishedPointMask: BigInteger.fromInt(3)
             };
 
             PollardRho.run(gx, gy, hx, hy, config);
