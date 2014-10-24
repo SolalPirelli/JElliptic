@@ -68,10 +68,6 @@
             return BigInteger.create(1, this._digits.slice(0));
         };
 
-        BigInteger.prototype.clone = function () {
-            return BigInteger.create(this._sign, this._digits.slice(0));
-        };
-
         BigInteger.prototype.add = function (other) {
             var thisAbs = this.abs();
             var otherAbs = other.abs();
@@ -179,7 +175,7 @@
                     result = result.sub(n);
                 }
             } else {
-                while (BigInteger.ZERO.gte(result)) {
+                while (BigInteger.ZERO.gt(result)) {
                     result = result.add(n);
                 }
             }
