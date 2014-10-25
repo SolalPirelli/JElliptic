@@ -38,23 +38,35 @@ function roundtripI(n: number) {
 }
 
 function op(name: string, s1: string, s2: string, result: string, op: (b1: BigInteger, b2: BigInteger) => BigInteger) {
-    var i1 = BigInteger.parse(s1);
-    var i2 = BigInteger.parse(s2);
-    var iResult = BigInteger.parse(result);
-
     test(name + ": " + s1 + ", " + s2, () => {
+        var i1 = BigInteger.parse(s1);
+        var i2 = BigInteger.parse(s2);
+        var iResult = BigInteger.parse(result);
+
         var actualResult = op(i1, i2);
         ok(actualResult.eq(iResult), "Expected " + result + ", got " + actualResult.toString());
     });
 }
 
 function binOp(name: string, s1: string, s2: string, result: boolean, op: (b1: BigInteger, b2: BigInteger) => boolean) {
+    test(name + ": " + s1 + ", " + s2, () => {
+        var i1 = BigInteger.parse(s1);
+        var i2 = BigInteger.parse(s2);
+
+        var actualResult = op(i1, i2);
+        equal(actualResult, result);
+    });
+}
+
+function negate(s1: string, s2: string) {
     var i1 = BigInteger.parse(s1);
     var i2 = BigInteger.parse(s2);
 
-    test(name + ": " + s1 + ", " + s2, () => {
-        var actualResult = op(i1, i2);
-        equal(actualResult, result);
+    test("neg: " + s1, () => {
+        ok(i1.negate().eq(i2));
+    });
+    test("neg: " + s2, () => {
+        ok(i2.negate().eq(i1));
     });
 }
 
@@ -86,7 +98,6 @@ function and(s1: string, s2: string, result: string) {
         op("and", s2, s1, result, (b1, b2) => b1.mod(b2));
     }
 }
-
 
 function lte(s1: string, s2: string, result: boolean) {
     binOp("lte", s1, s2, result, (b1, b2) => b1.lte(b2));
@@ -128,6 +139,11 @@ roundtripI(-1000000000);
 roundtripI(1000000000);
 roundtripI(4365447743);
 roundtripI(-578445757);
+
+negate("0", "0");
+negate("1", "-1");
+negate("843654783738219391462891409156201482963598234021939235792375230490324365",
+       "-843654783738219391462891409156201482963598234021939235792375230490324365");
 
 add("0", "0", "0");
 add("1", "1", "2");

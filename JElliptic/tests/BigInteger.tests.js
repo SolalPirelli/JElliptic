@@ -36,23 +36,35 @@ define(["require", "exports", "BigInteger"], function(require, exports, BigInteg
     }
 
     function op(name, s1, s2, result, op) {
-        var i1 = BigInteger.parse(s1);
-        var i2 = BigInteger.parse(s2);
-        var iResult = BigInteger.parse(result);
-
         test(name + ": " + s1 + ", " + s2, function () {
+            var i1 = BigInteger.parse(s1);
+            var i2 = BigInteger.parse(s2);
+            var iResult = BigInteger.parse(result);
+
             var actualResult = op(i1, i2);
             ok(actualResult.eq(iResult), "Expected " + result + ", got " + actualResult.toString());
         });
     }
 
     function binOp(name, s1, s2, result, op) {
+        test(name + ": " + s1 + ", " + s2, function () {
+            var i1 = BigInteger.parse(s1);
+            var i2 = BigInteger.parse(s2);
+
+            var actualResult = op(i1, i2);
+            equal(actualResult, result);
+        });
+    }
+
+    function negate(s1, s2) {
         var i1 = BigInteger.parse(s1);
         var i2 = BigInteger.parse(s2);
 
-        test(name + ": " + s1 + ", " + s2, function () {
-            var actualResult = op(i1, i2);
-            equal(actualResult, result);
+        test("neg: " + s1, function () {
+            ok(i1.negate().eq(i2));
+        });
+        test("neg: " + s2, function () {
+            ok(i2.negate().eq(i1));
         });
     }
 
@@ -155,6 +167,10 @@ define(["require", "exports", "BigInteger"], function(require, exports, BigInteg
     roundtripI(1000000000);
     roundtripI(4365447743);
     roundtripI(-578445757);
+
+    negate("0", "0");
+    negate("1", "-1");
+    negate("843654783738219391462891409156201482963598234021939235792375230490324365", "-843654783738219391462891409156201482963598234021939235792375230490324365");
 
     add("0", "0", "0");
     add("1", "1", "2");
