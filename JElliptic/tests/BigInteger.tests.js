@@ -86,6 +86,23 @@ define(["require", "exports", "BigInteger"], function(require, exports, BigInteg
         });
     }
 
+    function modInverse(s1, s2, result) {
+        op("modInverse", s1, s2, result, function (b1, b2) {
+            return b1.modInverse(b2);
+        });
+    }
+
+    function and(s1, s2, result) {
+        op("and", s1, s2, result, function (b1, b2) {
+            return b1.mod(b2);
+        });
+        if (s1 != s2) {
+            op("and", s2, s1, result, function (b1, b2) {
+                return b1.mod(b2);
+            });
+        }
+    }
+
     function lte(s1, s2, result) {
         binOp("lte", s1, s2, result, function (b1, b2) {
             return b1.lte(b2);
@@ -102,6 +119,17 @@ define(["require", "exports", "BigInteger"], function(require, exports, BigInteg
         binOp("gte", s1, s2, !result, function (b1, b2) {
             return b1.gte(b2);
         });
+    }
+
+    function eq(s1, s2, result) {
+        binOp("eq", s1, s2, result, function (b1, b2) {
+            return b1.eq(b2);
+        });
+        if (s1 != s2) {
+            binOp("eq", s2, s1, result, function (b1, b2) {
+                return b1.eq(b2);
+            });
+        }
     }
 
     equivalent("-1", -1);
@@ -172,6 +200,19 @@ define(["require", "exports", "BigInteger"], function(require, exports, BigInteg
     mod("-5", "2", "1");
     mod("-2", "3", "1");
 
+    modInverse("1", "10", "1");
+    modInverse("2", "3", "2");
+    modInverse("4", "5", "4");
+    modInverse("89548743", "975378538", "134684991");
+    modInverse("12345678", "1234567891", "908967567");
+
+    and("0", "0", "0");
+    and("0", "1", "0");
+    and("1", "1", "1");
+    and("2", "1", "0");
+    and("3", "1", "1");
+    and("63", "13", "13");
+
     lte("0", "0", true);
     lte("0", "1", true);
     lte("1", "1", true);
@@ -206,5 +247,13 @@ define(["require", "exports", "BigInteger"], function(require, exports, BigInteg
     lt("10000000000000000000000000000000", "100000", false);
     lt("100000000000000000000000000001", "100000000000000000000000000000", false);
     lt("-10000000000000000000000000000000", "-10000000000000000000000000000000", false);
+
+    eq("0", "0", true);
+    eq("-1", "-1", true);
+    eq("123", "123", true);
+    eq("123456789123456789123456789", "123456789123456789123456789", true);
+    eq("0", "1", false);
+    eq("-1", "1", false);
+    eq("123456789123456789123456789", "123456789123456789123456780", false);
 });
 //# sourceMappingURL=BigInteger.tests.js.map

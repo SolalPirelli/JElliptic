@@ -262,14 +262,6 @@
             return !this.lte(other);
         };
 
-        BigInteger.prototype.leftShift = function (n) {
-            var digits = this._digits.slice(0);
-            for (var _ = 0; _ < n; _++) {
-                digits.unshift(0);
-            }
-            return BigInteger.create(this._sign, digits);
-        };
-
         BigInteger.prototype.and = function (other) {
             var digits = [];
 
@@ -281,7 +273,7 @@
         };
 
         BigInteger.prototype.eq = function (other) {
-            var arrayEquals = function (a, b) {
+            function arrayEquals(a, b) {
                 if (a == b) {
                     return true;
                 }
@@ -295,7 +287,7 @@
                     }
                 }
                 return true;
-            };
+            }
 
             return this._sign == other._sign && arrayEquals(this._digits, other._digits);
         };
@@ -332,6 +324,14 @@
             }
 
             return result;
+        };
+
+        BigInteger.prototype.leftShift = function (n) {
+            var digits = this._digits.slice(0);
+            for (var _ = 0; _ < n; _++) {
+                digits.unshift(0);
+            }
+            return BigInteger.create(this._sign, digits);
         };
 
         BigInteger.create = function (sign, digits) {

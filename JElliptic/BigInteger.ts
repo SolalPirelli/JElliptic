@@ -274,14 +274,6 @@
         return !this.lte(other);
     }
 
-    leftShift(n: number): BigInteger {
-        var digits = this._digits.slice(0);
-        for (var _ = 0; _ < n; _++) {
-            digits.unshift(0);
-        }
-        return BigInteger.create(this._sign, digits);
-    }
-
     and(other: BigInteger): BigInteger {
         var digits: number[] = [];
 
@@ -294,7 +286,7 @@
 
 
     eq(other: BigInteger) {
-        var arrayEquals = (a: number[], b: number[]): boolean => {
+        function arrayEquals(a: number[], b: number[]): boolean {
             if (a == b) {
                 return true;
             }
@@ -346,6 +338,15 @@
         }
 
         return result;
+    }
+
+
+    private leftShift(n: number): BigInteger {
+        var digits = this._digits.slice(0);
+        for (var _ = 0; _ < n; _++) {
+            digits.unshift(0);
+        }
+        return BigInteger.create(this._sign, digits);
     }
 
 
