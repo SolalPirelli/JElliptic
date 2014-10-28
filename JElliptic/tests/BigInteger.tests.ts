@@ -93,9 +93,10 @@ function modInverse(s1: string, s2: string, result: string) {
 }
 
 function and(s1: string, s2: string, result: string) {
-    op("and", s1, s2, result, (b1, b2) => b1.mod(b2));
+    op("and", s1, s2, result, (b1, b2) => b1.and(b2));
+
     if (s1 != s2) {
-        op("and", s2, s1, result, (b1, b2) => b1.mod(b2));
+        op("and", s2, s1, result, (b1, b2) => b1.and(b2));
     }
 }
 

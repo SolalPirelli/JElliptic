@@ -106,11 +106,12 @@ define(["require", "exports", "BigInteger"], function(require, exports, BigInteg
 
     function and(s1, s2, result) {
         op("and", s1, s2, result, function (b1, b2) {
-            return b1.mod(b2);
+            return b1.and(b2);
         });
+
         if (s1 != s2) {
             op("and", s2, s1, result, function (b1, b2) {
-                return b1.mod(b2);
+                return b1.and(b2);
             });
         }
     }

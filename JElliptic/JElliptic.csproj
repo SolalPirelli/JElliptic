@@ -38,6 +38,7 @@
     <TypeScriptCompile Include="ModPoint.ts" />
     <TypeScriptCompile Include="PollardRho.ts" />
     <TypeScriptCompile Include="Server.ts" />
+    <TypeScriptCompile Include="tests\ModNumberTests.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="chutzpah.json" />

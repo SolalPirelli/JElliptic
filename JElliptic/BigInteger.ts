@@ -275,10 +275,10 @@
     }
 
     and(other: BigInteger): BigInteger {
-        var digits: number[] = [];
+        var digits = Array<number>();
 
-        for (var n = 0; n < this._digits.length || n < other._digits.length; n++) {
-            digits.push((this._digits[n] || 0) & (other._digits[n] || 0));
+        for (var n = 0; n < this._digits.length && n < other._digits.length; n++) {
+            digits.push(this._digits[n] & other._digits[n]);
         }
 
         return BigInteger.create(1, digits);
