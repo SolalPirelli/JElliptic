@@ -7,3 +7,8 @@
 [Rr]elease/
 [Bb]in/
 [Oo]bj/
+
+JElliptic/*.js
+JElliptic/*.js.map
+JElliptic/test/*.js
+JElliptic/test/*.js.map

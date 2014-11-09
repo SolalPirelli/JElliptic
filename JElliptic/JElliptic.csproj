@@ -19,12 +19,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="index.html" />
-    <Content Include="lib\jquery.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="lib\require.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="lib\jquery.min.js" />
+    <Content Include="lib\require.js" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
@@ -88,8 +84,6 @@
     <TypeScriptSourceMap>true</TypeScriptSourceMap>
     <TypeScriptNoImplicitAny>True</TypeScriptNoImplicitAny>
     <TypeScriptModuleKind>amd</TypeScriptModuleKind>
-    <TypeScriptOutDir>bin\</TypeScriptOutDir>
-    <TypeScriptMapRoot>bin\</TypeScriptMapRoot>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <TypeScriptRemoveComments>true</TypeScriptRemoveComments>

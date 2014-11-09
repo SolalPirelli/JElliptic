@@ -1,13 +1,12 @@
 ﻿{
     "Framework": "qunit",
     "TestHarnessReferenceMode": "AMD",
-    "TestHarnessLocationMode": "Custom",
-    "TestHarnessDirectory": "bin",
     "RootReferencePathMode": "SettingsFileDirectory",
     "References": [
         { "Path": "lib/require.js" },
         { "Path": "lib/require.d.ts" },
-        { "Path": "test/lib/qunit.d.ts" }
+        { "Path": "test/lib/qunit.d.ts" },
+        { "Include": ".ts", "Exclude": "*.d.ts" }
     ],
     "Tests": [
         { "Path": "test", "Include": "*.ts", "Exclude": "*.d.ts" }
