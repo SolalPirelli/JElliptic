@@ -6,8 +6,15 @@
     "TypeScriptModuleKind": "AMD",
     "TypeScriptCodeGenTarget": "ES5",
     "References": [
+        { "Include": "*.ts", "Exclude": "*.d.ts" },
         { "Path": "lib/require.js" },
         { "Path": "lib/require.d.ts", "IncludeInTestHarness": "false" },
         { "Path": "test/lib/qunit.d.ts", "IncludeInTestHarness": "false" }
-    ]
+    ],
+    "Tests": [
+        { "Include": "*/test/*.ts", "Exclude": "*/test/*.d.ts" }
+    ],
+    "Compile": { 
+        "Mode": "External"
+    }
 }
