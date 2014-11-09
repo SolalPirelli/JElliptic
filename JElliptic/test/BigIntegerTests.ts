@@ -1,5 +1,4 @@
 ﻿/// <reference path="lib/qunit.d.ts" />
-/// <reference path="../BigInteger.ts" />
 
 import BigInteger = require("BigInteger");
 

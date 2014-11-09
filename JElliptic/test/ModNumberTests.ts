@@ -1,6 +1,4 @@
 ﻿/// <reference path="lib/qunit.d.ts" />
-/// <reference path="../BigInteger.ts" />
-/// <reference path="../ModNumber.ts" />
 
 import BigInteger = require("BigInteger");
 import ModNumber = require("ModNumber");

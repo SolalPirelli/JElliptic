@@ -21,6 +21,7 @@
     <Content Include="index.html" />
     <Content Include="lib\jquery.min.js" />
     <Content Include="lib\require.js" />
+    <Content Include="test\lib\qunit.js" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
