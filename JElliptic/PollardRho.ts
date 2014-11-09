@@ -18,8 +18,6 @@ module PollardRho {
             walks[n] = new CurveWalk(table);
         }
 
-        console.clear();
-
         for (var step = BigInteger.ZERO; step.lt(config.curve.n); step = step.add(BigInteger.ONE)) {
             var N = config.parrallelWalksCount;
 

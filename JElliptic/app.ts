@@ -5,7 +5,7 @@ import ModCurve = require("ModCurve");
 import ModPoint = require("ModPoint");
 import IConfig = require("IConfig");
 import PollardRho = require("PollardRho");
-import ServerResultSink = require("ServerResultSink");
+import ResultSinks = require("ResultSinks");
 
 function bigintValue(elemName: string): BigInteger {
     return BigInteger.parse((<HTMLInputElement> document.getElementById(elemName)).value);
@@ -32,6 +32,8 @@ requirejs([], () => {
             distinguishedPointMask: BigInteger.fromInt(3)
         };
 
-        PollardRho.run(config, new ServerResultSink());
+        var sink = ResultSinks.combine(ResultSinks.server(), ResultSinks.debug());
+
+        PollardRho.run(config, sink);
     };
 });
