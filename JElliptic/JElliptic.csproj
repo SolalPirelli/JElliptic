@@ -19,8 +19,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="index.html" />
-    <Content Include="lib\jquery.min.js" />
-    <Content Include="lib\require.js" />
+    <Content Include="lib\jquery.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="lib\require.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>
