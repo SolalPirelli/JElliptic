@@ -3,18 +3,16 @@
     "TestHarnessReferenceMode": "AMD",
     "TestHarnessLocationMode": "Custom",
     "TestHarnessDirectory": "bin",
-    "TypeScriptModuleKind": "AMD",
-    "TypeScriptCodeGenTarget": "ES5",
+    "RootReferencePathMode": "SettingsFileDirectory",
     "References": [
-        { "Include": "*.ts", "Exclude": "*.d.ts" },
         { "Path": "lib/require.js" },
-        { "Path": "lib/require.d.ts", "IncludeInTestHarness": "false" },
-        { "Path": "test/lib/qunit.d.ts", "IncludeInTestHarness": "false" }
+        { "Path": "lib/require.d.ts" },
+        { "Path": "test/lib/qunit.d.ts" }
     ],
     "Tests": [
-        { "Include": "*/test/*.ts", "Exclude": "*/test/*.d.ts" }
+        { "Path": "test", "Include": "*.ts", "Exclude": "*.d.ts" }
     ],
-    "Compile": { 
+    "Compile": {
         "Mode": "External"
     }
 }
