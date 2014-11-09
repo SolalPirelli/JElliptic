@@ -37,7 +37,7 @@
     <TypeScriptCompile Include="ModNumber.ts" />
     <TypeScriptCompile Include="ModPoint.ts" />
     <TypeScriptCompile Include="PollardRho.ts" />
-    <TypeScriptCompile Include="ServerResultSink.ts" />
+    <TypeScriptCompile Include="ResultSinks.ts" />
     <TypeScriptCompile Include="test\BigIntegerTests.ts" />
     <TypeScriptCompile Include="test\lib\qunit.d.ts" />
     <TypeScriptCompile Include="test\ModNumberTests.ts" />
