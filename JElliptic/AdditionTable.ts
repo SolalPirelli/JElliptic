@@ -7,16 +7,16 @@ export class Table {
     private _entries: TableEntry[];
 
 
-    constructor(generator: ModPoint, target: ModPoint, config: IConfig) {
+    constructor(config: IConfig) {
         this._entries = new Array(config.additionTableLength);
 
-        var order = BigInteger.fromInt(generator.getOrder());
+        var order = BigInteger.fromInt(config.generator.getOrder());
         var rng = Table.getRng(config.additionTableSeed);
 
         for (var n = 0; n < this._entries.length; n++) {
             var u = new ModNumber(rng(this._entries.length), order);
             var v = new ModNumber(rng(this._entries.length), order);
-            var p = generator.mulNum(u.value).add(target.mulNum(v.value));
+            var p = config.generator.mulNum(u.value).add(config.target.mulNum(v.value));
             this._entries[n] = new TableEntry(u, v, p);
         }
     }

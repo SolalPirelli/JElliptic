@@ -3,16 +3,14 @@ import ModNumber = require("ModNumber");
 import ModPoint = require("ModPoint");
 import ModPointAddPartialResult = require("ModPointAddPartialResult");
 import IConfig = require("IConfig");
+import IResultSink = require("IResultSink");
 import Addition = require("AdditionTable");
-import Server = require("Server");
 
 module PollardRho {
     // based on the description in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
     // as well as http://www.hyperelliptic.org/tanja/SHARCS/slides09/03-bos.pdf
-    export function run(gx: BigInteger, gy: BigInteger, hx: BigInteger, hy: BigInteger, config: IConfig): void {
-        var generator = new ModPoint(gx, gy, config.curve);
-        var target = new ModPoint(hx, hy, config.curve);
-        var table = new Addition.Table(generator, target, config);
+    export function run(config: IConfig, resultSink: IResultSink): void {
+        var table = new Addition.Table(config);
 
         var walks = Array<CurveWalk>();
 
@@ -52,7 +50,7 @@ module PollardRho {
                 walks[n].endStep(lambda);
 
                 if (isDistinguished(walks[n].current, config)) {
-                    Server.send(walks[n].u, walks[n].v, walks[n].current);
+                    resultSink.send(walks[n].u, walks[n].v, walks[n].current);
                 }
             }
         }

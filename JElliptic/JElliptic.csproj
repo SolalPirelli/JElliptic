@@ -28,6 +28,7 @@
     <TypeScriptCompile Include="AdditionTable.ts" />
     <TypeScriptCompile Include="app.ts" />
     <TypeScriptCompile Include="BigInteger.ts" />
+    <TypeScriptCompile Include="IResultSink.ts" />
     <TypeScriptCompile Include="ModPointAddPartialResult.ts" />
     <TypeScriptCompile Include="IConfig.ts" />
     <TypeScriptCompile Include="lib\jquery.d.ts" />
@@ -36,10 +37,11 @@
     <TypeScriptCompile Include="ModNumber.ts" />
     <TypeScriptCompile Include="ModPoint.ts" />
     <TypeScriptCompile Include="PollardRho.ts" />
-    <TypeScriptCompile Include="Server.ts" />
+    <TypeScriptCompile Include="ServerResultSink.ts" />
     <TypeScriptCompile Include="test\BigIntegerTests.ts" />
     <TypeScriptCompile Include="test\lib\qunit.d.ts" />
     <TypeScriptCompile Include="test\ModNumberTests.ts" />
+    <TypeScriptCompile Include="test\PollardRhoTests.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="chutzpah.json" />
@@ -53,7 +55,6 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
-  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
   </PropertyGroup>

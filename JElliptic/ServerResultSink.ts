@@ -2,9 +2,10 @@
 
 import ModNumber = require("ModNumber");
 import ModPoint = require("ModPoint");
+import IResultSink= require("IResultSink");
 
-module Server {
-    export function send(u: ModNumber, v: ModNumber, p: ModPoint): void {
+class ServerResultSink implements IResultSink {
+    send(u: ModNumber, v: ModNumber, p: ModPoint): void {
         var point = {
             U: u.value.toString(),
             V: v.value.toString(),
@@ -22,4 +23,4 @@ module Server {
     }
 }
 
-export = Server;
+export = ServerResultSink;

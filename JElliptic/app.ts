@@ -2,8 +2,10 @@
 
 import BigInteger = require("BigInteger");
 import ModCurve = require("ModCurve");
+import ModPoint = require("ModPoint");
 import IConfig = require("IConfig");
 import PollardRho = require("PollardRho");
+import ServerResultSink = require("ServerResultSink");
 
 function bigintValue(elemName: string): BigInteger {
     return BigInteger.parse((<HTMLInputElement> document.getElementById(elemName)).value);
@@ -17,8 +19,12 @@ requirejs([], () => {
         var gx = bigintValue("gx"), gy = bigintValue("gy");
         var hx = bigintValue("hx"), hy = bigintValue("hy");
 
+        var curve = new ModCurve(a, b, n);
+
         var config: IConfig = {
-            curve: new ModCurve(a, b, n),
+            curve: curve,
+            generator: new ModPoint(gx, gy, curve),
+            target: new ModPoint(hx, hy, curve),
             additionTableSeed: 0,
             additionTableLength: 128,
             parrallelWalksCount: 10,
@@ -26,6 +32,6 @@ requirejs([], () => {
             distinguishedPointMask: BigInteger.fromInt(3)
         };
 
-        PollardRho.run(gx, gy, hx, hy, config);
+        PollardRho.run(config, new ServerResultSink());
     };
 });
