@@ -115,5 +115,5 @@ var correctResults = [
         "10") // Expected result
 ];
 
-correctResults.forEach(r => result("1 walk", r, 0, 1024, 1, true, "1"));
-correctResults.forEach(r => result("2 walks", r, 0, 1024, 2, true, "1"));
+correctResults.forEach(r => result("1 walk", r, 0, 64, 1, true, "1"));
+correctResults.forEach(r => result("2 walks", r, 0, 64, 2, true, "1"));

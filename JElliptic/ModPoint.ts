@@ -108,6 +108,7 @@ class ModPoint {
         return new ModPoint(x.value, y.value, this._curve);
     }
 
+    /** O(n) */
     mulNum(n: BigInteger): ModPoint {
         var g = ModPoint.INF;
         for (var _ = BigInteger.ZERO; _.lt(n); _ = _.add(BigInteger.ONE)) {
@@ -116,13 +117,15 @@ class ModPoint {
         return g;
     }
 
-    partition(count: number): number {
+    /** O(this.value.digits / n) */
+    partition(n: number): number {
         if (this == ModPoint.INF) {
             return 0;
         }
-        return this._x.value.mod(BigInteger.fromInt(count)).toInt();
+        return this._x.value.mod(BigInteger.fromInt(n)).toInt();
     }
 
+    /** O(return) */
     getOrder(): number {
         var point: ModPoint = ModPoint.INF;
         for (var order = 1; ; order++) {
@@ -135,6 +138,7 @@ class ModPoint {
         throw "No order found.";
     }
 
+    /** O(min(this.x.value.digits, other.x.value.digits) + min(this.y.value.digits, other.y.value.digits)) */
     eq(other: ModPoint): boolean {
         if (this == ModPoint.INF) {
             return other == ModPoint.INF;
@@ -146,12 +150,12 @@ class ModPoint {
         return this._x.eq(other._x) && this._y.eq(other._y);
     }
 
-
+    /** O(this.x.value.digits + this.y.value.digits) */
     toString(): string {
         if (this == ModPoint.INF) {
             return "Infinity";
         }
-        return "(" + this._x.value + ", " + this._y.value + ")";
+        return "(" + this._x.value.toString() + ", " + this._y.value.toString() + ")";
     }
 
 
