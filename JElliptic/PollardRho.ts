@@ -12,6 +12,26 @@ module PollardRho {
     export function run(config: IConfig, resultSink: IResultSink): void {
         var table = new Addition.Table(config);
 
+        if (config.parrallelWalksCount == 1) {
+            runOneWalk(config, resultSink, table);
+        } else {
+            runMultipleWalks(config, resultSink, table);
+        }
+    }
+
+    function runOneWalk(config: IConfig, resultSink: IResultSink, table: Addition.Table) {
+        var walk = new CurveWalk(table);
+
+        for (var step = BigInteger.ZERO; step.lt(config.curve.n); step = step.add(BigInteger.ONE)) {
+            walk.fullStep();
+
+            if (isDistinguished(walk.current, config)) {
+                resultSink.send(walk.u, walk.v, walk.current);
+            }
+        }
+    }
+
+    function runMultipleWalks(config: IConfig, resultSink: IResultSink, table: Addition.Table) {
         var walks = Array<CurveWalk>();
 
         for (var n = 0; n < config.parrallelWalksCount; n++) {
@@ -55,7 +75,7 @@ module PollardRho {
     }
 
     function isDistinguished(point: ModPoint, config: IConfig): boolean {
-        return (point.x.value.and(config.distinguishedPointMask)).eq(config.distinguishedPointMask);
+        return point != ModPoint.INFINITY && (point.x.value.and(config.distinguishedPointMask)).eq(config.distinguishedPointMask);
     }
 
     // Walk over a problem.
@@ -72,7 +92,8 @@ module PollardRho {
         constructor(table: Addition.Table) {
             this._table = table;
 
-            var entry = table.at(0);
+            // TODO the starting entry needs to be random, of course
+            var entry = this._table.at(0);
             this._u = entry.u;
             this._v = entry.v;
             this._current = entry.p;
@@ -102,6 +123,14 @@ module PollardRho {
 
         endStep(lambda: ModNumber): void {
             this._current = this._current.endAdd(this._currentEntry.p, lambda);
+        }
+
+        fullStep() {
+            var index = this._current.partition(this._table.length);
+            this._currentEntry = this._table.at(index);
+            this._u = this._u.add(this._currentEntry.u);
+            this._v = this._v.add(this._currentEntry.v);
+            this._current = this._current.add(this._currentEntry.p);
         }
 
 

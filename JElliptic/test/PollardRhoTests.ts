@@ -8,6 +8,8 @@ import IConfig = require("IConfig");
 import IResultSink = require("IResultSink");
 import PollardRho = require("PollardRho");
 
+QUnit.module("PollardRho");
+
 class NonAlgorithmicConfig {
     a: string;
     b: string;
@@ -80,13 +82,14 @@ function exactSteps(name: string, config: IConfig, ...expected: Result[]) {
     });
 }
 
-function result(points: NonAlgorithmicConfig,
+function result(configName: string,
+    points: NonAlgorithmicConfig,
     tableSeed: number, tableLength: number,
     walksCount: number, useNegationMap: boolean,
     distinguishedMask: string) {
     var sink = new ComputingResultSink();
     var curve = new ModCurve(BigInteger.parse(points.a), BigInteger.parse(points.b), BigInteger.parse(points.n));
-    var config: IConfig = {
+    var config = {
         curve: curve,
         generator: new ModPoint(BigInteger.parse(points.gx), BigInteger.parse(points.gy), curve),
         target: new ModPoint(BigInteger.parse(points.tx), BigInteger.parse(points.ty), curve),
@@ -96,16 +99,21 @@ function result(points: NonAlgorithmicConfig,
         useNegationMap: useNegationMap,
         distinguishedPointMask: BigInteger.parse(distinguishedMask)
     };
+    var order = BigInteger.fromInt(config.generator.getOrder());
 
-    PollardRho.run(config, sink);
-
-    ok(sink.result.eq(new ModNumber(BigInteger.parse(points.expected), curve.n)));
+    test(configName + ": " + config.generator + ", " + config.target + " on " + config.curve, () => {
+        PollardRho.run(config, sink);
+        ok(sink.result.eq(new ModNumber(BigInteger.parse(points.expected), order)));
+    });
 }
 
 var correctResults = [
     new NonAlgorithmicConfig(
-        "0", "0", "0", // Curve (A, B, N)
-        "0", "0", // Generator (X, Y)
-        "0", "0", // Target (X, Y)
-        "0") // Expected result
+        "0", "3", "31", // Curve (A, B, N)
+        "11", "1", // Generator (X, Y)
+        "23", "24", // Target (X, Y)
+        "10") // Expected result
 ];
+
+correctResults.forEach(r => result("1 walk", r, 0, 1024, 1, true, "1"));
+correctResults.forEach(r => result("2 walks", r, 0, 1024, 2, true, "1"));
