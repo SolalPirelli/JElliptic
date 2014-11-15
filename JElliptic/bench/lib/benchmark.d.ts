@@ -3,7 +3,7 @@
 declare module Benchmark {
     class Suite {
         /** Creates a new Suite. */
-        constructor();
+        constructor(name?: string, options?: SuiteConstructorOptions);
 
         /** Adds a test to the suite. */
         add(name: string, func: () => void): Suite;
@@ -18,7 +18,22 @@ declare module Benchmark {
         on(name: "complete", callback: () => void): Suite;
 
         /** Runs the suite. */
-        run(options?: any): void;
+        run(options?: SuiteRunOptions): void;
+    }
+
+    class SuiteConstructorOptions {
+        // called when the suite starts running
+        onStart: () => void;
+
+        // called between running benchmarks
+        onCycle: (evt: Event) => void;
+
+        // called when the suite completes running
+        onComplete: () => void;
+    }
+
+    class SuiteRunOptions {
+        async: boolean;
     }
 
     class Event {

@@ -312,12 +312,12 @@
         return this._sign == other._sign && arrayEquals(this._digits, other._digits);
     }
 
-    /** O(1) */
+    /** O(this.digits) */
     toInt(): number {
         // Hack-y, but simple
         var str = this.toString();
         var n = parseInt(str);
-        if (n > BigInteger.MAX_SAFE_INT) {
+        if (Math.abs(n) > BigInteger.MAX_SAFE_INT) {
             throw "toInt can only work with small BigIntegers.";
         }
 
