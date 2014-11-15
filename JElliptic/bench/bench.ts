@@ -41,50 +41,47 @@ function createSuite(suiteName: string) {
     });
 }
 
+
+var i1 = BigInteger.parse("1");
+
+var i20_1 = BigInteger.parse("12345678901234567890");
+var i20_2 = BigInteger.parse("99999999999999999999");
+
+var i100_1 = BigInteger.parse("9876543210987654321098765432109876543210987654321098765432109876543210987654321098765432109876543210");
+var i100_2 = BigInteger.parse("1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890");
+
 requirejs([], () => {
     var bi = createSuite("BigInteger");
 
-    bi.add("from 1-digit number", () => {
-        BigInteger.fromInt(9);
-    });
+    bi.add("Create from 1-digit int", () => BigInteger.fromInt(9));
+    bi.add("Create from 16-digit int", () => BigInteger.fromInt(9007199254740991));
 
-    bi.add("from 16-digit number", () => {
-        BigInteger.fromInt(9007199254740991);
-    });
+    bi.add("Parse 1-digit number", () => BigInteger.parse("1"));
+    bi.add("Parse 20-digit number", () => BigInteger.parse("1234578901234567890"));
+    bi.add("Parse 100-digit number", () => BigInteger.parse("12345789012345678901234578901234567890123457890123456789012345789012345678901234578901234567890"));
 
-    var i1 = BigInteger.parse("1");
-    bi.add("parse 1-digit number", () => {
-        BigInteger.parse("1");
-    });
+    bi.add("Negate a 1-digit number", () => i1.negate());
+    bi.add("Negate a 20-digit number", () => i20_1.negate());
+    bi.add("Negate a 100-digit number", () => i100_1.negate());
 
-    bi.add("parse 20-digit number", () => {
-        BigInteger.parse("1234578901234567890");
-    });
+    bi.add("Absolute value of a 1-digit number", () => i1.abs());
+    bi.add("Absolute value of a 20-digit number", () => i20_1.abs());
+    bi.add("Absolute value of a 100-digit number", () => i100_1.abs());
 
-    bi.add("parse 100-digit number", () => {
-        BigInteger.parse("12345789012345678901234578901234567890123457890123456789012345789012345678901234578901234567890");
-    });
+    bi.add("Add two 1-digit numbers", () => i1.add(i1));
+    bi.add("Add a 20-digit number and 1", () => i20_1.add(i1));
+    bi.add("Add two 20-digit numbers", () => i20_1.add(i20_2));
+    bi.add("Add two 100-digit numbers", () => i100_1.add(i100_2));
 
-    bi.add("1 + 1", () => {
-        i1.add(i1);
-    });
+    bi.add("Subtract two 1-digit numbers", () => i1.sub(i1));
+    bi.add("Subtract a 20-digit number and 1", () => i20_1.sub(i1));
+    bi.add("Subtract two 20-digit numbers", () => i20_1.sub(i20_2));
+    bi.add("Subtract two 100-digit numbers", () => i100_1.sub(i100_2));
 
-    var i10000000000000000000 = BigInteger.parse("10000000000000000000");
-    bi.add("20-digit number + 1", () => {
-        i10000000000000000000.add(i1);
-    });
-
-    var i12345678901234567890 = BigInteger.parse("12345678901234567890");
-    var i99999999999999999999 = BigInteger.parse("99999999999999999999");
-    bi.add("Addition of 20-digit numbers", () => {
-        i12345678901234567890.add(i99999999999999999999);
-    });
-
-    var i9876543210987654321098765432109876543210987654321098765432109876543210987654321098765432109876543210 = BigInteger.parse("9876543210987654321098765432109876543210987654321098765432109876543210987654321098765432109876543210");
-    var i1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890 = BigInteger.parse("1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890");
-    bi.add("Addition of 100-digit numbers", () => {
-        i9876543210987654321098765432109876543210987654321098765432109876543210987654321098765432109876543210.add(i1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890);
-    });
+    bi.add("Multiply two 1-digit numbers", () => i1.mul(i1));
+    bi.add("Multiply a 20-digit number and 1", () => i20_1.mul(i1));
+    bi.add("Multiply two 20-digit numbers", () => i20_1.mul(i20_2));
+    bi.add("Multiply two 100-digit numbers", () => i100_1.mul(i100_2));
 
     bi.run({ async: true });
 });

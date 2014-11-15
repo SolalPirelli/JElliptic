@@ -6,7 +6,7 @@ declare module Benchmark {
         constructor(name?: string, options?: SuiteConstructorOptions);
 
         /** Adds a test to the suite. */
-        add(name: string, func: () => void): Suite;
+        add(name: string, func: () => any): Suite;
 
         /** Adds a listener to a suite event. */
         on(name: string, callback: (obj: any) => void): Suite;
