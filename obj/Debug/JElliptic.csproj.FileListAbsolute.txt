@@ -1,0 +1,6 @@
+X:\Projects\JElliptic\JElliptic\bin\JElliptic.dll.config
+X:\Projects\JElliptic\JElliptic\bin\JElliptic.dll
+X:\Projects\JElliptic\JElliptic\bin\JElliptic.pdb
+X:\Projects\JElliptic\JElliptic\obj\Debug\JElliptic.dll
+X:\Projects\JElliptic\JElliptic\obj\Debug\JElliptic.pdb
+X:\Projects\JElliptic\JElliptic\obj\Debug\JElliptic.csprojResolveAssemblyReference.cache

@@ -111,6 +111,7 @@
             return new ModPoint(x.value, y.value, this._curve);
         };
 
+        /** O(n) */
         ModPoint.prototype.mulNum = function (n) {
             var g = ModPoint.INF;
             for (var _ = BigInteger.ZERO; _.lt(n); _ = _.add(BigInteger.ONE)) {
@@ -119,13 +120,15 @@
             return g;
         };
 
-        ModPoint.prototype.partition = function (count) {
+        /** O(this.value.digits / n) */
+        ModPoint.prototype.partition = function (n) {
             if (this == ModPoint.INF) {
                 return 0;
             }
-            return this._x.value.mod(BigInteger.fromInt(count)).toInt();
+            return this._x.value.mod(BigInteger.fromInt(n)).toInt();
         };
 
+        /** O(return) */
         ModPoint.prototype.getOrder = function () {
             var point = ModPoint.INF;
             for (var order = 1; ; order++) {
@@ -138,6 +141,7 @@
             throw "No order found.";
         };
 
+        /** O(min(this.x.value.digits, other.x.value.digits) + min(this.y.value.digits, other.y.value.digits)) */
         ModPoint.prototype.eq = function (other) {
             if (this == ModPoint.INF) {
                 return other == ModPoint.INF;
@@ -149,11 +153,12 @@
             return this._x.eq(other._x) && this._y.eq(other._y);
         };
 
+        /** O(this.x.value.digits + this.y.value.digits) */
         ModPoint.prototype.toString = function () {
             if (this == ModPoint.INF) {
                 return "Infinity";
             }
-            return "(" + this._x.value + ", " + this._y.value + ")";
+            return "(" + this._x.value.toString() + ", " + this._y.value.toString() + ")";
         };
 
         ModPoint.prototype.ensureValid = function () {

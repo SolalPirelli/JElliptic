@@ -12,6 +12,7 @@
     static ONE = BigInteger.uncheckedCreate(1, [1]);
 
 
+    /** O(1) */
     static fromInt(n: number): BigInteger {
         if (Math.abs(n) > BigInteger.MAX_SAFE_INT) {
             throw "BigInteger.fromInt cannot be called with inexact integers.";
@@ -32,8 +33,9 @@
         return BigInteger.create(sign, digits);
     }
 
-    // This is a bit too complex for bases that are powers of ten, but it works with any base
+    /** O(str.length) */
     static parse(str: string): BigInteger {
+        // This is a bit too complex for bases that are powers of ten, but it works with any base
         var sign = 1;
         if (str[0] == "-") {
             sign = -1;
@@ -67,11 +69,12 @@
         return BigInteger.create(sign, digits);
     }
 
-
+    /** O(1) */
     negate(): BigInteger {
         return BigInteger.create(-this._sign, this._digits.slice(0));
     }
 
+    /** O(1) */
     abs(): BigInteger {
         if (this._sign == 1) {
             return this;
@@ -79,7 +82,7 @@
         return BigInteger.create(1, this._digits.slice(0));
     }
 
-
+    /** O(max(this.digits, other.digits)) */
     add(other: BigInteger): BigInteger {
         var thisAbs = this.abs();
         var otherAbs = other.abs();
@@ -115,11 +118,12 @@
         return BigInteger.create(hi._sign, digits);
     }
 
+    /** O(max(this.digits, other.digits)) */
     sub(other: BigInteger): BigInteger {
         return this.add(other.negate());
     }
 
-    // http://en.wikipedia.org/wiki/Karatsuba_algorithm
+    /** O(max(this.digits, other.digits)^log_2(3)) */
     mul(other: BigInteger): BigInteger {
         function singleDigitMul(bi: BigInteger, mul: number, mulSign: number): BigInteger {
             var digits = Array<number>();
@@ -145,6 +149,8 @@
             return singleDigitMul(this, other._digits[0], other._sign);
         }
 
+        // http://en.wikipedia.org/wiki/Karatsuba_algorithm
+
         var m = Math.max(this._digits.length, other._digits.length);
         var m2 = Math.ceil(m / 2);
 
@@ -157,16 +163,10 @@
         var z1 = lo1.add(hi1).mul(lo2.add(hi2));
         var z2 = hi1.mul(hi2);
 
-        //return (z2.leftShift(m2 * 2)).add(z1.sub(z2).sub(z0).leftShift(m2)).add(z0);
-        var aaa0 = (z2.leftShift(m2 * 2));
-        var aaaaaa0 = z1.sub(z2).sub(z0);
-        var aaaaaa1 = aaaaaa0.leftShift(m2);
-        var aaa1 = aaa0.add(aaaaaa1);
-        var aaa2 = aaa1.add(z0);
-        return aaa2;
+        return (z2.leftShift(m2 * 2)).add(z1.sub(z2).sub(z0).leftShift(m2)).add(z0);
     }
 
-    // Simple long division, sufficient for now
+    /** O(this / other) */
     div(other: BigInteger): BigInteger {
         var quotient = this;
         var result = BigInteger.ZERO;
@@ -179,6 +179,7 @@
         return result;
     }
 
+    /** O(this / n) */
     mod(n: BigInteger): BigInteger {
         var result = this;
 
@@ -195,6 +196,7 @@
         return result;
     }
 
+    /** O(log(n)^2) */
     modInverse(n: BigInteger): BigInteger {
         var t = BigInteger.ZERO, newt = BigInteger.ONE;
         var r = n, newr = this;
@@ -218,6 +220,7 @@
         return t;
     }
 
+    /** O(min(this.digits, other.digits)) */
     lte(other: BigInteger): boolean {
         if (this._sign < other._sign) {
             return true;
@@ -242,10 +245,12 @@
         return true;
     }
 
+    /** O(min(this.digits, other.digits)) */
     lt(other: BigInteger): boolean {
         return !this.gte(other);
     }
 
+    /** O(min(this.digits, other.digits)) */
     gte(other: BigInteger): boolean {
         if (this._sign > other._sign) {
             return true;
@@ -270,10 +275,12 @@
         return true;
     }
 
+    /** O(min(this.digits, other.digits)) */
     gt(other: BigInteger): boolean {
         return !this.lte(other);
     }
 
+    /** O(min(this.digits, other.digits)) */
     and(other: BigInteger): BigInteger {
         var digits = Array<number>();
 
@@ -284,7 +291,7 @@
         return BigInteger.create(1, digits);
     }
 
-
+    /** O(min(this.digits, other.digits)) */
     eq(other: BigInteger) {
         function arrayEquals(a: number[], b: number[]): boolean {
             if (a == b) {
@@ -305,18 +312,19 @@
         return this._sign == other._sign && arrayEquals(this._digits, other._digits);
     }
 
-
+    /** O(this.digits) */
     toInt(): number {
         // Hack-y, but simple
         var str = this.toString();
         var n = parseInt(str);
-        if (n > BigInteger.MAX_SAFE_INT) {
+        if (Math.abs(n) > BigInteger.MAX_SAFE_INT) {
             throw "toInt can only work with small BigIntegers.";
         }
 
         return n;
     }
 
+    /** O(this.digits) */
     toString(): string {
         var padNum = (n: number, len: number): string => {
             var str = n.toString();
@@ -340,16 +348,22 @@
         return result;
     }
 
-
+    /** O(this.digits + n) */
     private leftShift(n: number): BigInteger {
-        var digits = this._digits.slice(0);
-        for (var _ = 0; _ < n; _++) {
-            digits.unshift(0);
+        var digits = new Array(this._digits.length + n);
+
+        for (var i = 0; i < n; i++) {
+            digits[i] = 0;
         }
+
+        for (var i = 0; i < this._digits.length; i++) {
+            digits[i + n] = this._digits[i];
+        }
+
         return BigInteger.create(this._sign, digits);
     }
 
-
+    /** O(digits) */
     private static create(sign: number, digits: number[]): BigInteger {
         // Remove useless digits
         var actualLength = digits.length;
@@ -367,6 +381,7 @@
         return bi;
     }
 
+    /** O(1) */
     private static uncheckedCreate(sign: number, digits: number[]): BigInteger {
         var bi = new BigInteger();
         bi._sign = sign;

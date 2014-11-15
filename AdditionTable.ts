@@ -1,22 +1,23 @@
 ﻿import BigInteger = require("BigInteger");
 import ModNumber = require("ModNumber");
 import ModPoint = require("ModPoint");
+import DeterministicRandom = require("DeterministicRandom");
 import IConfig = require("IConfig");
 
 export class Table {
     private _entries: TableEntry[];
 
 
-    constructor(generator: ModPoint, target: ModPoint, config: IConfig) {
+    constructor(config: IConfig) {
         this._entries = new Array(config.additionTableLength);
 
-        var order = BigInteger.fromInt(generator.getOrder());
-        var rng = Table.getRng(config.additionTableSeed);
+        var order = BigInteger.fromInt(config.generator.getOrder());
+        var rng = new DeterministicRandom(config.additionTableSeed);
 
         for (var n = 0; n < this._entries.length; n++) {
-            var u = new ModNumber(rng(this._entries.length), order);
-            var v = new ModNumber(rng(this._entries.length), order);
-            var p = generator.mulNum(u.value).add(target.mulNum(v.value));
+            var u = new ModNumber(rng.next(this._entries.length), order);
+            var v = new ModNumber(rng.next(this._entries.length), order);
+            var p = config.generator.mulNum(u.value).add(config.target.mulNum(v.value));
             this._entries[n] = new TableEntry(u, v, p);
         }
     }
@@ -28,15 +29,6 @@ export class Table {
 
     get length(): number {
         return this._entries.length;
-    }
-
-
-    // Very simple seeded RNG, based on http://stackoverflow.com/a/23304189
-    private static getRng(seed: number): (exclusiveMax: number) => BigInteger {
-        return exclusiveMax => {
-            seed = Math.cos(seed) * 10000;
-            return BigInteger.fromInt(Math.round((seed - Math.floor(seed)) * (exclusiveMax - 1)));
-        };
     }
 }
 

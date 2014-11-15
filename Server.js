@@ -1,8 +1,9 @@
 ﻿/// <reference path="lib/jquery.d.ts" />
 define(["require", "exports"], function(require, exports) {
-    var Server;
-    (function (Server) {
-        function send(u, v, p) {
+    var Server = (function () {
+        function Server() {
+        }
+        Server.prototype.send = function (u, v, p) {
             var point = {
                 U: u.value.toString(),
                 V: v.value.toString(),
@@ -17,9 +18,9 @@ define(["require", "exports"], function(require, exports) {
                 contentType: 'application/json',
                 async: true
             });
-        }
-        Server.send = send;
-    })(Server || (Server = {}));
+        };
+        return Server;
+    })();
 
     
     return Server;

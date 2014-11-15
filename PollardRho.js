@@ -1,20 +1,37 @@
-﻿define(["require", "exports", "BigInteger", "ModPoint", "AdditionTable", "Server"], function(require, exports, BigInteger, ModPoint, Addition, Server) {
+﻿define(["require", "exports", "BigInteger", "ModPoint", "AdditionTable"], function(require, exports, BigInteger, ModPoint, Addition) {
     var PollardRho;
     (function (PollardRho) {
         // based on the description in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
         // as well as http://www.hyperelliptic.org/tanja/SHARCS/slides09/03-bos.pdf
-        function run(gx, gy, hx, hy, config) {
-            var generator = new ModPoint(gx, gy, config.curve);
-            var target = new ModPoint(hx, hy, config.curve);
-            var table = new Addition.Table(generator, target, config);
+        function run(config, resultSink) {
+            var table = new Addition.Table(config);
 
+            if (config.parrallelWalksCount == 1) {
+                runOneWalk(config, resultSink, table);
+            } else {
+                runMultipleWalks(config, resultSink, table);
+            }
+        }
+        PollardRho.run = run;
+
+        function runOneWalk(config, resultSink, table) {
+            var walk = new CurveWalk(table);
+
+            for (var step = BigInteger.ZERO; step.lt(config.curve.n); step = step.add(BigInteger.ONE)) {
+                walk.fullStep();
+
+                if (isDistinguished(walk.current, config)) {
+                    resultSink.send(walk.u, walk.v, walk.current);
+                }
+            }
+        }
+
+        function runMultipleWalks(config, resultSink, table) {
             var walks = Array();
 
             for (var n = 0; n < config.parrallelWalksCount; n++) {
                 walks[n] = new CurveWalk(table);
             }
-
-            console.clear();
 
             for (var step = BigInteger.ZERO; step.lt(config.curve.n); step = step.add(BigInteger.ONE)) {
                 var N = config.parrallelWalksCount;
@@ -46,15 +63,14 @@
                     walks[n].endStep(lambda);
 
                     if (isDistinguished(walks[n].current, config)) {
-                        Server.send(walks[n].u, walks[n].v, walks[n].current);
+                        resultSink.send(walks[n].u, walks[n].v, walks[n].current);
                     }
                 }
             }
         }
-        PollardRho.run = run;
 
         function isDistinguished(point, config) {
-            return (point.x.value.and(config.distinguishedPointMask)).eq(config.distinguishedPointMask);
+            return point != ModPoint.INFINITY && (point.x.value.and(config.distinguishedPointMask)).eq(config.distinguishedPointMask);
         }
 
         // Walk over a problem.
@@ -62,7 +78,8 @@
             function CurveWalk(table) {
                 this._table = table;
 
-                var entry = table.at(0);
+                // TODO the starting entry needs to be random, of course
+                var entry = this._table.at(0);
                 this._u = entry.u;
                 this._v = entry.v;
                 this._current = entry.p;
@@ -101,6 +118,14 @@
 
             CurveWalk.prototype.endStep = function (lambda) {
                 this._current = this._current.endAdd(this._currentEntry.p, lambda);
+            };
+
+            CurveWalk.prototype.fullStep = function () {
+                var index = this._current.partition(this._table.length);
+                this._currentEntry = this._table.at(index);
+                this._u = this._u.add(this._currentEntry.u);
+                this._v = this._v.add(this._currentEntry.v);
+                this._current = this._current.add(this._currentEntry.p);
             };
 
             CurveWalk.prototype.toString = function () {

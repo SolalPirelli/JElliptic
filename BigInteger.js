@@ -2,6 +2,7 @@
     var BigInteger = (function () {
         function BigInteger() {
         }
+        /** O(1) */
         BigInteger.fromInt = function (n) {
             if (Math.abs(n) > BigInteger.MAX_SAFE_INT) {
                 throw "BigInteger.fromInt cannot be called with inexact integers.";
@@ -22,8 +23,9 @@
             return BigInteger.create(sign, digits);
         };
 
-        // This is a bit too complex for bases that are powers of ten, but it works with any base
+        /** O(str.length) */
         BigInteger.parse = function (str) {
+            // This is a bit too complex for bases that are powers of ten, but it works with any base
             var sign = 1;
             if (str[0] == "-") {
                 sign = -1;
@@ -57,10 +59,12 @@
             return BigInteger.create(sign, digits);
         };
 
+        /** O(1) */
         BigInteger.prototype.negate = function () {
             return BigInteger.create(-this._sign, this._digits.slice(0));
         };
 
+        /** O(1) */
         BigInteger.prototype.abs = function () {
             if (this._sign == 1) {
                 return this;
@@ -68,6 +72,7 @@
             return BigInteger.create(1, this._digits.slice(0));
         };
 
+        /** O(max(this.digits, other.digits)) */
         BigInteger.prototype.add = function (other) {
             var thisAbs = this.abs();
             var otherAbs = other.abs();
@@ -103,11 +108,12 @@
             return BigInteger.create(hi._sign, digits);
         };
 
+        /** O(max(this.digits, other.digits)) */
         BigInteger.prototype.sub = function (other) {
             return this.add(other.negate());
         };
 
-        // http://en.wikipedia.org/wiki/Karatsuba_algorithm
+        /** O(max(this.digits, other.digits)^log_2(3)) */
         BigInteger.prototype.mul = function (other) {
             function singleDigitMul(bi, mul, mulSign) {
                 var digits = Array();
@@ -133,6 +139,7 @@
                 return singleDigitMul(this, other._digits[0], other._sign);
             }
 
+            // http://en.wikipedia.org/wiki/Karatsuba_algorithm
             var m = Math.max(this._digits.length, other._digits.length);
             var m2 = Math.ceil(m / 2);
 
@@ -145,16 +152,10 @@
             var z1 = lo1.add(hi1).mul(lo2.add(hi2));
             var z2 = hi1.mul(hi2);
 
-            //return (z2.leftShift(m2 * 2)).add(z1.sub(z2).sub(z0).leftShift(m2)).add(z0);
-            var aaa0 = (z2.leftShift(m2 * 2));
-            var aaaaaa0 = z1.sub(z2).sub(z0);
-            var aaaaaa1 = aaaaaa0.leftShift(m2);
-            var aaa1 = aaa0.add(aaaaaa1);
-            var aaa2 = aaa1.add(z0);
-            return aaa2;
+            return (z2.leftShift(m2 * 2)).add(z1.sub(z2).sub(z0).leftShift(m2)).add(z0);
         };
 
-        // Simple long division, sufficient for now
+        /** O(this / other) */
         BigInteger.prototype.div = function (other) {
             var quotient = this;
             var result = BigInteger.ZERO;
@@ -167,6 +168,7 @@
             return result;
         };
 
+        /** O(this / n) */
         BigInteger.prototype.mod = function (n) {
             var result = this;
 
@@ -183,6 +185,7 @@
             return result;
         };
 
+        /** O(log(n)^2) */
         BigInteger.prototype.modInverse = function (n) {
             var t = BigInteger.ZERO, newt = BigInteger.ONE;
             var r = n, newr = this;
@@ -206,6 +209,7 @@
             return t;
         };
 
+        /** O(min(this.digits, other.digits)) */
         BigInteger.prototype.lte = function (other) {
             if (this._sign < other._sign) {
                 return true;
@@ -230,10 +234,12 @@
             return true;
         };
 
+        /** O(min(this.digits, other.digits)) */
         BigInteger.prototype.lt = function (other) {
             return !this.gte(other);
         };
 
+        /** O(min(this.digits, other.digits)) */
         BigInteger.prototype.gte = function (other) {
             if (this._sign > other._sign) {
                 return true;
@@ -258,10 +264,12 @@
             return true;
         };
 
+        /** O(min(this.digits, other.digits)) */
         BigInteger.prototype.gt = function (other) {
             return !this.lte(other);
         };
 
+        /** O(min(this.digits, other.digits)) */
         BigInteger.prototype.and = function (other) {
             var digits = Array();
 
@@ -272,6 +280,7 @@
             return BigInteger.create(1, digits);
         };
 
+        /** O(min(this.digits, other.digits)) */
         BigInteger.prototype.eq = function (other) {
             function arrayEquals(a, b) {
                 if (a == b) {
@@ -292,17 +301,19 @@
             return this._sign == other._sign && arrayEquals(this._digits, other._digits);
         };
 
+        /** O(this.digits) */
         BigInteger.prototype.toInt = function () {
             // Hack-y, but simple
             var str = this.toString();
             var n = parseInt(str);
-            if (n > BigInteger.MAX_SAFE_INT) {
+            if (Math.abs(n) > BigInteger.MAX_SAFE_INT) {
                 throw "toInt can only work with small BigIntegers.";
             }
 
             return n;
         };
 
+        /** O(this.digits) */
         BigInteger.prototype.toString = function () {
             var padNum = function (n, len) {
                 var str = n.toString();
@@ -326,14 +337,22 @@
             return result;
         };
 
+        /** O(this.digits + n) */
         BigInteger.prototype.leftShift = function (n) {
-            var digits = this._digits.slice(0);
-            for (var _ = 0; _ < n; _++) {
-                digits.unshift(0);
+            var digits = new Array(this._digits.length + n);
+
+            for (var i = 0; i < n; i++) {
+                digits[i] = 0;
             }
+
+            for (var i = 0; i < this._digits.length; i++) {
+                digits[i + n] = this._digits[i];
+            }
+
             return BigInteger.create(this._sign, digits);
         };
 
+        /** O(digits) */
         BigInteger.create = function (sign, digits) {
             // Remove useless digits
             var actualLength = digits.length;
@@ -351,6 +370,7 @@
             return bi;
         };
 
+        /** O(1) */
         BigInteger.uncheckedCreate = function (sign, digits) {
             var bi = new BigInteger();
             bi._sign = sign;
