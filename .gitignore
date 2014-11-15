@@ -10,5 +10,7 @@
 
 JElliptic/*.js
 JElliptic/*.js.map
+JElliptic/bench/*.js
+JElliptic/bench/*.js.map
 JElliptic/test/*.js
 JElliptic/test/*.js.map
