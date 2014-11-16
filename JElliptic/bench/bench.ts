@@ -1,6 +1,7 @@
 ﻿/// <reference path="lib/benchmark.d.ts" />
 
-import BigInteger = require("../BigInteger");
+import BigInteger = require("BigInteger");
+import ModNumber = require("ModNumber");
 
 var SUITE_PANE_WIDTH = 400;
 var suites = new Array<Benchmark.Suite>();
@@ -96,32 +97,37 @@ function bigIntegerSuite(): Benchmark.Suite {
     s.add("Add two 1-digit numbers", () => i1_1.add(i1_2));
     s.add("Add 20-digit and 1-digit numbers", () => i20_1.add(i1_1));
     s.add("Add two 20-digit numbers", () => i20_1.add(i20_2));
+    s.add("Add 100-digit and 20-digit numbers", () => i100_1.add(i20_1));
     s.add("Add two 100-digit numbers", () => i100_1.add(i100_2));
 
     s.add("Subtract two 1-digit numbers", () => i1_1.sub(i1_2));
     s.add("Subtract 20-digit and 1-digit numbers", () => i20_1.sub(i1_1));
     s.add("Subtract two 20-digit numbers", () => i20_1.sub(i20_2));
+    s.add("Subtract 100-digit and 20-digit numbers", () => i100_1.sub(i20_1));
     s.add("Subtract two 100-digit numbers", () => i100_1.sub(i100_2));
 
     s.add("Multiply two 1-digit numbers", () => i1_1.mul(i1_2));
     s.add("Multiply 20-digit and 1-digit numbers", () => i20_1.mul(i1_1));
     s.add("Multiply two 20-digit numbers", () => i20_1.mul(i20_2));
+    s.add("Multiply 100-digit and 20-digit numbers", () => i100_1.mul(i20_1));
     s.add("Multiply two 100-digit numbers", () => i100_1.mul(i100_2));
 
-    // FIXME: div, mod and modInverse are so incredibly slow they're not worth benchmarking :-/
-    //bi.add("Divide two 1-digit numbers", () => i1_1.div(i1_2));
-    //bi.add("Divide 20-digit and 1-digit numbers", () => i20_1.div(i1_1));
-    //bi.add("Divide two 20-digit numbers", () => i20_1.div(i20_2));
-    //bi.add("Divide two 100-digit numbers", () => i100_1.div(i100_2));
+    // FIXME: Too slow!
+    //s.add("Divide two 1-digit numbers", () => i1_1.div(i1_2));
+    //s.add("Divide 20-digit and 1-digit numbers", () => i20_1.div(i1_1));
+    //s.add("Divide two 20-digit numbers", () => i20_1.div(i20_2));
+    //s.add("Divide 100-digit and 20-digit numbers", () => i100_1.div(i20_1));
+    //s.add("Divide two 100-digit numbers", () => i100_1.div(i100_2));
 
-    //bi.add("Modulo two 1-digit numbers", () => i1_1.mod(i1_2));
-    //bi.add("Modulo 20-digit and 1-digit numbers", () => i20_1.mod(i1_1));
-    //bi.add("Modulo two 20-digit numbers", () => i20_1.mod(i20_2));
-    //bi.add("Modulo two 100-digit numbers", () => i100_1.mod(i100_2));
+    //s.add("Modulo two 1-digit numbers", () => i1_1.mod(i1_2));
+    //s.add("Modulo 20-digit and 1-digit numbers", () => i20_1.mod(i1_1));
+    //s.add("Modulo two 20-digit numbers", () => i20_1.mod(i20_2));
+    //s.add("Modulo 100-digit and 20-digit numbers", () => i100_1.mod(i20_1));
+    //s.add("Modulo two 100-digit numbers", () => i100_1.mod(i100_2));
 
-    //bi.add("Modular inverse of a 1-digit number", () => i1_1.modInverse(i1_2));
-    //bi.add("Modular inverse a 20-digit number", () => i20_1.modInverse(i20_2));
-    //bi.add("Modular inverse a 100-digit number", () => i100_1.modInverse(i100_2));
+    //s.add("Modular inverse of a 1-digit number", () => i1_1.modInverse(i1_2));
+    //s.add("Modular inverse a 20-digit number", () => i20_1.modInverse(i20_2));
+    //s.add("Modular inverse a 100-digit number", () => i100_1.modInverse(i100_2));
 
     s.add("Logical AND of two 1-digit numbers", () => i1_1.and(i1_2));
     s.add("Logical AND of 20-digit and 1-digit numbers", () => i20_1.and(i1_1));
@@ -129,14 +135,79 @@ function bigIntegerSuite(): Benchmark.Suite {
     s.add("Logical AND of 100-digit and 20-digit numbers", () => i100_1.and(i20_1));
     s.add("Logical AND of two 100-digit numbers", () => i100_1.and(i100_2));
 
+    s.add("Compare two 1-digit numbers", () => i1_1.eq(i1_2));
+    s.add("Compare 20-digit and 1-digit numbers", () => i20_1.eq(i1_1));
+    s.add("Compare two 20-digit numbers", () => i20_1.eq(i20_2));
+    s.add("Compare 100-digit and 20-digit numbers", () => i100_1.eq(i20_1));
+    s.add("Compare two 100-digit numbers", () => i100_1.eq(i100_2));
+
+    s.add("Stringify a 1-digit number", () => i1_1.toString());
+    s.add("Stringify a 20-digit number", () => i20_1.toString());
+    s.add("Stringify a 100-digit number", () => i100_1.toString());
+
     return s;
 }
 
 function modNumberSuite(): Benchmark.Suite {
-    return createSuite("ModNumber");
+    var mod1 = BigInteger.parse("9");
+    var i1_1 = new ModNumber(BigInteger.parse("1"), mod1);
+    var i1_2 = new ModNumber(BigInteger.parse("7"), mod1);
+
+    var mod20 = BigInteger.parse("99999999999999999999");
+    var i20_1 = new ModNumber(BigInteger.parse("12345678901234567890"), mod20);
+    var i20_2 = new ModNumber(BigInteger.parse("98765432109876543210"), mod20);
+
+    var mod100 = BigInteger.parse("9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999");
+    var i100_1 = new ModNumber(BigInteger.parse("1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"), mod100);
+    var i100_2 = new ModNumber(BigInteger.parse("9876543210987654321098765432109876543210987654321098765432109876543210987654321098765432109876543210"), mod100);
+
+    var s = createSuite("ModNumber");
+
+    s.add("Negate a 1-digit number", () => i1_1.negate());
+    s.add("Negate a 20-digit number", () => i20_1.negate());
+    s.add("Negate a 100-digit number", () => i100_1.negate());
+
+    // FIXME: Too slow!
+    //s.add("Invert a 1-digit number", () => i1_1.invert());
+    //s.add("Invert a 20-digit number", () => i20_1.invert());
+    //s.add("Invert a 100-digit number", () => i100_1.invert());
+
+    s.add("Add two 1-digit numbers", () => i1_1.add(i1_2));
+    s.add("Add two 20-digit numbers", () => i20_1.add(i20_2));
+    s.add("Add two 100-digit numbers", () => i100_1.add(i100_2));
+
+    s.add("Subtract two 1-digit numbers", () => i1_1.sub(i1_2));
+    s.add("Subtract two 20-digit numbers", () => i20_1.sub(i20_2));
+    s.add("Subtract two 100-digit numbers", () => i100_1.sub(i100_2));
+
+    s.add("Multiply two 1-digit numbers", () => i1_1.mul(i1_2));
+    s.add("Multiply two 20-digit numbers", () => i20_1.mul(i20_2));
+    s.add("Multiply two 100-digit numbers", () => i100_1.mul(i100_2));
+
+    s.add("Double a 1-digit number", () => i1_1.mulNum(2));
+    s.add("Double a 20-digit number", () => i20_1.mulNum(2));
+    s.add("Double a 100-digit number", () => i100_1.mulNum(2));
+    s.add("Centuple a 1-digit number", () => i1_1.mulNum(100));
+    s.add("Centuple a 20-digit number", () => i20_1.mulNum(100));
+    s.add("Centuple a 100-digit number", () => i100_1.mulNum(100));
+
+    // FIXME: Too slow!
+    //s.add("Divide two 1-digit numbers", () => i1_1.div(i1_2));
+    //s.add("Divide two 20-digit numbers", () => i20_1.div(i20_2));
+    //s.add("Divide two 100-digit numbers", () => i100_1.div(i100_2));
+
+    s.add("Square a 1-digit number", () => i1_1.pow(2));
+    s.add("Square a 20-digit number", () => i20_1.pow(2));
+    s.add("Square a 100-digit number", () => i100_1.pow(2));
+    s.add("Cube a 1-digit number", () => i1_1.pow(3));
+    s.add("Cube a 20-digit number", () => i20_1.pow(3));
+    s.add("Cube a 100-digit number", () => i100_1.pow(3));
+
+    s.add("Compare two 1-digit numbers", () => i1_1.eq(i1_2));
+    s.add("Compare two 20-digit numbers", () => i20_1.eq(i20_2));
+    s.add("Compare two 100-digit numbers", () => i100_1.eq(i100_2));
+
+    return s;
 }
 
-requirejs([], () => {
-    run(bigIntegerSuite(),
-        modNumberSuite());
-});
+run(bigIntegerSuite(), modNumberSuite());

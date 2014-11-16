@@ -8,9 +8,16 @@
 [Bb]in/
 [Oo]bj/
 
+# TypeScript build results
 JElliptic/*.js
 JElliptic/*.js.map
 JElliptic/bench/*.js
 JElliptic/bench/*.js.map
 JElliptic/test/*.js
 JElliptic/test/*.js.map
+
+# requirejs config files
+!JElliptic/bench/config.js
+
+# Chutzpah test harnesses
+*_Chutzpah*
