@@ -2,6 +2,8 @@
 
 import BigInteger = require("BigInteger");
 import ModNumber = require("ModNumber");
+import ModCurve = require("ModCurve");
+import ModPoint = require("ModPoint");
 
 var SUITE_PANE_WIDTH = 400;
 var suites = new Array<Benchmark.Suite>();
@@ -47,7 +49,7 @@ function createSuite(suiteName: string): Benchmark.Suite {
     setInfoText("Waiting...");
 
     var suite = new Benchmark.Suite(suiteName, {
-        onStart: () => setInfoText("Running benchmarks..."),
+        onStart: () => setInfoText("Running..."),
         onCycle: evt => addResult(evt),
         onComplete: () => {
             setInfoText("Finished.");
@@ -210,4 +212,31 @@ function modNumberSuite(): Benchmark.Suite {
     return s;
 }
 
-run(bigIntegerSuite(), modNumberSuite());
+function modPointSuite(): Benchmark.Suite {
+    // very simple curve and points generated with Wolfram|Alpha
+    var c1 = new ModCurve(BigInteger.parse("2"), BigInteger.parse("1"), BigInteger.parse("9"));
+    var pSmall_1 = new ModPoint(BigInteger.parse("4"), BigInteger.parse("1"), c1);
+    var pSmall_2 = new ModPoint(BigInteger.parse("6"), BigInteger.parse("2"), c1);
+
+    // FIXME this has a bug
+    // using the values defined in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
+    //var cBig = new ModCurve(BigInteger.parse("4451685225093714772084598273548427"), BigInteger.parse("2061118396808653202902996166388514"), BigInteger.parse("4451685225093714772084598273548427"));
+    //var pBig_1 = new ModPoint(BigInteger.parse("188281465057972534892223778713752"), BigInteger.parse("3419875491033170827167861896082688"), cBig);
+    //var pBig_2 = new ModPoint(BigInteger.parse("1415926535897932384626433832795028"), BigInteger.parse("3846759606494706724286139623885544"), cBig);
+
+    var s = createSuite("ModPoint");
+
+    s.add("Adding a tiny point and infinity", () => pSmall_1.add(ModPoint.INFINITY));
+    s.add("Adding a tiny point and itself", () => pSmall_1.add(pSmall_1));
+    s.add("Adding two tiny points", () => pSmall_1.add(pSmall_2));
+    //s.add("Adding a large point and infinity", () => pBig_1.add(ModPoint.INFINITY));
+    //s.add("Adding a large point and itself", () => pBig_1.add(pBig_1));
+    //s.add("Adding two large points", () => pBig_1.add(pBig_2));
+
+    s.add("Equality of two tiny points", () => pSmall_1.eq(pSmall_2));
+    //s.add("Equality of two large points", () => pBig_1.eq(pBig_2));
+
+    return s;
+}
+
+run(/*bigIntegerSuite(), modNumberSuite(),*/ modPointSuite());

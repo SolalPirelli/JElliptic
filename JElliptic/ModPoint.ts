@@ -12,7 +12,7 @@ class ModPoint {
 
     constructor(x: BigInteger, y: BigInteger, curve: ModCurve) {
         if (curve == null) {
-            return; // hack-y
+            return; // HACK for INFINITY
         }
 
         this._x = new ModNumber(x, curve.n);
