@@ -3,10 +3,16 @@
 import BigInteger = require("BigInteger");
 import ModNumber = require("ModNumber");
 
-QUnit.module("ModNumber");
+module ModNumberTests {
+    export function run() {
+        QUnit.module("ModNumber");
 
-test("constructor value is modulo-ed", () => {
-    var num = new ModNumber(BigInteger.fromInt(10), BigInteger.fromInt(3));
+        test("constructor value is modulo-ed", () => {
+            var num = new ModNumber(BigInteger.fromInt(10), BigInteger.fromInt(3));
 
-    ok(num.value.eq(BigInteger.fromInt(1)));
-});
+            ok(num.value.eq(BigInteger.fromInt(1)));
+        });
+    }
+}
+
+export = ModNumberTests;

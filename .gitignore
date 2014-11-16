@@ -18,6 +18,7 @@ JElliptic/test/*.js.map
 
 # requirejs config files
 !JElliptic/bench/config.js
+!JElliptic/test/config.js
 
 # Chutzpah test harnesses
 *_Chutzpah*

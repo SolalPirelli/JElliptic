@@ -5,30 +5,36 @@
     <meta charset="utf-8" />
     <title>JElliptic v0.000001</title>
     <script type="text/javascript" src="lib/jquery.min.js"></script>
-    <script data-main="app" type="text/javascript" src="lib/require.js"></script>
+    <script type="text/javascript" data-main="app" src="lib/require.js"></script>
 </head>
-<body>
-    Curve: 
-    y²
-  = x³
-  + <input id="a" type="number" value="9" /> · x 
-  + <input id="b" type="number" value="17" /> 
-  (mod <input id="order" type="number" value="23" />)
+    <body>
+        <a href="./test/test.html">Run tests</a>
+        <br />
+        <a href="./bench/bench.html">Run benchmarks</a>
+        <br />
+        <br />
 
-    <br />
+        Curve: 
+        y²
+        = x³
+        + <input id="a" type="number" value="9" /> · x 
+        + <input id="b" type="number" value="17" /> 
+        (mod <input id="order" type="number" value="23" />)
 
-    G: <input id="gx" type="number" value="16" />, <input id="gy" type="number" value="5" />
+        <br />
 
-    <br />
+        G: <input id="gx" type="number" value="16" />, <input id="gy" type="number" value="5" />
 
-    H: <input id="hx" type="number" value="4" />, <input id="hy" type="number" value="5" />
+        <br />
 
-    <br />
+        H: <input id="hx" type="number" value="4" />, <input id="hy" type="number" value="5" />
 
-    <button id="button">Start Pollard Rho</button>
+        <br />
 
-    <br />
+        <button id="button">Start Pollard Rho</button>
 
-    H = G·<b><span id="content"></span></b>
-</body>
+        <br />
+
+        H = G·<b><span id="content"></span></b>
+    </body>
 </html>
