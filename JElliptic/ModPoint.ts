@@ -19,7 +19,8 @@ class ModPoint {
         this._y = new ModNumber(y, curve.n);
         this._curve = curve;
 
-        this.ensureValid();
+        // N.B.: Ensuring the validity of a point on a curve is simply too slow
+        //       Unit tests will have to do...
     }
 
 
@@ -156,13 +157,6 @@ class ModPoint {
             return "Infinity";
         }
         return "(" + this._x.value.toString() + ", " + this._y.value.toString() + ")";
-    }
-
-
-    private ensureValid(): void {
-        if (!this._y.pow(2).eq(this._x.pow(3).add(this._curve.a.mul(this._x)).add(this._curve.b))) {
-            throw (this + " is not a valid point.");
-        }
     }
 }
 

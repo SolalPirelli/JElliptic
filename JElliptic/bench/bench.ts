@@ -238,4 +238,4 @@ function modPointSuite(): Benchmark.Suite {
     return s;
 }
 
-run(bigIntegerSuite(), modNumberSuite()/*, modPointSuite()*/);
+run(bigIntegerSuite(), modNumberSuite(), modPointSuite());
