@@ -1,6 +1,6 @@
 ﻿class BigInteger {
     private static MAX_SAFE_INT = 9007199254740991; // 2^53-1, where 53 is the mantissa size of IEEE-754 double-precision floating point numbers (what JS uses)
-    private static BASE = 10000000; // largest power of 10 smaller than sqrt(MAX_SAFE_INT) so that two digits can be multiplied in the safe space
+    private static BASE = 10000000; // largest power of 10 smaller than sqrt(MAX_SAFE_INT) so that two digits can be multiplied in the safe space; also needs to be even
     private static BASE_LOG10 = Math.floor(Math.log(BigInteger.BASE) / Math.log(10));
 
 
@@ -10,6 +10,7 @@
 
     static ZERO = BigInteger.uncheckedCreate(1, [0]);
     static ONE = BigInteger.uncheckedCreate(1, [1]);
+    static TWO = BigInteger.uncheckedCreate(1, [2]);
 
 
     /** O(1) */
@@ -80,6 +81,22 @@
             return this;
         }
         return BigInteger.create(1, this._digits.slice(0));
+    }
+
+    /** O(this.digits)
+        Rounds down. */
+    halve(): BigInteger {
+        var digits = new Array<number>(this._digits.length);
+        var hasRest = false;
+        for (var n = this._digits.length - 1; n >= 0; n--) {
+            digits[n] = Math.floor(this._digits[n] / 2);
+            if (hasRest) {
+                digits[n] += BigInteger.BASE / 2;
+            }
+            hasRest = this._digits[n] % 2 == 1;
+        }
+
+        return BigInteger.create(this._sign, digits);
     }
 
     /** O(max(this.digits, other.digits)) */
@@ -168,32 +185,65 @@
 
     /** O(this / other) */
     div(other: BigInteger): BigInteger {
-        var quotient = this;
-        var result = BigInteger.ZERO;
+        function divide(dividend: BigInteger, divisor: BigInteger): BigInteger {
+            var low = BigInteger.ONE;
+            var high = dividend;
 
-        while (quotient.gte(other)) {
-            quotient = quotient.sub(other);
-            result = result.add(BigInteger.ONE);
+            while (low.lt(high)) {
+                var guess = low.add(high).halve();
+                if (this.sub(divisor.mul(guess)).gte(n)) {
+                    low = guess.add(BigInteger.ONE);
+                } else {
+                    high = guess;
+                }
+            }
+
+            return low;
         }
 
-        return result;
+        // Digits of the dividend are taken until a number greater than or equal to the divisor occurs.
+        for (var n = this._digits.length - other._digits.length; n < this._digits.length; n++) {
+            if (this.rightShift(n).gte(other)) {
+                break;
+            }
+        }
+
+        return undefined;
     }
 
-    /** O(this / n) */
+    /** O(log(this)) */
     mod(n: BigInteger): BigInteger {
-        var result = this;
+        var low = BigInteger.ZERO;
+        var high = this.abs();
 
         if (this._sign == 1) {
-            while (result.gte(n)) {
-                result = result.sub(n);
+            while (low.lt(high)) {
+                var guess = low.add(high).halve();
+                if (this.sub(n.mul(guess)).gte(n)) {
+                    low = guess.add(BigInteger.ONE);
+                } else {
+                    high = guess;
+                }
             }
-        } else {
-            while (BigInteger.ZERO.gt(result)) {
-                result = result.add(n);
-            }
-        }
 
-        return result;
+            return this.sub(n.mul(low));
+        } else {
+            while (low.lt(high)) {
+                var guess = low.add(high).halve();
+                var result = this.add(n.mul(guess));
+                if (result._sign == 1) {
+                    if (result.lt(n)) {
+                        return result;
+                    } else {
+                        high = guess;
+                    }
+                } else {
+                    low = guess.add(BigInteger.ONE);
+                }
+            }
+
+            return this.add(n.mul(low));
+        }
     }
 
     /** O(log(n)^2) */
@@ -358,6 +408,17 @@
 
         for (var i = 0; i < this._digits.length; i++) {
             digits[i + n] = this._digits[i];
+        }
+
+        return BigInteger.create(this._sign, digits);
+    }
+
+    /** O(this.digits + n) */
+    private rightShift(n: number): BigInteger {
+        var digits = new Array(this._digits.length - n);
+
+        for (var i = 0; i < digits.length; i++) {
+            digits[i] = this._digits[i + n];
         }
 
         return BigInteger.create(this._sign, digits);
