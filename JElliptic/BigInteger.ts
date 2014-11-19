@@ -183,15 +183,19 @@
         return (z2.leftShift(m2 * 2)).add(z1.sub(z2).sub(z0).leftShift(m2)).add(z0);
     }
 
-    /** O(this / other) */
-    div(other: BigInteger): BigInteger {
+    /** O(this.digits^2) */
+    div(divisor: BigInteger): BigInteger {
         function divide(dividend: BigInteger, divisor: BigInteger): BigInteger {
+            if (dividend.eq(BigInteger.ZERO)) {
+                return BigInteger.ZERO; // yes, even if divisor == 0
+            }
+
             var low = BigInteger.ONE;
             var high = dividend;
 
             while (low.lt(high)) {
                 var guess = low.add(high).halve();
-                if (this.sub(divisor.mul(guess)).gte(n)) {
+                if (dividend.sub(divisor.mul(guess)).gte(divisor)) {
                     low = guess.add(BigInteger.ONE);
                 } else {
                     high = guess;
@@ -201,14 +205,44 @@
             return low;
         }
 
-        // Digits of the dividend are taken until a number greater than or equal to the divisor occurs.
-        for (var n = this._digits.length - other._digits.length; n < this._digits.length; n++) {
-            if (this.rightShift(n).gte(other)) {
+
+        var sign = this._sign * divisor._sign;
+        divisor = divisor.abs();
+        var dividend = this.abs();
+
+        if (dividend.lt(divisor)) {
+            return BigInteger.ZERO;
+        }
+
+        var digits = new Array<number>();
+
+        // First, take digits from the biggest one until the number they form is bigger than the divisor
+        var index: number;
+        var remainder: BigInteger;
+        for (index = dividend._digits.length - divisor._digits.length; index >= 0; index--) {
+            var shifted = dividend.rightShiftAbs(index);
+            if (shifted.gte(divisor)) {
+                // Divide that number by the divisor, store the quotient, and keep the remainder
+                var quotient = divide(shifted, divisor);
+                remainder = shifted.sub(quotient.mul(divisor));
+                digits.unshift(quotient.toInt());
+                index--;
                 break;
             }
         }
 
-        return undefined;
+        debugger;
+
+        // Then, for each digit from the next, add it as the new smallest one and repeat
+        for (; index >= 0; index--) {
+            var newDigit = dividend._digits[index];
+            var newDividend = remainder.pushRight(newDigit);
+            var quotient = divide(newDividend, divisor);
+            remainder = newDividend.sub(quotient.mul(divisor));
+            digits.unshift(quotient.toInt());
+        }
+
+        return BigInteger.create(sign, digits);
     }
 
     /** O(log(this)) */
@@ -414,14 +448,26 @@
     }
 
     /** O(this.digits + n) */
-    private rightShift(n: number): BigInteger {
+    private pushRight(n: number): BigInteger {
+        var digits = new Array(this._digits.length + 1);
+
+        digits[0] = n;
+        for (var i = 0; i < this._digits.length; i++) {
+            digits[i + 1] = this._digits[i];
+        }
+
+        return BigInteger.create(this._sign, digits);
+    }
+
+    /** O(this.digits + n) */
+    private rightShiftAbs(n: number): BigInteger {
         var digits = new Array(this._digits.length - n);
 
         for (var i = 0; i < digits.length; i++) {
             digits[i] = this._digits[i + n];
         }
 
-        return BigInteger.create(this._sign, digits);
+        return BigInteger.create(1, digits);
     }
 
     /** O(digits) */

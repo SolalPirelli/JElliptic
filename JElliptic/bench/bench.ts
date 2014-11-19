@@ -115,21 +115,21 @@ function bigIntegerSuite(): Benchmark.Suite {
     s.add("Multiply two 100-digit numbers", () => i100_1.mul(i100_2));
 
     // FIXME: Too slow!
-    //s.add("Divide two 1-digit numbers", () => i1_1.div(i1_2));
-    //s.add("Divide 20-digit and 1-digit numbers", () => i20_1.div(i1_1));
-    //s.add("Divide two 20-digit numbers", () => i20_1.div(i20_2));
-    //s.add("Divide 100-digit and 20-digit numbers", () => i100_1.div(i20_1));
-    //s.add("Divide two 100-digit numbers", () => i100_1.div(i100_2));
+    s.add("Divide two 1-digit numbers", () => i1_1.div(i1_2));
+    s.add("Divide 20-digit and 1-digit numbers", () => i20_1.div(i1_1));
+    s.add("Divide two 20-digit numbers", () => i20_1.div(i20_2));
+    s.add("Divide 100-digit and 20-digit numbers", () => i100_1.div(i20_1));
+    s.add("Divide two 100-digit numbers", () => i100_1.div(i100_2));
 
-    //s.add("Modulo two 1-digit numbers", () => i1_1.mod(i1_2));
-    //s.add("Modulo 20-digit and 1-digit numbers", () => i20_1.mod(i1_1));
-    //s.add("Modulo two 20-digit numbers", () => i20_1.mod(i20_2));
-    //s.add("Modulo 100-digit and 20-digit numbers", () => i100_1.mod(i20_1));
-    //s.add("Modulo two 100-digit numbers", () => i100_1.mod(i100_2));
+    s.add("Modulo two 1-digit numbers", () => i1_1.mod(i1_2));
+    s.add("Modulo 20-digit and 1-digit numbers", () => i20_1.mod(i1_1));
+    s.add("Modulo two 20-digit numbers", () => i20_1.mod(i20_2));
+    s.add("Modulo 100-digit and 20-digit numbers", () => i100_1.mod(i20_1));
+    s.add("Modulo two 100-digit numbers", () => i100_1.mod(i100_2));
 
-    //s.add("Modular inverse of a 1-digit number", () => i1_1.modInverse(i1_2));
-    //s.add("Modular inverse a 20-digit number", () => i20_1.modInverse(i20_2));
-    //s.add("Modular inverse a 100-digit number", () => i100_1.modInverse(i100_2));
+    s.add("Modular inverse of a 1-digit number", () => i1_1.modInverse(i1_2));
+    s.add("Modular inverse a 20-digit number", () => i20_1.modInverse(i20_2));
+    s.add("Modular inverse a 100-digit number", () => i100_1.modInverse(i100_2));
 
     s.add("Logical AND of two 1-digit numbers", () => i1_1.and(i1_2));
     s.add("Logical AND of 20-digit and 1-digit numbers", () => i20_1.and(i1_1));
@@ -170,9 +170,9 @@ function modNumberSuite(): Benchmark.Suite {
     s.add("Negate a 100-digit number", () => i100_1.negate());
 
     // FIXME: Too slow!
-    //s.add("Invert a 1-digit number", () => i1_1.invert());
-    //s.add("Invert a 20-digit number", () => i20_1.invert());
-    //s.add("Invert a 100-digit number", () => i100_1.invert());
+    s.add("Invert a 1-digit number", () => i1_1.invert());
+    s.add("Invert a 20-digit number", () => i20_1.invert());
+    s.add("Invert a 100-digit number", () => i100_1.invert());
 
     s.add("Add two 1-digit numbers", () => i1_1.add(i1_2));
     s.add("Add two 20-digit numbers", () => i20_1.add(i20_2));
@@ -194,9 +194,9 @@ function modNumberSuite(): Benchmark.Suite {
     s.add("Centuple a 100-digit number", () => i100_1.mulNum(100));
 
     // FIXME: Too slow!
-    //s.add("Divide two 1-digit numbers", () => i1_1.div(i1_2));
-    //s.add("Divide two 20-digit numbers", () => i20_1.div(i20_2));
-    //s.add("Divide two 100-digit numbers", () => i100_1.div(i100_2));
+    s.add("Divide two 1-digit numbers", () => i1_1.div(i1_2));
+    s.add("Divide two 20-digit numbers", () => i20_1.div(i20_2));
+    s.add("Divide two 100-digit numbers", () => i100_1.div(i100_2));
 
     s.add("Square a 1-digit number", () => i1_1.pow(2));
     s.add("Square a 20-digit number", () => i20_1.pow(2));
@@ -218,25 +218,24 @@ function modPointSuite(): Benchmark.Suite {
     var pSmall_1 = new ModPoint(BigInteger.parse("4"), BigInteger.parse("1"), c1);
     var pSmall_2 = new ModPoint(BigInteger.parse("6"), BigInteger.parse("2"), c1);
 
-    // FIXME this has a bug
     // using the values defined in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
-    //var cBig = new ModCurve(BigInteger.parse("4451685225093714772084598273548427"), BigInteger.parse("2061118396808653202902996166388514"), BigInteger.parse("4451685225093714772084598273548427"));
-    //var pBig_1 = new ModPoint(BigInteger.parse("188281465057972534892223778713752"), BigInteger.parse("3419875491033170827167861896082688"), cBig);
-    //var pBig_2 = new ModPoint(BigInteger.parse("1415926535897932384626433832795028"), BigInteger.parse("3846759606494706724286139623885544"), cBig);
+    var cBig = new ModCurve(BigInteger.parse("4451685225093714772084598273548427"), BigInteger.parse("2061118396808653202902996166388514"), BigInteger.parse("4451685225093714772084598273548427"));
+    var pBig_1 = new ModPoint(BigInteger.parse("188281465057972534892223778713752"), BigInteger.parse("3419875491033170827167861896082688"), cBig);
+    var pBig_2 = new ModPoint(BigInteger.parse("1415926535897932384626433832795028"), BigInteger.parse("3846759606494706724286139623885544"), cBig);
 
     var s = createSuite("ModPoint");
 
     s.add("Adding a tiny point and infinity", () => pSmall_1.add(ModPoint.INFINITY));
     s.add("Adding a tiny point and itself", () => pSmall_1.add(pSmall_1));
     s.add("Adding two tiny points", () => pSmall_1.add(pSmall_2));
-    //s.add("Adding a large point and infinity", () => pBig_1.add(ModPoint.INFINITY));
-    //s.add("Adding a large point and itself", () => pBig_1.add(pBig_1));
-    //s.add("Adding two large points", () => pBig_1.add(pBig_2));
+    s.add("Adding a large point and infinity", () => pBig_1.add(ModPoint.INFINITY));
+    s.add("Adding a large point and itself", () => pBig_1.add(pBig_1));
+    s.add("Adding two large points", () => pBig_1.add(pBig_2));
 
     s.add("Equality of two tiny points", () => pSmall_1.eq(pSmall_2));
-    //s.add("Equality of two large points", () => pBig_1.eq(pBig_2));
+    s.add("Equality of two large points", () => pBig_1.eq(pBig_2));
 
     return s;
 }
 
-run(/*bigIntegerSuite(), modNumberSuite(),*/ modPointSuite());
+run(bigIntegerSuite(), modNumberSuite()/*, modPointSuite()*/);
