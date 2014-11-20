@@ -231,8 +231,6 @@
             }
         }
 
-        debugger;
-
         // Then, for each digit from the next, add it as the new smallest one and repeat
         for (; index >= 0; index--) {
             var newDigit = dividend._digits[index];
