@@ -3,26 +3,23 @@ import ModNumber = require("ModNumber");
 import ModCurve = require("ModCurve");
 import ModPointAddPartialResult = require("ModPointAddPartialResult");
 
+// N.B.: Ensuring the validity of a point on a curve is simply too slow
+//       Unit tests will have to do...
+
 class ModPoint {
-    private static INF = new ModPoint(BigInteger.ZERO, BigInteger.ZERO, null);
+    private static INF = new ModPoint();
 
     private _x: ModNumber;
     private _y: ModNumber;
     private _curve: ModCurve;
 
-    constructor(x: BigInteger, y: BigInteger, curve: ModCurve) {
-        if (curve == null) {
-            return; // HACK for INFINITY
-        }
-
-        this._x = new ModNumber(x, curve.n);
-        this._y = new ModNumber(y, curve.n);
-        this._curve = curve;
-
-        // N.B.: Ensuring the validity of a point on a curve is simply too slow
-        //       Unit tests will have to do...
+    static create(x: BigInteger, y: BigInteger, curve: ModCurve): ModPoint {
+        var point = new ModPoint();
+        point._x = new ModNumber(x, curve.n);
+        point._y = new ModNumber(y, curve.n);
+        point._curve = curve;
+        return point;
     }
-
 
     get x(): ModNumber {
         return this._x;
@@ -40,6 +37,11 @@ class ModPoint {
         return ModPoint.INF;
     }
 
+
+    /** O(1) */
+    negate(): ModPoint {
+        return ModPoint.fromModNumbers(this._x, this._y.negate(), this._curve);
+    }
 
     add(other: ModPoint): ModPoint {
         // Case 1: One of the points is infinity -> return the other
@@ -71,7 +73,7 @@ class ModPoint {
         var x = lambda.pow(2).sub(this._x).sub(other._x);
         var y = lambda.mul(this._x.sub(x)).sub(this._y);
 
-        return new ModPoint(x.value, y.value, this._curve);
+        return ModPoint.fromModNumbers(x, y, this._curve);
     }
 
     beginAdd(other: ModPoint): ModPointAddPartialResult {
@@ -106,13 +108,13 @@ class ModPoint {
         var x = lambda.pow(2).sub(this._x).sub(other._x);
         var y = lambda.mul(this._x.sub(x)).sub(this._y);
 
-        return new ModPoint(x.value, y.value, this._curve);
+        return ModPoint.fromModNumbers(x, y, this._curve);
     }
 
     /** O(n) */
     mulNum(n: BigInteger): ModPoint {
         var g = ModPoint.INF;
-        for (var _ = BigInteger.ZERO; _.lt(n); _ = _.add(BigInteger.ONE)) {
+        for (var _ = BigInteger.ZERO; _.compare(n) == -1; _ = _.add(BigInteger.ONE)) {
             g = g.add(this);
         }
         return g;
@@ -157,6 +159,14 @@ class ModPoint {
             return "Infinity";
         }
         return "(" + this._x.value.toString() + ", " + this._y.value.toString() + ")";
+    }
+
+    private static fromModNumbers(x: ModNumber, y: ModNumber, curve: ModCurve) {
+        var point = new ModPoint();
+        point._x = x;
+        point._y = y;
+        point._curve = curve;
+        return point;
     }
 }
 

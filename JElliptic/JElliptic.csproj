@@ -56,7 +56,6 @@
     <TypeScriptCompile Include="test\test.ts" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="chutzpah.json" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>

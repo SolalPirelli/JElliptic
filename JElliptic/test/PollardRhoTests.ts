@@ -90,8 +90,8 @@ module PollardRhoTests {
         var curve = new ModCurve(BigInteger.parse(points.a), BigInteger.parse(points.b), BigInteger.parse(points.n));
         var config = {
             curve: curve,
-            generator: new ModPoint(BigInteger.parse(points.gx), BigInteger.parse(points.gy), curve),
-            target: new ModPoint(BigInteger.parse(points.tx), BigInteger.parse(points.ty), curve),
+            generator: ModPoint.create(BigInteger.parse(points.gx), BigInteger.parse(points.gy), curve),
+            target: ModPoint.create(BigInteger.parse(points.tx), BigInteger.parse(points.ty), curve),
             additionTableSeed: tableSeed,
             additionTableLength: tableLength,
             parrallelWalksCount: walksCount,

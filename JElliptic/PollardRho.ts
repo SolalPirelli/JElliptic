@@ -20,9 +20,9 @@ module PollardRho {
     }
 
     function runOneWalk(config: IConfig, resultSink: IResultSink, table: Addition.Table) {
-        var walk = new CurveWalk(table);
+        var walk = new CurveWalk(config, table);
 
-        for (var step = BigInteger.ZERO; step.lt(config.curve.n); step = step.add(BigInteger.ONE)) {
+        for (var step = BigInteger.ZERO; step.compare(config.curve.n) == -1; step = step.add(BigInteger.ONE)) {
             walk.fullStep();
 
             if (isDistinguished(walk.current, config)) {
@@ -32,13 +32,13 @@ module PollardRho {
     }
 
     function runMultipleWalks(config: IConfig, resultSink: IResultSink, table: Addition.Table) {
-        var walks = Array<CurveWalk>();
+        var walks = Array<CurveWalk>(config.parrallelWalksCount);
 
-        for (var n = 0; n < config.parrallelWalksCount; n++) {
-            walks[n] = new CurveWalk(table);
+        for (var n = 0; n < walks.length; n++) {
+            walks[n] = new CurveWalk(config, table);
         }
 
-        for (var step = BigInteger.ZERO; step.lt(config.curve.n); step = step.add(BigInteger.ONE)) {
+        for (var step = BigInteger.ZERO; step.compare(config.curve.n) == -1; step = step.add(BigInteger.ONE)) {
             var N = config.parrallelWalksCount;
 
             var x = Array<ModPointAddPartialResult>(N);
@@ -80,6 +80,7 @@ module PollardRho {
 
     // Walk over a problem.
     class CurveWalk {
+        private _config: IConfig;
         private _table: Addition.Table;
 
         private _u: ModNumber;
@@ -89,7 +90,8 @@ module PollardRho {
         private _currentEntry: Addition.TableEntry;
 
 
-        constructor(table: Addition.Table) {
+        constructor(config: IConfig, table: Addition.Table) {
+            this._config = config;
             this._table = table;
 
             // TODO the starting entry needs to be random, of course
@@ -130,7 +132,9 @@ module PollardRho {
             this._currentEntry = this._table.at(index);
             this._u = this._u.add(this._currentEntry.u);
             this._v = this._v.add(this._currentEntry.v);
-            this._current = this._current.add(this._currentEntry.p);
+            var candidate = this._current.add(this._currentEntry.p);
+            var candidateNeg = candidate.negate(); // TODO
+            this._current = candidate;
         }
 
 

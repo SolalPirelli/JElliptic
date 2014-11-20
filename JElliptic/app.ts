@@ -23,8 +23,8 @@ document.getElementById("button").onclick = () => {
 
     var config: IConfig = {
         curve: curve,
-        generator: new ModPoint(gx, gy, curve),
-        target: new ModPoint(hx, hy, curve),
+        generator: ModPoint.create(gx, gy, curve),
+        target: ModPoint.create(hx, hy, curve),
         additionTableSeed: 0,
         additionTableLength: 128,
         parrallelWalksCount: 10,

@@ -103,7 +103,7 @@
     add(other: BigInteger): BigInteger {
         var thisAbs = this.abs();
         var otherAbs = other.abs();
-        var thisIsGreater = thisAbs.gt(otherAbs) || thisAbs.eq(otherAbs) && this._sign == 1;
+        var thisIsGreater = thisAbs.compare(otherAbs) == 1 || thisAbs.eq(otherAbs) && this._sign == 1;
         var hi = thisIsGreater ? this : other;
         var lo = thisIsGreater ? other : this;
 
@@ -193,9 +193,9 @@
             var low = BigInteger.ONE;
             var high = dividend;
 
-            while (low.lt(high)) {
+            while (low.compare(high) == -1) {
                 var guess = low.add(high).halve();
-                if (dividend.sub(divisor.mul(guess)).gte(divisor)) {
+                if (dividend.sub(divisor.mul(guess)).compare(divisor) > -1) {
                     low = guess.add(BigInteger.ONE);
                 } else {
                     high = guess;
@@ -210,7 +210,7 @@
         divisor = divisor.abs();
         var dividend = this.abs();
 
-        if (dividend.lt(divisor)) {
+        if (dividend.compare(divisor) == -1) {
             return BigInteger.ZERO;
         }
 
@@ -221,7 +221,7 @@
         var remainder: BigInteger;
         for (index = dividend._digits.length - divisor._digits.length; index >= 0; index--) {
             var shifted = dividend.rightShiftAbs(index);
-            if (shifted.gte(divisor)) {
+            if (shifted.compare(divisor) > -1) {
                 // Divide that number by the divisor, store the quotient, and keep the remainder
                 var quotient = divide(shifted, divisor);
                 remainder = shifted.sub(quotient.mul(divisor));
@@ -249,9 +249,9 @@
         var high = this.abs();
 
         if (this._sign == 1) {
-            while (low.lt(high)) {
+            while (low.compare(high) == -1) {
                 var guess = low.add(high).halve();
-                if (this.sub(n.mul(guess)).gte(n)) {
+                if (this.sub(n.mul(guess)).compare(n) > -1) {
                     low = guess.add(BigInteger.ONE);
                 } else {
                     high = guess;
@@ -260,11 +260,11 @@
 
             return this.sub(n.mul(low));
         } else {
-            while (low.lt(high)) {
+            while (low.compare(high) == -1) {
                 var guess = low.add(high).halve();
                 var result = this.add(n.mul(guess));
                 if (result._sign == 1) {
-                    if (result.lt(n)) {
+                    if (result.compare(n) == -1) {
                         return result;
                     } else {
                         high = guess;
@@ -293,7 +293,7 @@
             r = newr;
             newr = oldr.sub(quotient.mul(newr));
         }
-        if (r.gt(BigInteger.ONE)) {
+        if (r.compare(BigInteger.ONE) == 1) {
             throw (this + " is not invertible");
         }
         if (t._sign == -1) {
@@ -303,63 +303,28 @@
     }
 
     /** O(min(this.digits, other.digits)) */
-    lte(other: BigInteger): boolean {
+    compare(other: BigInteger): number {
         if (this._sign < other._sign) {
-            return true;
+            return -1;
         }
         if (this._sign > other._sign) {
-            return false;
+            return 1;
         }
         if (this._digits.length < other._digits.length) {
-            return this._sign == 1;
+            return -this._sign;
         }
         if (this._digits.length > other._digits.length) {
-            return this._sign == -1;
+            return this._sign;
         }
         for (var n = this._digits.length - 1; n >= 0; n--) {
             if (this._digits[n] < other._digits[n]) {
-                return this._sign == 1;
+                return -this._sign;
             }
             if (this._digits[n] > other._digits[n]) {
-                return this._sign == -1;
+                return this._sign;
             }
         }
-        return true;
-    }
-
-    /** O(min(this.digits, other.digits)) */
-    lt(other: BigInteger): boolean {
-        return !this.gte(other);
-    }
-
-    /** O(min(this.digits, other.digits)) */
-    gte(other: BigInteger): boolean {
-        if (this._sign > other._sign) {
-            return true;
-        }
-        if (this._sign < other._sign) {
-            return false;
-        }
-        if (this._digits.length > other._digits.length) {
-            return this._sign == 1;
-        }
-        if (this._digits.length < other._digits.length) {
-            return this._sign == -1;
-        }
-        for (var n = this._digits.length - 1; n >= 0; n--) {
-            if (this._digits[n] > other._digits[n]) {
-                return this._sign == 1;
-            }
-            if (this._digits[n] < other._digits[n]) {
-                return this._sign == -1;
-            }
-        }
-        return true;
-    }
-
-    /** O(min(this.digits, other.digits)) */
-    gt(other: BigInteger): boolean {
-        return !this.lte(other);
+        return 0;
     }
 
     /** O(min(this.digits, other.digits)) */
