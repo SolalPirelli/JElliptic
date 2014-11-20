@@ -12,74 +12,25 @@ module PollardRho {
     export function run(config: IConfig, resultSink: IResultSink): void {
         var table = new Addition.Table(config);
 
+        var walk: CurveWalk; 
         if (config.parrallelWalksCount == 1) {
-            runOneWalk(config, resultSink, table);
+            walk = new SingleCurveWalk(config, table);
         } else {
-            runMultipleWalks(config, resultSink, table);
-        }
-    }
-
-    function runOneWalk(config: IConfig, resultSink: IResultSink, table: Addition.Table) {
-        var walk = new CurveWalk(config, table);
-
-        for (var step = BigInteger.ZERO; step.compare(config.curve.n) == -1; step = step.add(BigInteger.ONE)) {
-            walk.fullStep();
-
-            if (isDistinguished(walk.current, config)) {
-                resultSink.send(walk.u, walk.v, walk.current);
-            }
-        }
-    }
-
-    function runMultipleWalks(config: IConfig, resultSink: IResultSink, table: Addition.Table) {
-        var walks = Array<CurveWalk>(config.parrallelWalksCount);
-
-        for (var n = 0; n < walks.length; n++) {
-            walks[n] = new CurveWalk(config, table);
+            walk = new MultiCurveWalk(config, table);
         }
 
         for (var step = BigInteger.ZERO; step.compare(config.curve.n) == -1; step = step.add(BigInteger.ONE)) {
-            var N = config.parrallelWalksCount;
-
-            var x = Array<ModPointAddPartialResult>(N);
-
-            for (var n = 0; n < N; n++) {
-                x[n] = walks[n].beginStep();
-            }
-
-            var a = Array<ModNumber>(N);
-            a[0] = x[0].denominator;
-            for (var n = 1; n < N; n++) {
-                a[n] = a[n - 1].mul(x[n].denominator);
-            }
-
-            var xinv = Array<ModNumber>(N);
-            var ainv = Array<ModNumber>(N);
-            ainv[N - 1] = a[N - 1].invert();
-            for (var n = N - 1; n > 0; n--) {
-                xinv[n] = ainv[n].mul(a[n - 1]);
-                ainv[n - 1] = ainv[n].mul(x[n].denominator);
-            }
-            xinv[0] = ainv[0];
-
-            for (var n = 0; n < config.parrallelWalksCount; n++) {
-                var lambda = x[n].numerator.mul(xinv[n]);
-
-                walks[n].endStep(lambda);
-
-                if (isDistinguished(walks[n].current, config)) {
-                    resultSink.send(walks[n].u, walks[n].v, walks[n].current);
-                }
-            }
+            walk.step();
+            walk.send(resultSink);
         }
     }
 
-    function isDistinguished(point: ModPoint, config: IConfig): boolean {
-        return point != ModPoint.INFINITY && (point.x.value.and(config.distinguishedPointMask)).eq(config.distinguishedPointMask);
+    interface CurveWalk {
+        send(sink: IResultSink): void;
+        step(): void;
     }
 
-    // Walk over a problem.
-    class CurveWalk {
+    class SingleCurveWalk implements CurveWalk {
         private _config: IConfig;
         private _table: Addition.Table;
 
@@ -114,6 +65,22 @@ module PollardRho {
             return this._current;
         }
 
+        step() {
+            var index = this._current.partition(this._table.length);
+            this._currentEntry = this._table.at(index);
+            this._u = this._u.add(this._currentEntry.u);
+            this._v = this._v.add(this._currentEntry.v);
+            this.setCurrent(this._current.add(this._currentEntry.p));
+        }
+
+        send(sink: IResultSink): void {
+            if (this._current != ModPoint.INFINITY && (this._current.x.value.and(this._config.distinguishedPointMask)).eq(this._config.distinguishedPointMask)) {
+                sink.send(this._u, this._v, this._current);
+            }
+        }
+
+
+        // beginStep and endStep are used by the multi-walk
 
         beginStep(): ModPointAddPartialResult {
             var index = this._current.partition(this._table.length);
@@ -125,18 +92,6 @@ module PollardRho {
 
         endStep(lambda: ModNumber): void {
             this.setCurrent(this._current.endAdd(this._currentEntry.p, lambda));
-        }
-
-        fullStep() {
-            var index = this._current.partition(this._table.length);
-            this._currentEntry = this._table.at(index);
-            this._u = this._u.add(this._currentEntry.u);
-            this._v = this._v.add(this._currentEntry.v);
-            this.setCurrent(this._current.add(this._currentEntry.p));
-        }
-
-        toString(): string {
-            return "[u = " + this._u + ", v = " + this._v + "]";
         }
 
         private setCurrent(candidate: ModPoint) {
@@ -152,6 +107,52 @@ module PollardRho {
             } else {
                 this._current = candidate;
             }
+        }
+    }
+
+    class MultiCurveWalk implements CurveWalk {
+        private _walks: SingleCurveWalk[];
+
+        constructor(config: IConfig, table: Addition.Table) {
+            this._walks = Array<SingleCurveWalk>(config.parrallelWalksCount);
+            for (var n = 0; n < this._walks.length; n++) {
+                this._walks[n] = new SingleCurveWalk(config, table);
+            }
+        }
+
+        step(): void {
+            var N = this._walks.length; // alias, for convenience
+
+            var x = Array<ModPointAddPartialResult>(N);
+
+            for (var n = 0; n < N; n++) {
+                x[n] = this._walks[n].beginStep();
+            }
+
+            var a = Array<ModNumber>(N);
+            a[0] = x[0].denominator;
+            for (var n = 1; n < N; n++) {
+                a[n] = a[n - 1].mul(x[n].denominator);
+            }
+
+            var xinv = Array<ModNumber>(N);
+            var ainv = Array<ModNumber>(N);
+            ainv[N - 1] = a[N - 1].invert();
+            for (var n = N - 1; n > 0; n--) {
+                xinv[n] = ainv[n].mul(a[n - 1]);
+                ainv[n - 1] = ainv[n].mul(x[n].denominator);
+            }
+            xinv[0] = ainv[0];
+
+            for (var n = 0; n < this._walks.length; n++) {
+                var lambda = x[n].numerator.mul(xinv[n]);
+
+                this._walks[n].endStep(lambda);
+            }
+        }
+
+        send(sink: IResultSink): void {
+            this._walks.forEach(w => w.send(sink));
         }
     }
 }
