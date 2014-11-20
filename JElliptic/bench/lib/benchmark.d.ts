@@ -1,42 +1,28 @@
 ﻿// Very tiny definition file extracted from http://benchmarkjs.com/docs
 
-declare module Benchmark {
-    class Suite {
-        /** Creates a new Suite. */
-        constructor(name?: string, options?: SuiteConstructorOptions);
+declare class Benchmark {
+    constructor(name: string, func: () => any, options?: BenchmarkConstructorOptions);
 
-        /** Adds a test to the suite. */
-        add(name: string, func: () => any): Suite;
+    run(): void;
+}
 
-        /** Adds a listener to a suite event. */
-        on(name: string, callback: (obj: any) => void): Suite;
+interface BenchmarkConstructorOptions {
+    // set this to true, or awful stuff happens.
+    async: boolean;
 
-        /** Adds a listener called each time a benchmark is finished. */
-        on(name: "cycle", callback: (evt: Event) => void): Suite;
+    // called when the benchmark starts running
+    onStart: () => void;
 
-        /** Adds a listener called when the suite has finished running. */
-        on(name: "complete", callback: () => void): Suite;
+    // called after each run cycle
+    onCycle: () => void;
 
-        /** Runs the suite. */
-        run(options?: SuiteRunOptions): void;
-    }
+    // called when a test errors
+    onError: () => void;
 
-    class SuiteConstructorOptions {
-        // called when the suite starts running
-        onStart: () => void;
+    // called when the benchmark completes running
+    onComplete: (evt: BenchmarkEvent) => void;
+}
 
-        // called between running benchmarks
-        onCycle: (evt: Event) => void;
-
-        // called when the suite completes running
-        onComplete: () => void;
-    }
-
-    class SuiteRunOptions {
-        async: boolean;
-    }
-
-    class Event {
-        target: any;
-    }
+interface BenchmarkEvent {
+    target: any;
 }

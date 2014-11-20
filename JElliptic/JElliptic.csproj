@@ -35,6 +35,7 @@
     <TypeScriptCompile Include="app.ts" />
     <TypeScriptCompile Include="bench\bench.ts" />
     <Content Include="bench\config.js" />
+    <TypeScriptCompile Include="bench\BenchmarkSuite.ts" />
     <TypeScriptCompile Include="bench\lib\benchmark.d.ts" />
     <TypeScriptCompile Include="BigInteger.ts" />
     <TypeScriptCompile Include="DeterministicRandom.ts" />
