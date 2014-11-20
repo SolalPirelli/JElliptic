@@ -53,8 +53,8 @@ module PollardRho {
                 a[n] = a[n - 1].mul(x[n].denominator);
             }
 
-            var xinv = Array<ModNumber>();
-            var ainv = Array<ModNumber>();
+            var xinv = Array<ModNumber>(N);
+            var ainv = Array<ModNumber>(N);
             ainv[N - 1] = a[N - 1].invert();
             for (var n = N - 1; n > 0; n--) {
                 xinv[n] = ainv[n].mul(a[n - 1]);
