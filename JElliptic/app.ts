@@ -12,9 +12,6 @@ function bigintValue(elemName: string): BigInteger {
 }
 
 document.getElementById("button").onclick = () => {
-    BigInteger.parse("123456789").mod(BigInteger.TWO);
-
-
     var a = bigintValue("a"), b = bigintValue("b"), n = bigintValue("n"), order=bigintValue("order");
     var gx = bigintValue("gx"), gy = bigintValue("gy");
     var hx = bigintValue("hx"), hy = bigintValue("hy");
