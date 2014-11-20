@@ -112,12 +112,23 @@ class ModPoint {
     }
 
     /** O(n) */
-    mulNum(n: BigInteger): ModPoint {
-        var g = ModPoint.INF;
-        for (var _ = BigInteger.ZERO; _.compare(n) == -1; _ = _.add(BigInteger.ONE)) {
-            g = g.add(this);
+    mulNum(n: number): ModPoint {
+        var result = ModPoint.INF;
+        var currentAdding = this;
+
+        while (n != 0) {
+            if ((n & 1) == 1) {
+                result = result.add(currentAdding);
+            }
+
+            n >>= 1;
+            if (n != 0) {
+                // This is expensive, don't do it if we're not going to use it
+                currentAdding = currentAdding.add(currentAdding);
+            }
         }
-        return g;
+
+        return result;
     }
 
     /** O(this.value.digits / n) */
@@ -126,19 +137,6 @@ class ModPoint {
             return 0;
         }
         return this._x.value.mod(BigInteger.fromInt(n)).toInt();
-    }
-
-    /** O(return) */
-    getOrder(): number {
-        var point: ModPoint = ModPoint.INF;
-        for (var order = 1; ; order++) {
-            point = point.add(this);
-            if (point.eq(ModPoint.INF)) {
-                return order;
-            }
-        }
-
-        throw "No order found.";
     }
 
     /** O(min(this.x.value.digits, other.x.value.digits) + min(this.y.value.digits, other.y.value.digits)) */

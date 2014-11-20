@@ -2,6 +2,9 @@
 import ModNumber = require("ModNumber");
 import ModCurve = require("ModCurve");
 import ModPoint = require("ModPoint");
+import IConfig = require("IConfig");
+import Addition = require("AdditionTable");
+import PollardRho =require("PollardRho");
 import BenchmarkSuite = require("bench/BenchmarkSuite");
 
 function bigIntegerSuite() {
@@ -142,12 +145,13 @@ function modNumberSuite() {
 
 function modPointSuite() {
     // very simple curve and points generated with Wolfram|Alpha
-    var c1 = new ModCurve(BigInteger.parse("2"), BigInteger.parse("1"), BigInteger.parse("9"));
+    var c1 = new ModCurve(BigInteger.parse("2"), BigInteger.parse("1"), BigInteger.parse("9"), BigInteger.parse("0")); // I don't know the order of that curve
     var pSmall_1 = ModPoint.create(BigInteger.parse("4"), BigInteger.parse("1"), c1);
     var pSmall_2 = ModPoint.create(BigInteger.parse("6"), BigInteger.parse("2"), c1);
 
     // using the values defined in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
-    var cBig = new ModCurve(BigInteger.parse("4451685225093714772084598273548427"), BigInteger.parse("2061118396808653202902996166388514"), BigInteger.parse("4451685225093714772084598273548427"));
+    var cBig = new ModCurve(BigInteger.parse("4451685225093714772084598273548424"), BigInteger.parse("2061118396808653202902996166388514"),
+        BigInteger.parse("4451685225093714772084598273548427"), BigInteger.parse("4451685225093714776491891542548933"));
     var pBig_1 = ModPoint.create(BigInteger.parse("188281465057972534892223778713752"), BigInteger.parse("3419875491033170827167861896082688"), cBig);
     var pBig_2 = ModPoint.create(BigInteger.parse("1415926535897932384626433832795028"), BigInteger.parse("3846759606494706724286139623885544"), cBig);
 
@@ -164,6 +168,66 @@ function modPointSuite() {
     s("Equality of two large points", () => pBig_1.eq(pBig_2));
 }
 
+function pollardRhoSuite() {
+    var s = BenchmarkSuite.create("PollardRho");
+
+    var curve = new ModCurve(BigInteger.parse("4451685225093714772084598273548424"), BigInteger.parse("2061118396808653202902996166388514"),
+        BigInteger.parse("4451685225093714772084598273548427"), BigInteger.parse("4451685225093714776491891542548933"));
+    var gen = ModPoint.create(BigInteger.parse("188281465057972534892223778713752"), BigInteger.parse("3419875491033170827167861896082688"), curve);
+    var target = ModPoint.create(BigInteger.parse("1415926535897932384626433832795028"), BigInteger.parse("3846759606494706724286139623885544"), curve);
+
+
+    function configWithTableLength(length: number) {
+        return {
+            additionTableLength: length,
+            curve: curve,
+            generator: gen,
+            target: target,
+            additionTableSeed: 0,
+            distinguishedPointMask: BigInteger.parse("1"),
+            parrallelWalksCount: 1,
+            useNegationMap: false
+        };
+    }
+
+    var config16 = configWithTableLength(16);
+    var config64 = configWithTableLength(64);
+    var config256 = configWithTableLength(256);
+    // FIXME: Too slow!
+    //s("Initialize an addition table with 16 elements over a 112-bit curve", () => new Addition.Table(config16));
+    //s("Initialize an addition table with 64 elements over a 112-bit curve", () => new Addition.Table(config64));
+    //s("Initialize an addition table with 256 elements over a 112-bit curve", () => new Addition.Table(config256));
+
+    function configWithParrallelWalkCount(count: number) {
+        return {
+            additionTableLength: 16,
+            curve: curve,
+            generator: gen,
+            target: target,
+            additionTableSeed: 0,
+            distinguishedPointMask: BigInteger.parse("1"),
+            parrallelWalksCount: count,
+            useNegationMap: false
+        };
+    }
+
+    var config_walks1 = configWithParrallelWalkCount(1);
+    var config_walks2 = configWithParrallelWalkCount(2);
+    var config_walks4 = configWithParrallelWalkCount(4);
+    var config_walks8 = configWithParrallelWalkCount(8);
+    debugger;
+    var table = new Addition.Table(config16);
+    var walk1 = new PollardRho.SingleCurveWalk(config_walks1, table);
+    var walk2 = new PollardRho.MultiCurveWalk(config_walks2, table);
+    var walk4 = new PollardRho.MultiCurveWalk(config_walks4, table);
+    var walk8 = new PollardRho.MultiCurveWalk(config_walks8, table);
+    s("Step of a single walk over a 112-bit curve", () => walk1.step());
+    s("Step of 2 parrallel walks over a 112-bit curve", () => walk2.step());
+    s("Step of 4 parrallel walks over a 112-bit curve", () => walk4.step());
+    s("Step of 8 parrallel walks over a 112-bit curve", () => walk8.step());
+}
+
 bigIntegerSuite();
 modNumberSuite();
 modPointSuite();
+pollardRhoSuite();

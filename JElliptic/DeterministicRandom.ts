@@ -8,9 +8,9 @@ class DeterministicRandom {
         this._seed = seed;
     }
 
-    next(exclusiveMax: number): BigInteger {
+    next(exclusiveMax: number): number {
         this._seed = Math.cos(this._seed) * 10000;
-        return BigInteger.fromInt(Math.round((this._seed - Math.floor(this._seed)) * (exclusiveMax - 1)));
+        return Math.round((this._seed - Math.floor(this._seed)) * (exclusiveMax - 1));
     }
 }
 

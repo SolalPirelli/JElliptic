@@ -12,12 +12,9 @@ module PollardRho {
     export function run(config: IConfig, resultSink: IResultSink): void {
         var table = new Addition.Table(config);
 
-        var walk: CurveWalk; 
-        if (config.parrallelWalksCount == 1) {
-            walk = new SingleCurveWalk(config, table);
-        } else {
-            walk = new MultiCurveWalk(config, table);
-        }
+        var walk: CurveWalk =
+            config.parrallelWalksCount == 1 ?
+            new SingleCurveWalk(config, table) : new MultiCurveWalk(config, table);
 
         for (var step = BigInteger.ZERO; step.compare(config.curve.n) == -1; step = step.add(BigInteger.ONE)) {
             walk.step();
@@ -25,12 +22,12 @@ module PollardRho {
         }
     }
 
-    interface CurveWalk {
+    export interface CurveWalk {
         send(sink: IResultSink): void;
         step(): void;
     }
 
-    class SingleCurveWalk implements CurveWalk {
+    export class SingleCurveWalk implements CurveWalk {
         private _config: IConfig;
         private _table: Addition.Table;
 
@@ -110,7 +107,7 @@ module PollardRho {
         }
     }
 
-    class MultiCurveWalk implements CurveWalk {
+    export class MultiCurveWalk implements CurveWalk {
         private _walks: SingleCurveWalk[];
 
         constructor(config: IConfig, table: Addition.Table) {

@@ -6,11 +6,13 @@ class ModCurve {
     private _a: ModNumber;
     private _b: ModNumber;
     private _n: BigInteger;
+    private _order:BigInteger;
 
-    constructor(a: BigInteger, b: BigInteger, n: BigInteger) {
+    constructor(a: BigInteger, b: BigInteger, n: BigInteger, order: BigInteger) {
         this._a = new ModNumber(a, n);
         this._b = new ModNumber(b, n);
         this._n = n;
+        this._order = order;
     }
 
     get a(): ModNumber {
@@ -23,6 +25,10 @@ class ModCurve {
 
     get n(): BigInteger {
         return this._n;
+    }
+
+    get order(): BigInteger {
+        return this._order;
     }
 
 

@@ -13,18 +13,20 @@ module PollardRhoTests {
         a: string;
         b: string;
         n: string;
+        order: string;
         gx: string;
         gy: string;
         tx: string;
         ty: string;
         expected: string;
 
-        constructor(a: string, b: string, n: string,
+        constructor(a: string, b: string, n: string, order: string,
             gx: string, gy: string, tx: string, ty: string,
             expected: string) {
             this.a = a;
             this.b = b;
             this.n = n;
+            this.order = order;
             this.gx = gx;
             this.gy = gy;
             this.tx = tx;
@@ -82,12 +84,12 @@ module PollardRhoTests {
     }
 
     function result(configName: string,
-                    points: NonAlgorithmicConfig,
-                    tableSeed: number, tableLength: number,
-                    walksCount: number, useNegationMap: boolean,
-                    distinguishedMask: string) {
+        points: NonAlgorithmicConfig,
+        tableSeed: number, tableLength: number,
+        walksCount: number, useNegationMap: boolean,
+        distinguishedMask: string) {
         var sink = new ComputingResultSink();
-        var curve = new ModCurve(BigInteger.parse(points.a), BigInteger.parse(points.b), BigInteger.parse(points.n));
+        var curve = new ModCurve(BigInteger.parse(points.a), BigInteger.parse(points.b), BigInteger.parse(points.n), BigInteger.parse(points.order));
         var config = {
             curve: curve,
             generator: ModPoint.create(BigInteger.parse(points.gx), BigInteger.parse(points.gy), curve),
@@ -98,11 +100,10 @@ module PollardRhoTests {
             useNegationMap: useNegationMap,
             distinguishedPointMask: BigInteger.parse(distinguishedMask)
         };
-        var order = BigInteger.fromInt(config.generator.getOrder());
 
         test(configName + ": " + points.expected + " * " + config.generator + " = " + config.target + " on " + config.curve, () => {
             PollardRho.run(config, sink);
-            ok(sink.result.eq(new ModNumber(BigInteger.parse(points.expected), order)));
+            ok(sink.result.eq(new ModNumber(BigInteger.parse(points.expected), curve.order)));
         });
     }
 
@@ -111,7 +112,7 @@ module PollardRhoTests {
 
         var correctResults = [
             new NonAlgorithmicConfig(
-                "0", "3", "31", // Curve (A, B, N)
+                "0", "3", "31", "31", // Curve (A, B, N)
                 "11", "1", // Generator (X, Y)
                 "23", "24", // Target (X, Y)
                 "10") // Expected result
