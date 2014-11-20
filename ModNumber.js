@@ -37,11 +37,6 @@
             return new ModNumber(this._value.add(other._value), this._n);
         };
 
-        /** O(this.digits) */
-        ModNumber.prototype.addNum = function (n) {
-            return new ModNumber(this._value.add(BigInteger.fromInt(n)), this._n);
-        };
-
         /** O(max(this.value.digits, other.value.digits)) */
         ModNumber.prototype.sub = function (other) {
             this.ensureCompatible(other);

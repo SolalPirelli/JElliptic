@@ -37,11 +37,6 @@ class ModNumber {
         return new ModNumber(this._value.add(other._value), this._n);
     }
 
-    /** O(this.digits) */
-    addNum(n: number): ModNumber {
-        return new ModNumber(this._value.add(BigInteger.fromInt(n)), this._n);
-    }
-
     /** O(max(this.value.digits, other.value.digits)) */
     sub(other: ModNumber): ModNumber {
         this.ensureCompatible(other);

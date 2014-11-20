@@ -8,8 +8,8 @@
             this._x = new ModNumber(x, curve.n);
             this._y = new ModNumber(y, curve.n);
             this._curve = curve;
-
-            this.ensureValid();
+            // N.B.: Ensuring the validity of a point on a curve is simply too slow
+            //       Unit tests will have to do...
         }
         Object.defineProperty(ModPoint.prototype, "x", {
             get: function () {
@@ -159,12 +159,6 @@
                 return "Infinity";
             }
             return "(" + this._x.value.toString() + ", " + this._y.value.toString() + ")";
-        };
-
-        ModPoint.prototype.ensureValid = function () {
-            if (!this._y.pow(2).eq(this._x.pow(3).add(this._curve.a.mul(this._x)).add(this._curve.b))) {
-                throw (this + " is not a valid point.");
-            }
         };
         ModPoint.INF = new ModPoint(BigInteger.ZERO, BigInteger.ZERO, null);
         return ModPoint;

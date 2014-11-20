@@ -1,96 +1,352 @@
-﻿/// <reference path="lib/benchmark.d.ts" />
-define(["require", "exports", "../BigInteger"], function(require, exports, BigInteger) {
-    function createSuite(suiteName) {
-        var container = document.createElement("div");
-        document.body.appendChild(container);
+﻿define(["require", "exports", "BigInteger", "ModNumber", "ModCurve", "ModPoint", "bench/BenchmarkSuite"], function(require, exports, BigInteger, ModNumber, ModCurve, ModPoint, BenchmarkSuite) {
+    function bigIntegerSuite() {
+        var i1_1 = BigInteger.parse("1");
+        var i1_2 = BigInteger.parse("9");
 
-        var header = document.createElement("b");
-        header.appendChild(document.createTextNode(suiteName));
-        container.appendChild(header);
-        container.appendChild(document.createElement("br"));
+        var i20_1 = BigInteger.parse("12345678901234567890");
+        var i20_2 = BigInteger.parse("99999999999999999999");
 
-        var infoContainer = document.createElement("span");
-        container.appendChild(infoContainer);
-        container.appendChild(document.createElement("br"));
-        container.appendChild(document.createElement("br"));
+        var i34_1 = BigInteger.parse("2061118396808653202902996166388514");
+        var i34_2 = BigInteger.parse("4451685225093714772084598273548427");
 
-        function setInfoText(text) {
-            infoContainer.innerText = text;
-        }
+        var s = BenchmarkSuite.create("BigInteger");
 
-        function addResult(evt) {
-            var fullResult = evt.target.toString().split(' x ');
-            var name = fullResult[0];
-            var result = fullResult[1];
+        s("Create from 1-digit int", function () {
+            return BigInteger.fromInt(9);
+        });
+        s("Create from 16-digit int", function () {
+            return BigInteger.fromInt(9007199254740991);
+        });
 
-            container.appendChild(document.createTextNode(name));
-            container.appendChild(document.createElement("br"));
+        s("Parse 1-digit number", function () {
+            return BigInteger.parse("1");
+        });
+        s("Parse 20-digit number", function () {
+            return BigInteger.parse("1234578901234567890");
+        });
+        s("Parse 34-digit number", function () {
+            return BigInteger.parse("4451685225093714772084598273548427");
+        });
 
-            var resultContainer = document.createElement("i");
-            resultContainer.appendChild(document.createTextNode(result));
-            container.appendChild(resultContainer);
-            container.appendChild(document.createElement("br"));
-        }
+        s("Negate a 1-digit number", function () {
+            return i1_1.negate();
+        });
+        s("Negate a 20-digit number", function () {
+            return i20_1.negate();
+        });
+        s("Negate a 34-digit number", function () {
+            return i34_1.negate();
+        });
 
-        return new Benchmark.Suite(suiteName, {
-            onStart: function () {
-                return setInfoText("Running benchmarks...");
-            },
-            onCycle: function (evt) {
-                return addResult(evt);
-            },
-            onComplete: function () {
-                return setInfoText("Finished.");
-            }
+        s("Absolute value of a 1-digit number", function () {
+            return i1_1.abs();
+        });
+        s("Absolute value of a 20-digit number", function () {
+            return i20_1.abs();
+        });
+        s("Absolute value of a 34-digit number", function () {
+            return i34_1.abs();
+        });
+
+        s("Add two 1-digit numbers", function () {
+            return i1_1.add(i1_2);
+        });
+        s("Add 20-digit and 1-digit numbers", function () {
+            return i20_1.add(i1_1);
+        });
+        s("Add two 20-digit numbers", function () {
+            return i20_1.add(i20_2);
+        });
+        s("Add 34-digit and 20-digit numbers", function () {
+            return i34_1.add(i20_1);
+        });
+        s("Add two 34-digit numbers", function () {
+            return i34_1.add(i34_2);
+        });
+
+        s("Subtract two 1-digit numbers", function () {
+            return i1_1.sub(i1_2);
+        });
+        s("Subtract 20-digit and 1-digit numbers", function () {
+            return i20_1.sub(i1_1);
+        });
+        s("Subtract two 20-digit numbers", function () {
+            return i20_1.sub(i20_2);
+        });
+        s("Subtract 34-digit and 20-digit numbers", function () {
+            return i34_1.sub(i20_1);
+        });
+        s("Subtract two 34-digit numbers", function () {
+            return i34_1.sub(i34_2);
+        });
+
+        s("Multiply two 1-digit numbers", function () {
+            return i1_1.mul(i1_2);
+        });
+        s("Multiply 20-digit and 1-digit numbers", function () {
+            return i20_1.mul(i1_1);
+        });
+        s("Multiply two 20-digit numbers", function () {
+            return i20_1.mul(i20_2);
+        });
+        s("Multiply 34-digit and 20-digit numbers", function () {
+            return i34_1.mul(i20_1);
+        });
+        s("Multiply two 34-digit numbers", function () {
+            return i34_1.mul(i34_2);
+        });
+
+        s("Divide two 1-digit numbers", function () {
+            return i1_1.div(i1_2);
+        });
+        s("Divide 20-digit and 1-digit numbers", function () {
+            return i20_1.div(i1_1);
+        });
+        s("Divide two 20-digit numbers", function () {
+            return i20_1.div(i20_2);
+        });
+        s("Divide 34-digit and 20-digit numbers", function () {
+            return i34_1.div(i20_1);
+        });
+        s("Divide two 34-digit numbers", function () {
+            return i34_1.div(i34_2);
+        });
+
+        s("Modulo two 1-digit numbers", function () {
+            return i1_1.mod(i1_2);
+        });
+        s("Modulo 20-digit and 1-digit numbers", function () {
+            return i20_1.mod(i1_1);
+        });
+        s("Modulo two 20-digit numbers", function () {
+            return i20_1.mod(i20_2);
+        });
+        s("Modulo 34-digit and 20-digit numbers", function () {
+            return i34_1.mod(i20_1);
+        });
+        s("Modulo two 34-digit numbers", function () {
+            return i34_1.mod(i34_2);
+        });
+
+        s("Modular inverse of a 1-digit number", function () {
+            return i1_1.modInverse(i1_2);
+        });
+        s("Modular inverse a 20-digit number", function () {
+            return i20_1.modInverse(i20_2);
+        });
+        s("Modular inverse a 34-digit number", function () {
+            return i34_1.modInverse(i34_2);
+        });
+
+        s("Logical AND of two 1-digit numbers", function () {
+            return i1_1.and(i1_2);
+        });
+        s("Logical AND of 20-digit and 1-digit numbers", function () {
+            return i20_1.and(i1_1);
+        });
+        s("Logical AND of two 20-digit numbers", function () {
+            return i20_1.and(i20_2);
+        });
+        s("Logical AND of 34-digit and 20-digit numbers", function () {
+            return i34_1.and(i20_1);
+        });
+        s("Logical AND of two 34-digit numbers", function () {
+            return i34_1.and(i34_2);
+        });
+
+        s("Compare two 1-digit numbers", function () {
+            return i1_1.eq(i1_2);
+        });
+        s("Compare 20-digit and 1-digit numbers", function () {
+            return i20_1.eq(i1_1);
+        });
+        s("Compare two 20-digit numbers", function () {
+            return i20_1.eq(i20_2);
+        });
+        s("Compare 34-digit and 20-digit numbers", function () {
+            return i34_1.eq(i20_1);
+        });
+        s("Compare two 34-digit numbers", function () {
+            return i34_1.eq(i34_2);
+        });
+
+        s("Stringify a 1-digit number", function () {
+            return i1_1.toString();
+        });
+        s("Stringify a 20-digit number", function () {
+            return i20_1.toString();
+        });
+        s("Stringify a 34-digit number", function () {
+            return i34_1.toString();
         });
     }
 
-    requirejs([], function () {
-        var bi = createSuite("BigInteger");
+    function modNumberSuite() {
+        var mod1 = BigInteger.parse("9");
+        var i1_1 = new ModNumber(BigInteger.parse("1"), mod1);
+        var i1_2 = new ModNumber(BigInteger.parse("7"), mod1);
 
-        bi.add("from 1-digit number", function () {
-            BigInteger.fromInt(9);
+        var mod20 = BigInteger.parse("99999999999999999999");
+        var i20_1 = new ModNumber(BigInteger.parse("12345678901234567890"), mod20);
+        var i20_2 = new ModNumber(BigInteger.parse("98765432109876543210"), mod20);
+
+        var mod34 = BigInteger.parse("4451685225093714772084598273548427");
+        var i34_1 = new ModNumber(BigInteger.parse("2061118396808653202902996166388514"), mod34);
+        var i34_2 = new ModNumber(BigInteger.parse("4451685225093714772084598273548427"), mod34);
+
+        var s = BenchmarkSuite.create("ModNumber");
+
+        s("Negate a 1-digit number", function () {
+            return i1_1.negate();
+        });
+        s("Negate a 20-digit number", function () {
+            return i20_1.negate();
+        });
+        s("Negate a 34-digit number", function () {
+            return i34_1.negate();
         });
 
-        bi.add("from 16-digit number", function () {
-            BigInteger.fromInt(9007199254740991);
+        s("Invert a 1-digit number", function () {
+            return i1_1.invert();
+        });
+        s("Invert a 20-digit number", function () {
+            return i20_1.invert();
+        });
+        s("Invert a 34-digit number", function () {
+            return i34_1.invert();
         });
 
-        var i1 = BigInteger.parse("1");
-        bi.add("parse 1-digit number", function () {
-            BigInteger.parse("1");
+        s("Add two 1-digit numbers", function () {
+            return i1_1.add(i1_2);
+        });
+        s("Add two 20-digit numbers", function () {
+            return i20_1.add(i20_2);
+        });
+        s("Add two 34-digit numbers", function () {
+            return i34_1.add(i34_2);
         });
 
-        bi.add("parse 20-digit number", function () {
-            BigInteger.parse("1234578901234567890");
+        s("Subtract two 1-digit numbers", function () {
+            return i1_1.sub(i1_2);
+        });
+        s("Subtract two 20-digit numbers", function () {
+            return i20_1.sub(i20_2);
+        });
+        s("Subtract two 34-digit numbers", function () {
+            return i34_1.sub(i34_2);
         });
 
-        bi.add("parse 100-digit number", function () {
-            BigInteger.parse("12345789012345678901234578901234567890123457890123456789012345789012345678901234578901234567890");
+        s("Multiply two 1-digit numbers", function () {
+            return i1_1.mul(i1_2);
+        });
+        s("Multiply two 20-digit numbers", function () {
+            return i20_1.mul(i20_2);
+        });
+        s("Multiply two 34-digit numbers", function () {
+            return i34_1.mul(i34_2);
         });
 
-        bi.add("1 + 1", function () {
-            i1.add(i1);
+        s("Double a 1-digit number", function () {
+            return i1_1.mulNum(2);
+        });
+        s("Double a 20-digit number", function () {
+            return i20_1.mulNum(2);
+        });
+        s("Double a 34-digit number", function () {
+            return i34_1.mulNum(2);
+        });
+        s("Centuple a 1-digit number", function () {
+            return i1_1.mulNum(100);
+        });
+        s("Centuple a 20-digit number", function () {
+            return i20_1.mulNum(100);
+        });
+        s("Centuple a 34-digit number", function () {
+            return i34_1.mulNum(100);
         });
 
-        var i10000000000000000000 = BigInteger.parse("10000000000000000000");
-        bi.add("20-digit number + 1", function () {
-            i10000000000000000000.add(i1);
+        s("Divide two 1-digit numbers", function () {
+            return i1_1.div(i1_2);
+        });
+        s("Divide two 20-digit numbers", function () {
+            return i20_1.div(i20_2);
+        });
+        s("Divide two 34-digit numbers", function () {
+            return i34_1.div(i34_2);
         });
 
-        var i12345678901234567890 = BigInteger.parse("12345678901234567890");
-        var i99999999999999999999 = BigInteger.parse("99999999999999999999");
-        bi.add("Addition of 20-digit numbers", function () {
-            i12345678901234567890.add(i99999999999999999999);
+        s("Square a 1-digit number", function () {
+            return i1_1.pow(2);
+        });
+        s("Square a 20-digit number", function () {
+            return i20_1.pow(2);
+        });
+        s("Square a 34-digit number", function () {
+            return i34_1.pow(2);
+        });
+        s("Cube a 1-digit number", function () {
+            return i1_1.pow(3);
+        });
+        s("Cube a 20-digit number", function () {
+            return i20_1.pow(3);
+        });
+        s("Cube a 34-digit number", function () {
+            return i34_1.pow(3);
         });
 
-        var i9876543210987654321098765432109876543210987654321098765432109876543210987654321098765432109876543210 = BigInteger.parse("9876543210987654321098765432109876543210987654321098765432109876543210987654321098765432109876543210");
-        var i1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890 = BigInteger.parse("1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890");
-        bi.add("Addition of 100-digit numbers", function () {
-            i9876543210987654321098765432109876543210987654321098765432109876543210987654321098765432109876543210.add(i1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890);
+        s("Compare two 1-digit numbers", function () {
+            return i1_1.eq(i1_2);
+        });
+        s("Compare two 20-digit numbers", function () {
+            return i20_1.eq(i20_2);
+        });
+        s("Compare two 34-digit numbers", function () {
+            return i34_1.eq(i34_2);
+        });
+    }
+
+    function modPointSuite() {
+        // very simple curve and points generated with Wolfram|Alpha
+        var c1 = new ModCurve(BigInteger.parse("2"), BigInteger.parse("1"), BigInteger.parse("9"));
+        var pSmall_1 = new ModPoint(BigInteger.parse("4"), BigInteger.parse("1"), c1);
+        var pSmall_2 = new ModPoint(BigInteger.parse("6"), BigInteger.parse("2"), c1);
+
+        // using the values defined in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
+        var cBig = new ModCurve(BigInteger.parse("4451685225093714772084598273548427"), BigInteger.parse("2061118396808653202902996166388514"), BigInteger.parse("4451685225093714772084598273548427"));
+        var pBig_1 = new ModPoint(BigInteger.parse("188281465057972534892223778713752"), BigInteger.parse("3419875491033170827167861896082688"), cBig);
+        var pBig_2 = new ModPoint(BigInteger.parse("1415926535897932384626433832795028"), BigInteger.parse("3846759606494706724286139623885544"), cBig);
+
+        var s = BenchmarkSuite.create("ModPoint");
+
+        s("Adding a tiny point and infinity", function () {
+            return pSmall_1.add(ModPoint.INFINITY);
+        });
+        s("Adding a tiny point and itself", function () {
+            return pSmall_1.add(pSmall_1);
+        });
+        s("Adding two tiny points", function () {
+            return pSmall_1.add(pSmall_2);
+        });
+        s("Adding a large point and infinity", function () {
+            return pBig_1.add(ModPoint.INFINITY);
+        });
+        s("Adding a large point and itself", function () {
+            return pBig_1.add(pBig_1);
+        });
+        s("Adding two large points", function () {
+            return pBig_1.add(pBig_2);
         });
 
-        bi.run({ async: true });
-    });
+        s("Equality of two tiny points", function () {
+            return pSmall_1.eq(pSmall_2);
+        });
+        s("Equality of two large points", function () {
+            return pBig_1.eq(pBig_2);
+        });
+    }
+
+    bigIntegerSuite();
+    modNumberSuite();
+    modPointSuite();
 });
 //# sourceMappingURL=bench.js.map

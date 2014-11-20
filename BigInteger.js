@@ -72,6 +72,22 @@
             return BigInteger.create(1, this._digits.slice(0));
         };
 
+        /** O(this.digits)
+        Rounds down. */
+        BigInteger.prototype.halve = function () {
+            var digits = new Array(this._digits.length);
+            var hasRest = false;
+            for (var n = this._digits.length - 1; n >= 0; n--) {
+                digits[n] = Math.floor(this._digits[n] / 2);
+                if (hasRest) {
+                    digits[n] += BigInteger.BASE / 2;
+                }
+                hasRest = this._digits[n] % 2 == 1;
+            }
+
+            return BigInteger.create(this._sign, digits);
+        };
+
         /** O(max(this.digits, other.digits)) */
         BigInteger.prototype.add = function (other) {
             var thisAbs = this.abs();
@@ -155,34 +171,97 @@
             return (z2.leftShift(m2 * 2)).add(z1.sub(z2).sub(z0).leftShift(m2)).add(z0);
         };
 
-        /** O(this / other) */
-        BigInteger.prototype.div = function (other) {
-            var quotient = this;
-            var result = BigInteger.ZERO;
+        /** O(this.digits^2) */
+        BigInteger.prototype.div = function (divisor) {
+            function divide(dividend, divisor) {
+                if (dividend.eq(BigInteger.ZERO)) {
+                    return BigInteger.ZERO;
+                }
 
-            while (quotient.gte(other)) {
-                quotient = quotient.sub(other);
-                result = result.add(BigInteger.ONE);
+                var low = BigInteger.ONE;
+                var high = dividend;
+
+                while (low.lt(high)) {
+                    var guess = low.add(high).halve();
+                    if (dividend.sub(divisor.mul(guess)).gte(divisor)) {
+                        low = guess.add(BigInteger.ONE);
+                    } else {
+                        high = guess;
+                    }
+                }
+
+                return low;
             }
 
-            return result;
+            var sign = this._sign * divisor._sign;
+            divisor = divisor.abs();
+            var dividend = this.abs();
+
+            if (dividend.lt(divisor)) {
+                return BigInteger.ZERO;
+            }
+
+            var digits = new Array();
+
+            // First, take digits from the biggest one until the number they form is bigger than the divisor
+            var index;
+            var remainder;
+            for (index = dividend._digits.length - divisor._digits.length; index >= 0; index--) {
+                var shifted = dividend.rightShiftAbs(index);
+                if (shifted.gte(divisor)) {
+                    // Divide that number by the divisor, store the quotient, and keep the remainder
+                    var quotient = divide(shifted, divisor);
+                    remainder = shifted.sub(quotient.mul(divisor));
+                    digits.unshift(quotient.toInt());
+                    index--;
+                    break;
+                }
+            }
+
+            for (; index >= 0; index--) {
+                var newDigit = dividend._digits[index];
+                var newDividend = remainder.pushRight(newDigit);
+                var quotient = divide(newDividend, divisor);
+                remainder = newDividend.sub(quotient.mul(divisor));
+                digits.unshift(quotient.toInt());
+            }
+
+            return BigInteger.create(sign, digits);
         };
 
-        /** O(this / n) */
+        /** O(log(this)) */
         BigInteger.prototype.mod = function (n) {
-            var result = this;
+            var low = BigInteger.ZERO;
+            var high = this.abs();
 
             if (this._sign == 1) {
-                while (result.gte(n)) {
-                    result = result.sub(n);
+                while (low.lt(high)) {
+                    var guess = low.add(high).halve();
+                    if (this.sub(n.mul(guess)).gte(n)) {
+                        low = guess.add(BigInteger.ONE);
+                    } else {
+                        high = guess;
+                    }
                 }
-            } else {
-                while (BigInteger.ZERO.gt(result)) {
-                    result = result.add(n);
-                }
-            }
 
-            return result;
+                return this.sub(n.mul(low));
+            } else {
+                while (low.lt(high)) {
+                    var guess = low.add(high).halve();
+                    var result = this.add(n.mul(guess));
+                    if (result._sign == 1) {
+                        if (result.lt(n)) {
+                            return result;
+                        } else {
+                            high = guess;
+                        }
+                    } else {
+                        low = guess.add(BigInteger.ONE);
+                    }
+                }
+
+                return this.add(n.mul(low));
+            }
         };
 
         /** O(log(n)^2) */
@@ -352,6 +431,29 @@
             return BigInteger.create(this._sign, digits);
         };
 
+        /** O(this.digits + n) */
+        BigInteger.prototype.pushRight = function (n) {
+            var digits = new Array(this._digits.length + 1);
+
+            digits[0] = n;
+            for (var i = 0; i < this._digits.length; i++) {
+                digits[i + 1] = this._digits[i];
+            }
+
+            return BigInteger.create(this._sign, digits);
+        };
+
+        /** O(this.digits + n) */
+        BigInteger.prototype.rightShiftAbs = function (n) {
+            var digits = new Array(this._digits.length - n);
+
+            for (var i = 0; i < digits.length; i++) {
+                digits[i] = this._digits[i + n];
+            }
+
+            return BigInteger.create(1, digits);
+        };
+
         /** O(digits) */
         BigInteger.create = function (sign, digits) {
             // Remove useless digits
@@ -383,6 +485,7 @@
 
         BigInteger.ZERO = BigInteger.uncheckedCreate(1, [0]);
         BigInteger.ONE = BigInteger.uncheckedCreate(1, [1]);
+        BigInteger.TWO = BigInteger.uncheckedCreate(1, [2]);
         return BigInteger;
     })();
 
