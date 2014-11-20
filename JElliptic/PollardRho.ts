@@ -124,7 +124,7 @@ module PollardRho {
         }
 
         endStep(lambda: ModNumber): void {
-            this._current = this._current.endAdd(this._currentEntry.p, lambda);
+            this.setCurrent(this._current.endAdd(this._currentEntry.p, lambda));
         }
 
         fullStep() {
@@ -132,14 +132,26 @@ module PollardRho {
             this._currentEntry = this._table.at(index);
             this._u = this._u.add(this._currentEntry.u);
             this._v = this._v.add(this._currentEntry.v);
-            var candidate = this._current.add(this._currentEntry.p);
-            var candidateNeg = candidate.negate(); // TODO
-            this._current = candidate;
+            this.setCurrent(this._current.add(this._currentEntry.p));
         }
-
 
         toString(): string {
             return "[u = " + this._u + ", v = " + this._v + "]";
+        }
+
+        private setCurrent(candidate: ModPoint) {
+            if (this._config.useNegationMap) {
+                var candidateNeg = candidate.negate();
+                if (candidate.y.compare(candidateNeg.y) == 1) {
+                    this._current = candidate;
+                } else {
+                    this._current = candidateNeg;
+                    this._u = this._u.negate();
+                    this._v = this._v.negate();
+                }
+            } else {
+                this._current = candidate;
+            }
         }
     }
 }
