@@ -32,22 +32,16 @@ class ModNumber {
 
     /** O(max(this.value.digits, other.value.digits)) */
     add(other: ModNumber): ModNumber {
-        this.ensureCompatible(other);
-
         return new ModNumber(this._value.add(other._value), this._n);
     }
 
     /** O(max(this.value.digits, other.value.digits)) */
     sub(other: ModNumber): ModNumber {
-        this.ensureCompatible(other);
-
         return new ModNumber(this._value.sub(other._value), this._n);
     }
 
     /** O(max(this.value.digits, other.value.digits)^log_2(3)) */
     mul(other: ModNumber): ModNumber {
-        this.ensureCompatible(other);
-
         return new ModNumber(this._value.mul(other._value), this._n);
     }
 
@@ -58,8 +52,6 @@ class ModNumber {
 
     /** O(log(n)^2 + max(this.value.digits, other.value.digits)^log_2(3)) */
     div(other: ModNumber): ModNumber {
-        this.ensureCompatible(other);
-
         return new ModNumber(this._value.mul(other._value.modInverse(this._n)), this._n);
     }
 
@@ -73,22 +65,18 @@ class ModNumber {
     }
 
     /** O(min(this.value.digits, other.value.digits)) */
-    eq(other: ModNumber): boolean {
-        this.ensureCompatible(other);
+    compare(other: ModNumber): number {
+        return this._value.compare(other._value);
+    }
 
+    /** O(min(this.value.digits, other.value.digits)) */
+    eq(other: ModNumber): boolean {
         return this._value.eq(other._value);
     }
 
     /** O(this.value.digits + this.n.digits) */
     toString(): string {
         return this._value.toString() + " mod " + this._n.toString();
-    }
-
-    /** O(this.n.digits) */
-    private ensureCompatible(other: ModNumber): void {
-        if (!this._n.eq(other._n)) {
-            throw "Incompatible ModNums";
-        }
     }
 }
 

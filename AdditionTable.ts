@@ -11,14 +11,16 @@ export class Table {
     constructor(config: IConfig) {
         this._entries = new Array(config.additionTableLength);
 
-        var order = BigInteger.fromInt(config.generator.getOrder());
         var rng = new DeterministicRandom(config.additionTableSeed);
 
         for (var n = 0; n < this._entries.length; n++) {
-            var u = new ModNumber(rng.next(this._entries.length), order);
-            var v = new ModNumber(rng.next(this._entries.length), order);
-            var p = config.generator.mulNum(u.value).add(config.target.mulNum(v.value));
-            this._entries[n] = new TableEntry(u, v, p);
+            var u = rng.next(this._entries.length);
+            var v = rng.next(this._entries.length);
+
+            var um = new ModNumber(BigInteger.fromInt(u), config.curve.order);
+            var vm = new ModNumber(BigInteger.fromInt(v), config.curve.order);
+            var p = config.generator.mulNum(u).add(config.target.mulNum(v));
+            this._entries[n] = new TableEntry(um, vm, p);
         }
     }
 

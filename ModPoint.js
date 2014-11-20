@@ -1,16 +1,17 @@
 ﻿define(["require", "exports", "BigInteger", "ModNumber", "ModPointAddPartialResult"], function(require, exports, BigInteger, ModNumber, ModPointAddPartialResult) {
+    // N.B.: Ensuring the validity of a point on a curve is simply too slow
+    //       Unit tests will have to do...
     var ModPoint = (function () {
-        function ModPoint(x, y, curve) {
-            if (curve == null) {
-                return;
-            }
-
-            this._x = new ModNumber(x, curve.n);
-            this._y = new ModNumber(y, curve.n);
-            this._curve = curve;
-            // N.B.: Ensuring the validity of a point on a curve is simply too slow
-            //       Unit tests will have to do...
+        function ModPoint() {
         }
+        ModPoint.create = function (x, y, curve) {
+            var point = new ModPoint();
+            point._x = new ModNumber(x, curve.n);
+            point._y = new ModNumber(y, curve.n);
+            point._curve = curve;
+            return point;
+        };
+
         Object.defineProperty(ModPoint.prototype, "x", {
             get: function () {
                 return this._x;
@@ -43,6 +44,11 @@
             configurable: true
         });
 
+        /** O(1) */
+        ModPoint.prototype.negate = function () {
+            return ModPoint.fromModNumbers(this._x, this._y.negate(), this._curve);
+        };
+
         ModPoint.prototype.add = function (other) {
             // Case 1: One of the points is infinity -> return the other
             if (this == ModPoint.INF) {
@@ -73,7 +79,7 @@
             var x = lambda.pow(2).sub(this._x).sub(other._x);
             var y = lambda.mul(this._x.sub(x)).sub(this._y);
 
-            return new ModPoint(x.value, y.value, this._curve);
+            return ModPoint.fromModNumbers(x, y, this._curve);
         };
 
         ModPoint.prototype.beginAdd = function (other) {
@@ -108,16 +114,27 @@
             var x = lambda.pow(2).sub(this._x).sub(other._x);
             var y = lambda.mul(this._x.sub(x)).sub(this._y);
 
-            return new ModPoint(x.value, y.value, this._curve);
+            return ModPoint.fromModNumbers(x, y, this._curve);
         };
 
         /** O(n) */
         ModPoint.prototype.mulNum = function (n) {
-            var g = ModPoint.INF;
-            for (var _ = BigInteger.ZERO; _.lt(n); _ = _.add(BigInteger.ONE)) {
-                g = g.add(this);
+            var result = ModPoint.INF;
+            var currentAdding = this;
+
+            while (n != 0) {
+                if ((n & 1) == 1) {
+                    result = result.add(currentAdding);
+                }
+
+                n >>= 1;
+                if (n != 0) {
+                    // This is expensive, don't do it if we're not going to use it
+                    currentAdding = currentAdding.add(currentAdding);
+                }
             }
-            return g;
+
+            return result;
         };
 
         /** O(this.value.digits / n) */
@@ -126,19 +143,6 @@
                 return 0;
             }
             return this._x.value.mod(BigInteger.fromInt(n)).toInt();
-        };
-
-        /** O(return) */
-        ModPoint.prototype.getOrder = function () {
-            var point = ModPoint.INF;
-            for (var order = 1; ; order++) {
-                point = point.add(this);
-                if (point.eq(ModPoint.INF)) {
-                    return order;
-                }
-            }
-
-            throw "No order found.";
         };
 
         /** O(min(this.x.value.digits, other.x.value.digits) + min(this.y.value.digits, other.y.value.digits)) */
@@ -160,7 +164,15 @@
             }
             return "(" + this._x.value.toString() + ", " + this._y.value.toString() + ")";
         };
-        ModPoint.INF = new ModPoint(BigInteger.ZERO, BigInteger.ZERO, null);
+
+        ModPoint.fromModNumbers = function (x, y, curve) {
+            var point = new ModPoint();
+            point._x = x;
+            point._y = y;
+            point._curve = curve;
+            return point;
+        };
+        ModPoint.INF = new ModPoint();
         return ModPoint;
     })();
 

@@ -3,10 +3,11 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModPoint", "ModCurve",
     var PollardRhoTests;
     (function (PollardRhoTests) {
         var NonAlgorithmicConfig = (function () {
-            function NonAlgorithmicConfig(a, b, n, gx, gy, tx, ty, expected) {
+            function NonAlgorithmicConfig(a, b, n, order, gx, gy, tx, ty, expected) {
                 this.a = a;
                 this.b = b;
                 this.n = n;
+                this.order = order;
                 this.gx = gx;
                 this.gy = gy;
                 this.tx = tx;
@@ -69,22 +70,21 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModPoint", "ModCurve",
 
         function result(configName, points, tableSeed, tableLength, walksCount, useNegationMap, distinguishedMask) {
             var sink = new ComputingResultSink();
-            var curve = new ModCurve(BigInteger.parse(points.a), BigInteger.parse(points.b), BigInteger.parse(points.n));
+            var curve = new ModCurve(BigInteger.parse(points.a), BigInteger.parse(points.b), BigInteger.parse(points.n), BigInteger.parse(points.order));
             var config = {
                 curve: curve,
-                generator: new ModPoint(BigInteger.parse(points.gx), BigInteger.parse(points.gy), curve),
-                target: new ModPoint(BigInteger.parse(points.tx), BigInteger.parse(points.ty), curve),
+                generator: ModPoint.create(BigInteger.parse(points.gx), BigInteger.parse(points.gy), curve),
+                target: ModPoint.create(BigInteger.parse(points.tx), BigInteger.parse(points.ty), curve),
                 additionTableSeed: tableSeed,
                 additionTableLength: tableLength,
                 parrallelWalksCount: walksCount,
                 useNegationMap: useNegationMap,
                 distinguishedPointMask: BigInteger.parse(distinguishedMask)
             };
-            var order = BigInteger.fromInt(config.generator.getOrder());
 
-            test(configName + ": " + config.generator + ", " + config.target + " on " + config.curve, function () {
+            test(configName + ": " + points.expected + " * " + config.generator + " = " + config.target + " on " + config.curve, function () {
                 PollardRho.run(config, sink);
-                ok(sink.result.eq(new ModNumber(BigInteger.parse(points.expected), order)));
+                ok(sink.result.eq(new ModNumber(BigInteger.parse(points.expected), curve.order)));
             });
         }
 
@@ -92,7 +92,7 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModPoint", "ModCurve",
             QUnit.module("PollardRho");
 
             var correctResults = [
-                new NonAlgorithmicConfig("0", "3", "31", "11", "1", "23", "24", "10")
+                new NonAlgorithmicConfig("0", "3", "31", "31", "11", "1", "23", "24", "10")
             ];
 
             correctResults.forEach(function (r) {

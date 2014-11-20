@@ -32,22 +32,16 @@
 
         /** O(max(this.value.digits, other.value.digits)) */
         ModNumber.prototype.add = function (other) {
-            this.ensureCompatible(other);
-
             return new ModNumber(this._value.add(other._value), this._n);
         };
 
         /** O(max(this.value.digits, other.value.digits)) */
         ModNumber.prototype.sub = function (other) {
-            this.ensureCompatible(other);
-
             return new ModNumber(this._value.sub(other._value), this._n);
         };
 
         /** O(max(this.value.digits, other.value.digits)^log_2(3)) */
         ModNumber.prototype.mul = function (other) {
-            this.ensureCompatible(other);
-
             return new ModNumber(this._value.mul(other._value), this._n);
         };
 
@@ -58,8 +52,6 @@
 
         /** O(log(n)^2 + max(this.value.digits, other.value.digits)^log_2(3)) */
         ModNumber.prototype.div = function (other) {
-            this.ensureCompatible(other);
-
             return new ModNumber(this._value.mul(other._value.modInverse(this._n)), this._n);
         };
 
@@ -73,22 +65,18 @@
         };
 
         /** O(min(this.value.digits, other.value.digits)) */
-        ModNumber.prototype.eq = function (other) {
-            this.ensureCompatible(other);
+        ModNumber.prototype.compare = function (other) {
+            return this._value.compare(other._value);
+        };
 
+        /** O(min(this.value.digits, other.value.digits)) */
+        ModNumber.prototype.eq = function (other) {
             return this._value.eq(other._value);
         };
 
         /** O(this.value.digits + this.n.digits) */
         ModNumber.prototype.toString = function () {
             return this._value.toString() + " mod " + this._n.toString();
-        };
-
-        /** O(this.n.digits) */
-        ModNumber.prototype.ensureCompatible = function (other) {
-            if (!this._n.eq(other._n)) {
-                throw "Incompatible ModNums";
-            }
         };
         return ModNumber;
     })();

@@ -56,6 +56,16 @@ module BigIntegerTests {
         });
     }
 
+    function intOp(name: string, s1: string, s2: string, result: number, op: (b1: BigInteger, b2: BigInteger) => number) {
+        test(name + ": " + s1 + ", " + s2 + " = " + result, () => {
+            var i1 = BigInteger.parse(s1);
+            var i2 = BigInteger.parse(s2);
+
+            var actualResult = op(i1, i2);
+            equal(actualResult, result);
+        });
+    }
+
     function negate(s1: string, s2: string) {
         var i1 = BigInteger.parse(s1);
         var i2 = BigInteger.parse(s2);
@@ -119,14 +129,11 @@ module BigIntegerTests {
         }
     }
 
-    function lte(s1: string, s2: string, result: boolean) {
-        binOp("lte", s1, s2, result, (b1, b2) => b1.lte(b2));
-        binOp("gt", s1, s2, !result, (b1, b2) => b1.gt(b2));
-    }
-
-    function lt(s1: string, s2: string, result: boolean) {
-        binOp("lt", s1, s2, result, (b1, b2) => b1.lt(b2));
-        binOp("gte", s1, s2, !result, (b1, b2) => b1.gte(b2));
+    function compare(s1: string, s2: string, result: number) {
+        intOp("compare", s1, s2, result, (b1, b2) => b1.compare(b2));
+        if (s1 != s2) {
+            intOp("compare", s2, s1, -result, (b1, b2) => b1.compare(b2));
+        }
     }
 
     function eq(s1: string, s2: string, result: boolean) {
@@ -257,40 +264,22 @@ module BigIntegerTests {
         and("3", "1", "1");
         and("63", "13", "13");
 
-        lte("0", "0", true);
-        lte("0", "1", true);
-        lte("1", "1", true);
-        lte("1", "10", true);
-        lte("100000000000", "100000000000000000000000000000", true);
-        lte("100000000000000000000000000000", "100000000000000000000000000001", true);
-        lte("100000000000000000000000000000", "200000000000000000000000000000", true);
-        lte("-1", "0", true);
-        lte("-10", "-1", true);
-        lte("-10000000000000000000000000000000", "-100000", true);
-        lte("-200000000000000000000000000000", "-100000000000000000000000000000", true);
-        lte("0", "-1", false);
-        lte("1", "-1", false);
-        lte("-1", "-10", false);
-        lte("10000000000000000000000000000000", "100000", false);
-        lte("100000000000000000000000000001", "100000000000000000000000000000", false);
-
-        lt("0", "1", true);
-        lt("1", "10", true);
-        lt("100000000000", "100000000000000000000000000000", true);
-        lt("100000000000000000000000000000", "100000000000000000000000000001", true);
-        lt("100000000000000000000000000000", "200000000000000000000000000000", true);
-        lt("-1", "0", true);
-        lt("-10", "-1", true);
-        lt("-10000000000000000000000000000000", "-100000", true);
-        lt("-200000000000000000000000000000", "-100000000000000000000000000000", true);
-        lt("0", "0", false);
-        lt("1", "1", false);
-        lt("0", "-1", false);
-        lt("1", "-1", false);
-        lt("-1", "-10", false);
-        lt("10000000000000000000000000000000", "100000", false);
-        lt("100000000000000000000000000001", "100000000000000000000000000000", false);
-        lt("-10000000000000000000000000000000", "-10000000000000000000000000000000", false);
+        compare("0", "0", 0);
+        compare("0", "1", -1);
+        compare("1", "1", 0);
+        compare("1", "10", -1);
+        compare("100000000000", "100000000000000000000000000000", -1);
+        compare("100000000000000000000000000000", "100000000000000000000000000001", -1);
+        compare("100000000000000000000000000000", "200000000000000000000000000000", -1);
+        compare("-1", "0", -1);
+        compare("-10", "-1", -1);
+        compare("-10000000000000000000000000000000", "-100000", -1);
+        compare("-200000000000000000000000000000", "-100000000000000000000000000000", -1);
+        compare("0", "-1", 1);
+        compare("1", "-1", 1);
+        compare("-1", "-10", 1);
+        compare("10000000000000000000000000000000", "100000", 1);
+        compare("100000000000000000000000000001", "100000000000000000000000000000", 1);
 
         eq("0", "0", true);
         eq("-1", "-1", true);

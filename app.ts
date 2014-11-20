@@ -12,23 +12,20 @@ function bigintValue(elemName: string): BigInteger {
 }
 
 document.getElementById("button").onclick = () => {
-    BigInteger.parse("123456789").mod(BigInteger.TWO);
-
-
-    var a = bigintValue("a"), b = bigintValue("b"), n = bigintValue("order");
+    var a = bigintValue("a"), b = bigintValue("b"), n = bigintValue("n"), order=bigintValue("order");
     var gx = bigintValue("gx"), gy = bigintValue("gy");
     var hx = bigintValue("hx"), hy = bigintValue("hy");
 
-    var curve = new ModCurve(a, b, n);
+    var curve = new ModCurve(a, b, n, order);
 
     var config: IConfig = {
         curve: curve,
-        generator: new ModPoint(gx, gy, curve),
-        target: new ModPoint(hx, hy, curve),
+        generator: ModPoint.create(gx, gy, curve),
+        target: ModPoint.create(hx, hy, curve),
         additionTableSeed: 0,
         additionTableLength: 128,
         parrallelWalksCount: 10,
-        useNegationMap: true, // TODO
+        useNegationMap: true,
         distinguishedPointMask: BigInteger.fromInt(3)
     };
 
