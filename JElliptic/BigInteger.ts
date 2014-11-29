@@ -106,7 +106,7 @@
         var hi = thisIsGreater ? this : other;
         var lo = thisIsGreater ? other : this;
 
-        var digits = new Uint32Array(hi._digits.length);
+        var digits = new Uint32Array(hi._digits.length + 1);
         var loIsPositive = hi._positive == lo._positive;
 
         var carry: number = 0;
@@ -148,7 +148,7 @@
 
     /** O(max(this.digits, other.digits)^log_2(3)) */
     mul(other: BigInteger): BigInteger {
-        function singleDigitMul(bi: BigInteger, mul: number, resultIsPositive: boolean): BigInteger {
+        function singleDigitMul(bi: BigInteger, mul: number, mulIsPositive: boolean): BigInteger {
             var digits = new Uint32Array(bi._digits.length + 1);
             var carry = 0;
             for (var n = 0; n < bi._digits.length; n++) {
@@ -161,32 +161,38 @@
                 digits[bi._digits.length] = carry;
             }
 
-            return BigInteger.create(resultIsPositive == bi._positive, digits);
+            return BigInteger.create(mulIsPositive == bi._positive, digits);
         }
 
-        if (this._digits.length == 1) {
-            return singleDigitMul(other, this._digits[0], this._positive);
+        var result = BigInteger.ZERO;
+        for (var n = 0; n < this._digits.length; n++) {
+            result = result.add(singleDigitMul(other, this._digits[n], this._positive).leftShift(n));
         }
+        return result;
 
-        if (other._digits.length == 1) {
-            return singleDigitMul(this, other._digits[0], other._positive);
-        }
+        //if (this._digits.length == 1) {
+        //    return singleDigitMul(other, this._digits[0], this._positive);
+        //}
 
-        // http://en.wikipedia.org/wiki/Karatsuba_algorithm
+        //if (other._digits.length == 1) {
+        //    return singleDigitMul(this, other._digits[0], other._positive);
+        //}
 
-        var m = Math.max(this._digits.length, other._digits.length);
-        var m2 = Math.ceil(m / 2);
+        //// http://en.wikipedia.org/wiki/Karatsuba_algorithm
 
-        var lo1 = BigInteger.create(this._positive, this._digits.subarray(0, m2));
-        var hi1 = BigInteger.create(this._positive, this._digits.subarray(m2));
-        var lo2 = BigInteger.create(other._positive, other._digits.subarray(0, m2));
-        var hi2 = BigInteger.create(other._positive, other._digits.subarray(m2));
+        //var m = Math.max(this._digits.length, other._digits.length);
+        //var m2 = Math.ceil(m / 2);
 
-        var z0 = lo1.mul(lo2);
-        var z1 = lo1.add(hi1).mul(lo2.add(hi2));
-        var z2 = hi1.mul(hi2);
+        //var lo1 = BigInteger.create(this._positive, this._digits.subarray(0, m2));
+        //var hi1 = BigInteger.create(this._positive, this._digits.subarray(m2));
+        //var lo2 = BigInteger.create(other._positive, other._digits.subarray(0, m2));
+        //var hi2 = BigInteger.create(other._positive, other._digits.subarray(m2));
 
-        return (z2.leftShift(m2 * 2)).add(z1.sub(z2).sub(z0).leftShift(m2)).add(z0);
+        //var z0 = lo1.mul(lo2);
+        //var z1 = lo1.add(hi1).mul(lo2.add(hi2));
+        //var z2 = hi1.mul(hi2);
+
+        //return (z2.leftShift(m2 * 2)).add(z1.sub(z2).sub(z0).leftShift(m2)).add(z0);
     }
 
     /** O(???) */
@@ -272,7 +278,7 @@
         return [BigInteger.create(resultIsPositive, digits), remainder];
     }
 
-    /** ~O(1) */
+    /** O(1) */
     smallRem(divisor: number): number {
         return this._digits[0] % divisor;
     }
@@ -391,10 +397,6 @@
     /** O(this.digits + n) */
     private leftShift(n: number): BigInteger {
         var digits = new Uint32Array(this._digits.length + n);
-
-        for (var i = 0; i < n; i++) {
-            digits[i] = 0;
-        }
 
         for (var i = 0; i < this._digits.length; i++) {
             digits[i + n] = this._digits[i];
