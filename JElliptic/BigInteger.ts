@@ -21,7 +21,7 @@
         }
 
         var sign = n >= 0 ? 1 : -1;
-        var digits = Array<number>();
+        var digits = new Array<number>();
 
         n = Math.abs(n);
 
@@ -44,7 +44,7 @@
             str = str.substring(1);
         }
 
-        var digits = Array<number>();
+        var digits = new Array<number>();
         var currentDigit = 0;
         var currentMul = 1;
 
@@ -73,7 +73,7 @@
 
     /** O(1) */
     negate(): BigInteger {
-        return BigInteger.create(-this._sign, this._digits.slice(0));
+        return BigInteger.create(-this._sign, this._digits);
     }
 
     /** O(1) */
@@ -81,7 +81,7 @@
         if (this._sign == 1) {
             return this;
         }
-        return BigInteger.create(1, this._digits.slice(0));
+        return BigInteger.create(1, this._digits);
     }
 
     /** O(this.digits)
@@ -108,13 +108,17 @@
         var hi = thisIsGreater ? this : other;
         var lo = thisIsGreater ? other : this;
 
-        var digits = Array<number>();
+        var digits = new Array<number>(hi._digits.length + 1);
         var loSign = hi._sign == lo._sign ? 1 : -1;
 
         var carry: number = 0;
 
         for (var n = 0; n < hi._digits.length; n++) {
-            var current = hi._digits[n] + loSign * (lo._digits[n] || 0) + carry;
+            var current = hi._digits[n] + carry;
+
+            if (n < lo._digits.length) {
+                current += loSign * lo._digits[n];
+            }
 
             if (current >= BigInteger.BASE) {
                 carry = 1;
@@ -144,44 +148,50 @@
     /** O(max(this.digits, other.digits)^log_2(3)) */
     mul(other: BigInteger): BigInteger {
         function singleDigitMul(bi: BigInteger, mul: number, mulSign: number): BigInteger {
-            var digits = Array<number>();
+            var digits = new Array<number>(bi._digits.length + 1);
             var carry = 0;
             for (var n = 0; n < bi._digits.length; n++) {
                 var digit = bi._digits[n] * mul + carry;
                 carry = Math.floor(digit / BigInteger.BASE);
                 digit %= BigInteger.BASE;
-                digits.push(digit);
+                digits[n] = digit;
             }
             if (carry != 0) {
-                digits.push(carry);
+                digits[bi._digits.length] = carry;
             }
 
             return BigInteger.create(mulSign * bi._sign, digits);
         }
 
-        if (this._digits.length == 1) {
-            return singleDigitMul(other, this._digits[0], this._sign);
+        var result = BigInteger.ZERO;
+        for (var n = 0; n < this._digits.length; n++) {
+            result = result.add(singleDigitMul(other, this._digits[n], this._sign).leftShift(n));
         }
+        return result;
 
-        if (other._digits.length == 1) {
-            return singleDigitMul(this, other._digits[0], other._sign);
-        }
+        //if (this._digits.length == 1) {
+        //    return singleDigitMul(other, this._digits[0], this._sign);
+        //}
 
-        // http://en.wikipedia.org/wiki/Karatsuba_algorithm
+        //if (other._digits.length == 1) {
+        //    return singleDigitMul(this, other._digits[0], other._sign);
+        //}
 
-        var m = Math.max(this._digits.length, other._digits.length);
-        var m2 = Math.ceil(m / 2);
+        //// http://en.wikipedia.org/wiki/Karatsuba_algorithm
 
-        var lo1 = BigInteger.create(this._sign, this._digits.slice(0, m2));
-        var hi1 = BigInteger.create(this._sign, this._digits.slice(m2));
-        var lo2 = BigInteger.create(other._sign, other._digits.slice(0, m2));
-        var hi2 = BigInteger.create(other._sign, other._digits.slice(m2));
+        //var m = Math.max(this._digits.length, other._digits.length);
+        //var m2 = Math.ceil(m / 2);
 
-        var z0 = lo1.mul(lo2);
-        var z1 = lo1.add(hi1).mul(lo2.add(hi2));
-        var z2 = hi1.mul(hi2);
+        //var lo1 = BigInteger.create(this._sign, this._digits.slice(0, m2));
+        //var hi1 = BigInteger.create(this._sign, this._digits.slice(m2));
+        //var lo2 = BigInteger.create(other._sign, other._digits.slice(0, m2));
+        //var hi2 = BigInteger.create(other._sign, other._digits.slice(m2));
 
-        return (z2.leftShift(m2 * 2)).add(z1.sub(z2).sub(z0).leftShift(m2)).add(z0);
+        //var z0 = lo1.mul(lo2);
+        //var z1 = lo1.add(hi1).mul(lo2.add(hi2));
+        //var z2 = hi1.mul(hi2);
+
+        //return (z2.leftShift(m2 * 2)).add(z1.sub(z2).sub(z0).leftShift(m2)).add(z0);
     }
 
     /** O(???) */
@@ -218,7 +228,7 @@
         var divisor = other.abs();
         var dividend = this.abs();
 
-        switch(dividend.compare(divisor)) {
+        switch (dividend.compare(divisor)) {
             case 0:
                 if (sign == 1) {
                     return [BigInteger.ONE, BigInteger.ZERO];
@@ -234,7 +244,7 @@
                 }
         }
 
-        var digits = new Array<number>();
+        var digits = new Array<number>(this._digits.length);
 
         // First, take digits from the biggest one until the number they form is bigger than the divisor
         var index: number;
@@ -245,7 +255,7 @@
                 // Divide that number by the divisor, store the quotient, and keep the remainder
                 var quotientAndRemainder = inner(shifted, divisor);
                 remainder = quotientAndRemainder[1];
-                digits.unshift(quotientAndRemainder[0].toInt());
+                digits[index] = quotientAndRemainder[0].toInt();
                 index--;
                 break;
             }
@@ -257,7 +267,7 @@
             var newDividend = remainder.pushRight(newDigit);
             var quotientAndRemainder = inner(newDividend, divisor);
             remainder = quotientAndRemainder[1];
-            digits.unshift(quotientAndRemainder[0].toInt());
+            digits[index] = quotientAndRemainder[0].toInt();
         }
 
         if (this._sign == -1) {
@@ -323,10 +333,10 @@
 
     /** O(min(this.digits, other.digits)) */
     and(other: BigInteger): BigInteger {
-        var digits = Array<number>();
+        var digits = new Array<number>(Math.min(this._digits.length, other._digits.length));
 
-        for (var n = 0; n < this._digits.length && n < other._digits.length; n++) {
-            digits.push(this._digits[n] & other._digits[n]);
+        for (var n = 0; n < digits.length; n++) {
+            digits[n] = this._digits[n] & other._digits[n];
         }
 
         return BigInteger.create(1, digits);
@@ -391,7 +401,7 @@
 
     /** O(this.digits + n) */
     private leftShift(n: number): BigInteger {
-        var digits = new Array(this._digits.length + n);
+        var digits = new Array<number>(this._digits.length + n);
 
         for (var i = 0; i < n; i++) {
             digits[i] = 0;
@@ -406,7 +416,7 @@
 
     /** O(this.digits + n) */
     private pushRight(n: number): BigInteger {
-        var digits = new Array(this._digits.length + 1);
+        var digits = new Array<number>(this._digits.length + 1);
 
         digits[0] = n;
         for (var i = 0; i < this._digits.length; i++) {
@@ -418,7 +428,7 @@
 
     /** O(this.digits + n) */
     private rightShiftAbs(n: number): BigInteger {
-        var digits = new Array(this._digits.length - n);
+        var digits = new Array<number>(this._digits.length - n);
 
         for (var i = 0; i < digits.length; i++) {
             digits[i] = this._digits[i + n];
