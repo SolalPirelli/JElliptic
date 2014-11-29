@@ -196,7 +196,7 @@
 
             while (low.compare(high) == -1) {
                 var guess = low.add(high).halve();
-                if (dividend.sub(divisor.mul(guess)).compare(dividend) > -1) {
+                if (dividend.sub(divisor.mul(guess)).compare(divisor) > -1) {
                     if (fastGrowth) {
                         low = guess;
                         high = high.mul(high);
