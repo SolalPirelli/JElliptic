@@ -1,49 +1,47 @@
 ﻿class BigInteger {
-    private static MAX_SAFE_INT = 9007199254740991; // 2^53-1, where 53 is the mantissa size of IEEE-754 double-precision floating point numbers (what JS uses)
-    private static BASE = 10000000; // largest power of 10 smaller than sqrt(MAX_SAFE_INT) so that two digits can be multiplied in the safe space; also needs to be even
+    private static BASE = 10000; // largest power of 10 smaller than sqrt(uint32 max) so that two digits can be multiplied in the safe space; also needs to be even
     private static BASE_LOG10 = Math.floor(Math.log(BigInteger.BASE) / Math.log(10));
 
 
-    private _sign: number; // -1 or 1; zero always has 1 as a sign
-    private _digits: number[]; // base BASE
+    private _positive: boolean;
+    private _digits: Uint32Array; // base BASE
 
 
-    static MINUS_ONE = BigInteger.uncheckedCreate(-1, [1]);
-    static ZERO = BigInteger.uncheckedCreate(1, [0]);
-    static ONE = BigInteger.uncheckedCreate(1, [1]);
-    static TWO = BigInteger.uncheckedCreate(1, [2]);
+    static MINUS_ONE = BigInteger.uncheckedCreate(false, [1]);
+    static ZERO = BigInteger.uncheckedCreate(true, [0]);
+    static ONE = BigInteger.uncheckedCreate(true, [1]);
+    static TWO = BigInteger.uncheckedCreate(true, [2]);
 
 
     /** O(1) */
     static fromInt(n: number): BigInteger {
-        if (Math.abs(n) > BigInteger.MAX_SAFE_INT) {
-            throw "BigInteger.fromInt cannot be called with inexact integers.";
-        }
-
-        var sign = n >= 0 ? 1 : -1;
-        var digits = Array<number>();
-
+        var positive = n >= 0;
         n = Math.abs(n);
 
+        var digits = new Uint32Array(Math.ceil(Math.log(n) / Math.log(BigInteger.BASE) + 1));
+
+        var index = 0;
         do {
             var rem = n % BigInteger.BASE;
             n = Math.floor(n / BigInteger.BASE);
 
-            digits.push(rem);
+            digits[index] = rem;
+            index++;
         } while (n != 0);
 
-        return BigInteger.create(sign, digits);
+        return BigInteger.create(positive, digits);
     }
 
     /** O(str.length) */
     static parse(str: string): BigInteger {
         // This is a bit too complex for bases that are powers of ten, but it works with any base
-        var sign = 1;
+        var positive = true;
         if (str[0] == "-") {
-            sign = -1;
+            positive = false;
             str = str.substring(1);
         }
 
+        // TODO: Is there a way to use Uint32Array here? We'd need an upper bound on the length...
         var digits = Array<number>();
         var currentDigit = 0;
         var currentMul = 1;
@@ -68,26 +66,26 @@
             digits.push(Math.floor(currentDigit / BigInteger.BASE));
         }
 
-        return BigInteger.create(sign, digits);
+        return BigInteger.create(positive, new Uint32Array(digits));
     }
 
     /** O(1) */
     negate(): BigInteger {
-        return BigInteger.create(-this._sign, this._digits.slice(0));
+        return BigInteger.create(!this._positive, this._digits);
     }
 
     /** O(1) */
     abs(): BigInteger {
-        if (this._sign == 1) {
+        if (this._positive) {
             return this;
         }
-        return BigInteger.create(1, this._digits.slice(0));
+        return BigInteger.create(true, this._digits);
     }
 
     /** O(this.digits)
         Rounds down. */
     halve(): BigInteger {
-        var digits = new Array<number>(this._digits.length);
+        var digits = new Uint32Array(this._digits.length);
         var hasRest = false;
         for (var n = this._digits.length - 1; n >= 0; n--) {
             digits[n] = Math.floor(this._digits[n] / 2);
@@ -97,24 +95,31 @@
             hasRest = this._digits[n] % 2 == 1;
         }
 
-        return BigInteger.create(this._sign, digits);
+        return BigInteger.create(this._positive, digits);
     }
 
     /** O(max(this.digits, other.digits)) */
     add(other: BigInteger): BigInteger {
         var thisAbs = this.abs();
         var otherAbs = other.abs();
-        var thisIsGreater = thisAbs.compare(otherAbs) == 1 || thisAbs.eq(otherAbs) && this._sign == 1;
+        var thisIsGreater = thisAbs.compare(otherAbs) == 1 || thisAbs.eq(otherAbs) && this._positive;
         var hi = thisIsGreater ? this : other;
         var lo = thisIsGreater ? other : this;
 
-        var digits = Array<number>();
-        var loSign = hi._sign == lo._sign ? 1 : -1;
+        var digits = new Uint32Array(hi._digits.length);
+        var loIsPositive = hi._positive == lo._positive;
 
         var carry: number = 0;
 
         for (var n = 0; n < hi._digits.length; n++) {
-            var current = hi._digits[n] + loSign * (lo._digits[n] || 0) + carry;
+            var current = hi._digits[n] + carry;
+            if (n < lo._digits.length) {
+                if (loIsPositive) {
+                    current += lo._digits[n];
+                } else {
+                    current -= lo._digits[n];
+                }
+            }
 
             if (current >= BigInteger.BASE) {
                 carry = 1;
@@ -133,7 +138,7 @@
             digits[hi._digits.length] = carry;
         }
 
-        return BigInteger.create(hi._sign, digits);
+        return BigInteger.create(hi._positive, digits);
     }
 
     /** O(max(this.digits, other.digits)) */
@@ -143,28 +148,28 @@
 
     /** O(max(this.digits, other.digits)^log_2(3)) */
     mul(other: BigInteger): BigInteger {
-        function singleDigitMul(bi: BigInteger, mul: number, mulSign: number): BigInteger {
-            var digits = Array<number>();
+        function singleDigitMul(bi: BigInteger, mul: number, resultIsPositive: boolean): BigInteger {
+            var digits = new Uint32Array(bi._digits.length + 1);
             var carry = 0;
             for (var n = 0; n < bi._digits.length; n++) {
                 var digit = bi._digits[n] * mul + carry;
                 carry = Math.floor(digit / BigInteger.BASE);
                 digit %= BigInteger.BASE;
-                digits.push(digit);
+                digits[n] = digit;
             }
             if (carry != 0) {
-                digits.push(carry);
+                digits[bi._digits.length] = carry;
             }
 
-            return BigInteger.create(mulSign * bi._sign, digits);
+            return BigInteger.create(resultIsPositive == bi._positive, digits);
         }
 
         if (this._digits.length == 1) {
-            return singleDigitMul(other, this._digits[0], this._sign);
+            return singleDigitMul(other, this._digits[0], this._positive);
         }
 
         if (other._digits.length == 1) {
-            return singleDigitMul(this, other._digits[0], other._sign);
+            return singleDigitMul(this, other._digits[0], other._positive);
         }
 
         // http://en.wikipedia.org/wiki/Karatsuba_algorithm
@@ -172,10 +177,10 @@
         var m = Math.max(this._digits.length, other._digits.length);
         var m2 = Math.ceil(m / 2);
 
-        var lo1 = BigInteger.create(this._sign, this._digits.slice(0, m2));
-        var hi1 = BigInteger.create(this._sign, this._digits.slice(m2));
-        var lo2 = BigInteger.create(other._sign, other._digits.slice(0, m2));
-        var hi2 = BigInteger.create(other._sign, other._digits.slice(m2));
+        var lo1 = BigInteger.create(this._positive, this._digits.subarray(0, m2));
+        var hi1 = BigInteger.create(this._positive, this._digits.subarray(m2));
+        var lo2 = BigInteger.create(other._positive, other._digits.subarray(0, m2));
+        var hi2 = BigInteger.create(other._positive, other._digits.subarray(m2));
 
         var z0 = lo1.mul(lo2);
         var z1 = lo1.add(hi1).mul(lo2.add(hi2));
@@ -214,27 +219,27 @@
             return [low, dividend.sub(divisor.mul(low))];
         }
 
-        var sign = this._sign * other._sign;
+        var resultIsPositive = this._positive == other._positive;
         var divisor = other.abs();
         var dividend = this.abs();
 
-        switch(dividend.compare(divisor)) {
+        switch (dividend.compare(divisor)) {
             case 0:
-                if (sign == 1) {
+                if (resultIsPositive) {
                     return [BigInteger.ONE, BigInteger.ZERO];
                 } else {
                     return [BigInteger.MINUS_ONE, BigInteger.ZERO];
                 }
 
             case -1:
-                if (sign == 1) {
+                if (resultIsPositive) {
                     return [BigInteger.ZERO, dividend];
                 } else {
                     return [BigInteger.ZERO, divisor.sub(dividend)];
                 }
         }
 
-        var digits = new Array<number>();
+        var digits = new Uint32Array(this._digits.length);
 
         // First, take digits from the biggest one until the number they form is bigger than the divisor
         var index: number;
@@ -245,7 +250,7 @@
                 // Divide that number by the divisor, store the quotient, and keep the remainder
                 var quotientAndRemainder = inner(shifted, divisor);
                 remainder = quotientAndRemainder[1];
-                digits.unshift(quotientAndRemainder[0].toInt());
+                digits[index] = quotientAndRemainder[0].toInt();
                 index--;
                 break;
             }
@@ -257,14 +262,14 @@
             var newDividend = remainder.pushRight(newDigit);
             var quotientAndRemainder = inner(newDividend, divisor);
             remainder = quotientAndRemainder[1];
-            digits.unshift(quotientAndRemainder[0].toInt());
+            digits[index] = quotientAndRemainder[0].toInt();
         }
 
-        if (this._sign == -1) {
+        if (!this._positive) {
             remainder = divisor.sub(remainder);
         }
 
-        return [BigInteger.create(sign, digits), remainder];
+        return [BigInteger.create(resultIsPositive, digits), remainder];
     }
 
     /** ~O(1) */
@@ -290,7 +295,7 @@
         if (r.compare(BigInteger.ONE) == 1) {
             throw (this + " is not invertible");
         }
-        if (t._sign == -1) {
+        if (!t._positive) {
             t = t.add(n);
         }
         return t;
@@ -298,24 +303,24 @@
 
     /** O(min(this.digits, other.digits)) */
     compare(other: BigInteger): number {
-        if (this._sign < other._sign) {
-            return -1;
-        }
-        if (this._sign > other._sign) {
+        if (this._positive && !other._positive) {
             return 1;
         }
+        if (!this._positive && other._positive) {
+            return -1;
+        }
         if (this._digits.length < other._digits.length) {
-            return -this._sign;
+            return this._positive ? -1 : 1;
         }
         if (this._digits.length > other._digits.length) {
-            return this._sign;
+            return this._positive ? 1 : -1;
         }
         for (var n = this._digits.length - 1; n >= 0; n--) {
             if (this._digits[n] < other._digits[n]) {
-                return -this._sign;
+                return this._positive ? -1 : 1;
             }
             if (this._digits[n] > other._digits[n]) {
-                return this._sign;
+                return this._positive ? 1 : -1;
             }
         }
         return 0;
@@ -323,18 +328,18 @@
 
     /** O(min(this.digits, other.digits)) */
     and(other: BigInteger): BigInteger {
-        var digits = Array<number>();
+        var digits = new Uint32Array(Math.min(this._digits.length, other._digits.length));
 
         for (var n = 0; n < this._digits.length && n < other._digits.length; n++) {
-            digits.push(this._digits[n] & other._digits[n]);
+            digits[n] = this._digits[n] & other._digits[n];
         }
 
-        return BigInteger.create(1, digits);
+        return BigInteger.create(true, digits);
     }
 
     /** O(min(this.digits, other.digits)) */
     eq(other: BigInteger) {
-        function arrayEquals(a: number[], b: number[]): boolean {
+        function arrayEquals(a: Uint32Array, b: Uint32Array): boolean {
             if (a == b) {
                 return true;
             }
@@ -350,19 +355,13 @@
             return true;
         }
 
-        return this._sign == other._sign && arrayEquals(this._digits, other._digits);
+        return this._positive == other._positive && arrayEquals(this._digits, other._digits);
     }
 
     /** O(this.digits) */
     toInt(): number {
         // Hack-y, but simple
-        var str = this.toString();
-        var n = parseInt(str);
-        if (Math.abs(n) > BigInteger.MAX_SAFE_INT) {
-            throw "toInt can only work with small BigIntegers.";
-        }
-
-        return n;
+        return parseInt(this.toString());
     }
 
     /** O(this.digits) */
@@ -382,7 +381,7 @@
         }
         result = this._digits[this._digits.length - 1].toString() + result;
 
-        if (this._sign == -1) {
+        if (!this._positive) {
             result = "-" + result;
         }
 
@@ -391,7 +390,7 @@
 
     /** O(this.digits + n) */
     private leftShift(n: number): BigInteger {
-        var digits = new Array(this._digits.length + n);
+        var digits = new Uint32Array(this._digits.length + n);
 
         for (var i = 0; i < n; i++) {
             digits[i] = 0;
@@ -401,34 +400,34 @@
             digits[i + n] = this._digits[i];
         }
 
-        return BigInteger.create(this._sign, digits);
+        return BigInteger.create(this._positive, digits);
     }
 
     /** O(this.digits + n) */
     private pushRight(n: number): BigInteger {
-        var digits = new Array(this._digits.length + 1);
+        var digits = new Uint32Array(this._digits.length + 1);
 
         digits[0] = n;
         for (var i = 0; i < this._digits.length; i++) {
             digits[i + 1] = this._digits[i];
         }
 
-        return BigInteger.create(this._sign, digits);
+        return BigInteger.create(this._positive, digits);
     }
 
     /** O(this.digits + n) */
     private rightShiftAbs(n: number): BigInteger {
-        var digits = new Array(this._digits.length - n);
+        var digits = new Uint32Array(this._digits.length - n);
 
         for (var i = 0; i < digits.length; i++) {
             digits[i] = this._digits[i + n];
         }
 
-        return BigInteger.create(1, digits);
+        return BigInteger.create(true, digits);
     }
 
     /** O(digits) */
-    private static create(sign: number, digits: number[]): BigInteger {
+    private static create(positive: boolean, digits: Uint32Array): BigInteger {
         // Remove useless digits
         var actualLength = digits.length;
         while (actualLength > 0 && digits[actualLength - 1] == 0) {
@@ -440,16 +439,16 @@
         }
 
         var bi = new BigInteger();
-        bi._sign = sign;
-        bi._digits = digits.slice(0, actualLength);
+        bi._positive = positive;
+        bi._digits = digits.subarray(0, actualLength);
         return bi;
     }
 
     /** O(1) */
-    private static uncheckedCreate(sign: number, digits: number[]): BigInteger {
+    private static uncheckedCreate(positive: boolean, digits: number[]): BigInteger {
         var bi = new BigInteger();
-        bi._sign = sign;
-        bi._digits = digits;
+        bi._positive = positive;
+        bi._digits = new Uint32Array(digits);
         return bi;
     }
 }
