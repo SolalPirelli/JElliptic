@@ -4,14 +4,14 @@
     private static BASE_LOG10 = Math.floor(Math.log(BigInteger.BASE) / Math.log(10));
 
 
-    private _sign: number; // -1 or 1; zero always has 1 as a sign
+    private _isPositive: boolean;
     private _digits: number[]; // base BASE
 
 
-    static MINUS_ONE = BigInteger.uncheckedCreate(-1, [1]);
-    static ZERO = BigInteger.uncheckedCreate(1, [0]);
-    static ONE = BigInteger.uncheckedCreate(1, [1]);
-    static TWO = BigInteger.uncheckedCreate(1, [2]);
+    static MINUS_ONE = BigInteger.uncheckedCreate(false, [1]);
+    static ZERO = BigInteger.uncheckedCreate(true, [0]);
+    static ONE = BigInteger.uncheckedCreate(true, [1]);
+    static TWO = BigInteger.uncheckedCreate(true, [2]);
 
 
     /** O(1) */
@@ -20,7 +20,7 @@
             throw "BigInteger.fromInt cannot be called with inexact integers.";
         }
 
-        var sign = n >= 0 ? 1 : -1;
+        var isPositive = n >= 0;
         var digits = Array<number>();
 
         n = Math.abs(n);
@@ -32,15 +32,15 @@
             digits.push(rem);
         } while (n != 0);
 
-        return BigInteger.create(sign, digits);
+        return BigInteger.create(isPositive, digits);
     }
 
     /** O(str.length) */
     static parse(str: string): BigInteger {
         // This is a bit too complex for bases that are powers of ten, but it works with any base
-        var sign = 1;
+        var isPositive = true;
         if (str[0] == "-") {
-            sign = -1;
+            isPositive = false;
             str = str.substring(1);
         }
 
@@ -68,20 +68,20 @@
             digits.push(Math.floor(currentDigit / BigInteger.BASE));
         }
 
-        return BigInteger.create(sign, digits);
+        return BigInteger.create(isPositive, digits);
     }
 
     /** O(1) */
     negate(): BigInteger {
-        return BigInteger.create(-this._sign, this._digits.slice(0));
+        return BigInteger.create(!this._isPositive, this._digits);
     }
 
     /** O(1) */
     abs(): BigInteger {
-        if (this._sign == 1) {
+        if (this._isPositive) {
             return this;
         }
-        return BigInteger.create(1, this._digits.slice(0));
+        return BigInteger.create(true, this._digits);
     }
 
     /** O(this.digits)
@@ -97,24 +97,31 @@
             hasRest = this._digits[n] % 2 == 1;
         }
 
-        return BigInteger.create(this._sign, digits);
+        return BigInteger.create(this._isPositive, digits);
     }
 
     /** O(max(this.digits, other.digits)) */
     add(other: BigInteger): BigInteger {
         var thisAbs = this.abs();
         var otherAbs = other.abs();
-        var thisIsGreater = thisAbs.compare(otherAbs) == 1 || thisAbs.eq(otherAbs) && this._sign == 1;
+        var thisIsGreater = thisAbs.compare(otherAbs) == 1 || thisAbs.eq(otherAbs) && this._isPositive;
         var hi = thisIsGreater ? this : other;
         var lo = thisIsGreater ? other : this;
 
         var digits = Array<number>();
-        var loSign = hi._sign == lo._sign ? 1 : -1;
+        var loIsPositive = hi._isPositive == lo._isPositive;
 
         var carry: number = 0;
 
         for (var n = 0; n < hi._digits.length; n++) {
-            var current = hi._digits[n] + loSign * (lo._digits[n] || 0) + carry;
+            var current = hi._digits[n] + carry;
+            if (n < lo._digits.length) {
+                if (loIsPositive) {
+                    current += lo._digits[n];
+                } else {
+                    current -= lo._digits[n];
+                }
+            }
 
             if (current >= BigInteger.BASE) {
                 carry = 1;
@@ -133,7 +140,7 @@
             digits[hi._digits.length] = carry;
         }
 
-        return BigInteger.create(hi._sign, digits);
+        return BigInteger.create(hi._isPositive, digits);
     }
 
     /** O(max(this.digits, other.digits)) */
@@ -143,7 +150,7 @@
 
     /** O(max(this.digits, other.digits)^log_2(3)) */
     mul(other: BigInteger): BigInteger {
-        function singleDigitMul(bi: BigInteger, mul: number, mulSign: number): BigInteger {
+        function singleDigitMul(bi: BigInteger, mul: number, mulIsPositive: boolean): BigInteger {
             var digits = Array<number>();
             var carry = 0;
             for (var n = 0; n < bi._digits.length; n++) {
@@ -156,32 +163,38 @@
                 digits.push(carry);
             }
 
-            return BigInteger.create(mulSign * bi._sign, digits);
+            return BigInteger.create(mulIsPositive == bi._isPositive, digits);
         }
 
-        if (this._digits.length == 1) {
-            return singleDigitMul(other, this._digits[0], this._sign);
+       var result = BigInteger.ZERO;
+        for (var n = 0; n < this._digits.length; n++) {
+            result = result.add(singleDigitMul(other, this._digits[n], this._isPositive).leftShift(n));
         }
+        return result;
 
-        if (other._digits.length == 1) {
-            return singleDigitMul(this, other._digits[0], other._sign);
-        }
+        //if (this._digits.length == 1) {
+        //    return singleDigitMul(other, this._digits[0], this._sign);
+        //}
 
-        // http://en.wikipedia.org/wiki/Karatsuba_algorithm
+        //if (other._digits.length == 1) {
+        //    return singleDigitMul(this, other._digits[0], other._sign);
+        //}
 
-        var m = Math.max(this._digits.length, other._digits.length);
-        var m2 = Math.ceil(m / 2);
+        //// http://en.wikipedia.org/wiki/Karatsuba_algorithm
 
-        var lo1 = BigInteger.create(this._sign, this._digits.slice(0, m2));
-        var hi1 = BigInteger.create(this._sign, this._digits.slice(m2));
-        var lo2 = BigInteger.create(other._sign, other._digits.slice(0, m2));
-        var hi2 = BigInteger.create(other._sign, other._digits.slice(m2));
+        //var m = Math.max(this._digits.length, other._digits.length);
+        //var m2 = Math.ceil(m / 2);
 
-        var z0 = lo1.mul(lo2);
-        var z1 = lo1.add(hi1).mul(lo2.add(hi2));
-        var z2 = hi1.mul(hi2);
+        //var lo1 = BigInteger.create(this._sign, this._digits.slice(0, m2));
+        //var hi1 = BigInteger.create(this._sign, this._digits.slice(m2));
+        //var lo2 = BigInteger.create(other._sign, other._digits.slice(0, m2));
+        //var hi2 = BigInteger.create(other._sign, other._digits.slice(m2));
 
-        return (z2.leftShift(m2 * 2)).add(z1.sub(z2).sub(z0).leftShift(m2)).add(z0);
+        //var z0 = lo1.mul(lo2);
+        //var z1 = lo1.add(hi1).mul(lo2.add(hi2));
+        //var z2 = hi1.mul(hi2);
+
+        //return (z2.leftShift(m2 * 2)).add(z1.sub(z2).sub(z0).leftShift(m2)).add(z0);
     }
 
     /** O(???) */
@@ -214,20 +227,20 @@
             return [low, dividend.sub(divisor.mul(low))];
         }
 
-        var sign = this._sign * other._sign;
+        var isPositive = this._isPositive == other._isPositive;
         var divisor = other.abs();
         var dividend = this.abs();
 
-        switch(dividend.compare(divisor)) {
+        switch (dividend.compare(divisor)) {
             case 0:
-                if (sign == 1) {
+                if (isPositive) {
                     return [BigInteger.ONE, BigInteger.ZERO];
                 } else {
                     return [BigInteger.MINUS_ONE, BigInteger.ZERO];
                 }
 
             case -1:
-                if (sign == 1) {
+                if (isPositive) {
                     return [BigInteger.ZERO, dividend];
                 } else {
                     return [BigInteger.ZERO, divisor.sub(dividend)];
@@ -260,11 +273,11 @@
             digits.unshift(quotientAndRemainder[0].toInt());
         }
 
-        if (this._sign == -1) {
+        if (!this._isPositive) {
             remainder = divisor.sub(remainder);
         }
 
-        return [BigInteger.create(sign, digits), remainder];
+        return [BigInteger.create(isPositive, digits), remainder];
     }
 
     /** ~O(1) */
@@ -290,7 +303,7 @@
         if (r.compare(BigInteger.ONE) == 1) {
             throw (this + " is not invertible");
         }
-        if (t._sign == -1) {
+        if (!t._isPositive) {
             t = t.add(n);
         }
         return t;
@@ -298,24 +311,24 @@
 
     /** O(min(this.digits, other.digits)) */
     compare(other: BigInteger): number {
-        if (this._sign < other._sign) {
-            return -1;
-        }
-        if (this._sign > other._sign) {
+        if (this._isPositive && !other._isPositive) {
             return 1;
         }
+        if (!this._isPositive && other._isPositive) {
+            return -1;
+        }
         if (this._digits.length < other._digits.length) {
-            return -this._sign;
+            return this._isPositive ? -1 : 1;
         }
         if (this._digits.length > other._digits.length) {
-            return this._sign;
+            return this._isPositive ? 1 : -1;
         }
         for (var n = this._digits.length - 1; n >= 0; n--) {
             if (this._digits[n] < other._digits[n]) {
-                return -this._sign;
+                return this._isPositive ? -1 : 1;
             }
             if (this._digits[n] > other._digits[n]) {
-                return this._sign;
+                return this._isPositive ? 1 : -1;
             }
         }
         return 0;
@@ -329,7 +342,7 @@
             digits.push(this._digits[n] & other._digits[n]);
         }
 
-        return BigInteger.create(1, digits);
+        return BigInteger.create(true, digits);
     }
 
     /** O(min(this.digits, other.digits)) */
@@ -350,7 +363,7 @@
             return true;
         }
 
-        return this._sign == other._sign && arrayEquals(this._digits, other._digits);
+        return this._isPositive == other._isPositive && arrayEquals(this._digits, other._digits);
     }
 
     /** O(this.digits) */
@@ -382,7 +395,7 @@
         }
         result = this._digits[this._digits.length - 1].toString() + result;
 
-        if (this._sign == -1) {
+        if (!this._isPositive) {
             result = "-" + result;
         }
 
@@ -401,7 +414,7 @@
             digits[i + n] = this._digits[i];
         }
 
-        return BigInteger.create(this._sign, digits);
+        return BigInteger.create(this._isPositive, digits);
     }
 
     /** O(this.digits + n) */
@@ -413,7 +426,7 @@
             digits[i + 1] = this._digits[i];
         }
 
-        return BigInteger.create(this._sign, digits);
+        return BigInteger.create(this._isPositive, digits);
     }
 
     /** O(this.digits + n) */
@@ -424,11 +437,11 @@
             digits[i] = this._digits[i + n];
         }
 
-        return BigInteger.create(1, digits);
+        return BigInteger.create(true, digits);
     }
 
     /** O(digits) */
-    private static create(sign: number, digits: number[]): BigInteger {
+    private static create(isPositive: boolean, digits: number[]): BigInteger {
         // Remove useless digits
         var actualLength = digits.length;
         while (actualLength > 0 && digits[actualLength - 1] == 0) {
@@ -440,15 +453,15 @@
         }
 
         var bi = new BigInteger();
-        bi._sign = sign;
+        bi._isPositive = isPositive;
         bi._digits = digits.slice(0, actualLength);
         return bi;
     }
 
     /** O(1) */
-    private static uncheckedCreate(sign: number, digits: number[]): BigInteger {
+    private static uncheckedCreate(isPositive: boolean, digits: number[]): BigInteger {
         var bi = new BigInteger();
-        bi._sign = sign;
+        bi._isPositive = isPositive;
         bi._digits = digits;
         return bi;
     }
