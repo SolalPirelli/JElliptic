@@ -191,20 +191,26 @@
             }
 
             var low = BigInteger.ONE;
-            var high = dividend;
+            var high = BigInteger.TWO;
+            var fastGrowth = true;
 
             while (low.compare(high) == -1) {
                 var guess = low.add(high).halve();
-                if (dividend.sub(divisor.mul(guess)).compare(divisor) > -1) {
-                    low = guess.add(BigInteger.ONE);
+                if (dividend.sub(divisor.mul(guess)).compare(dividend) > -1) {
+                    if (fastGrowth) {
+                        low = guess;
+                        high = high.mul(high);
+                    } else {
+                        low = guess.add(BigInteger.ONE);
+                    }
                 } else {
                     high = guess;
+                    fastGrowth = false;
                 }
             }
 
             return low;
         }
-
 
         var sign = this._sign * divisor._sign;
         divisor = divisor.abs();
@@ -245,21 +251,36 @@
 
     /** O(log(this)) */
     mod(n: BigInteger): BigInteger {
-        var low = BigInteger.ZERO;
-        var high = this.abs();
-
         if (this._sign == 1) {
+            if (this.compare(n) == -1) {
+                return this;
+            }
+
+            var low = BigInteger.ONE;
+            var high = BigInteger.TWO;
+            var fastGrowth = true;
+
             while (low.compare(high) == -1) {
                 var guess = low.add(high).halve();
                 if (this.sub(n.mul(guess)).compare(n) > -1) {
-                    low = guess.add(BigInteger.ONE);
+                    if (fastGrowth) {
+                        low = guess;
+                        high = high.mul(high);
+                    } else {
+                        low = guess.add(BigInteger.ONE);
+                    }
                 } else {
                     high = guess;
+                    fastGrowth = false;
                 }
             }
 
             return this.sub(n.mul(low));
         } else {
+            // TODO port code above
+            var low = BigInteger.ONE;
+            var high = BigInteger.TWO;
+
             while (low.compare(high) == -1) {
                 var guess = low.add(high).halve();
                 var result = this.add(n.mul(guess));

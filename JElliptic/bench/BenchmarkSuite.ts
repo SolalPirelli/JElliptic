@@ -86,7 +86,7 @@ module BenchmarkSuite {
             // Add a button to run the suite
             var runButton = document.createElement("a");
             runButton.text = "run";
-            runButton.href = "#"; // force the browser to use the default style for links
+            runButton.href = "javascript:;"; // force the browser to use the default style for links
             runButton.onclick = () => {
                 this.reset();
                 this.run(0, () => { });
@@ -159,7 +159,7 @@ module BenchmarkSuite {
             // Add an hyperlink to run the test
             var runButton = document.createElement("a");
             runButton.text = "run";
-            runButton.href = "#"; // forces the browser to use the default style for links
+            runButton.href = "javascript:;"; // forces the browser to use the default style for links
             runButton.onclick = () => {
                 this.reset();
                 this.run(() => { });
