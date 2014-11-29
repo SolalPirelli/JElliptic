@@ -164,35 +164,35 @@
             return BigInteger.create(mulIsPositive == bi._positive, digits);
         }
 
-        var result = BigInteger.ZERO;
-        for (var n = 0; n < this._digits.length; n++) {
-            result = result.add(singleDigitMul(other, this._digits[n], this._positive).leftShift(n));
+        //var result = BigInteger.ZERO;
+        //for (var n = 0; n < this._digits.length; n++) {
+        //    result = result.add(singleDigitMul(other, this._digits[n], this._positive).leftShift(n));
+        //}
+        //return result;
+
+        if (this._digits.length == 1) {
+            return singleDigitMul(other, this._digits[0], this._positive);
         }
-        return result;
 
-        //if (this._digits.length == 1) {
-        //    return singleDigitMul(other, this._digits[0], this._positive);
-        //}
+        if (other._digits.length == 1) {
+            return singleDigitMul(this, other._digits[0], other._positive);
+        }
 
-        //if (other._digits.length == 1) {
-        //    return singleDigitMul(this, other._digits[0], other._positive);
-        //}
+        // http://en.wikipedia.org/wiki/Karatsuba_algorithm
 
-        //// http://en.wikipedia.org/wiki/Karatsuba_algorithm
+        var m = Math.max(this._digits.length, other._digits.length);
+        var m2 = Math.ceil(m / 2);
 
-        //var m = Math.max(this._digits.length, other._digits.length);
-        //var m2 = Math.ceil(m / 2);
+        var lo1 = BigInteger.create(this._positive, this._digits.subarray(0, m2));
+        var hi1 = BigInteger.create(this._positive, this._digits.subarray(m2));
+        var lo2 = BigInteger.create(other._positive, other._digits.subarray(0, m2));
+        var hi2 = BigInteger.create(other._positive, other._digits.subarray(m2));
 
-        //var lo1 = BigInteger.create(this._positive, this._digits.subarray(0, m2));
-        //var hi1 = BigInteger.create(this._positive, this._digits.subarray(m2));
-        //var lo2 = BigInteger.create(other._positive, other._digits.subarray(0, m2));
-        //var hi2 = BigInteger.create(other._positive, other._digits.subarray(m2));
+        var z0 = lo1.mul(lo2);
+        var z1 = lo1.add(hi1).mul(lo2.add(hi2));
+        var z2 = hi1.mul(hi2);
 
-        //var z0 = lo1.mul(lo2);
-        //var z1 = lo1.add(hi1).mul(lo2.add(hi2));
-        //var z2 = hi1.mul(hi2);
-
-        //return (z2.leftShift(m2 * 2)).add(z1.sub(z2).sub(z0).leftShift(m2)).add(z0);
+        return (z2.leftShift(m2 * 2)).add(z1.sub(z2).sub(z0).leftShift(m2)).add(z0);
     }
 
     /** O(???) */
