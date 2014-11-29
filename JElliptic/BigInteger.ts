@@ -8,6 +8,7 @@
     private _digits: number[]; // base BASE
 
 
+    static MINUS_ONE = BigInteger.uncheckedCreate(-1, [1]);
     static ZERO = BigInteger.uncheckedCreate(1, [0]);
     static ONE = BigInteger.uncheckedCreate(1, [1]);
     static TWO = BigInteger.uncheckedCreate(1, [2]);
@@ -183,11 +184,11 @@
         return (z2.leftShift(m2 * 2)).add(z1.sub(z2).sub(z0).leftShift(m2)).add(z0);
     }
 
-    /** O(this.digits^2) */
-    div(divisor: BigInteger): BigInteger {
-        function divide(dividend: BigInteger, divisor: BigInteger): BigInteger {
+    /** O(???) */
+    divRem(other: BigInteger): BigInteger[] {
+        function inner(dividend: BigInteger, divisor: BigInteger): BigInteger[] {
             if (dividend.eq(BigInteger.ZERO)) {
-                return BigInteger.ZERO; // yes, even if divisor == 0
+                return [BigInteger.ZERO, BigInteger.ZERO]; // yes, even if divisor == 0
             }
 
             var low = BigInteger.ONE;
@@ -196,9 +197,10 @@
 
             while (low.compare(high) == -1) {
                 var guess = low.add(high).halve();
-                if (dividend.sub(divisor.mul(guess)).compare(divisor) > -1) {
+                var remainder = dividend.sub(divisor.mul(guess));
+                if (remainder.compare(divisor) > -1) {
                     if (fastGrowth) {
-                        low = guess;
+                        low = guess.add(BigInteger.ONE);
                         high = high.mul(high);
                     } else {
                         low = guess.add(BigInteger.ONE);
@@ -209,15 +211,27 @@
                 }
             }
 
-            return low;
+            return [low, dividend.sub(divisor.mul(low))];
         }
 
-        var sign = this._sign * divisor._sign;
-        divisor = divisor.abs();
+        var sign = this._sign * other._sign;
+        var divisor = other.abs();
         var dividend = this.abs();
 
-        if (dividend.compare(divisor) == -1) {
-            return BigInteger.ZERO;
+        switch(dividend.compare(divisor)) {
+            case 0:
+                if (sign == 1) {
+                    return [BigInteger.ONE, BigInteger.ZERO];
+                } else {
+                    return [BigInteger.MINUS_ONE, BigInteger.ZERO];
+                }
+
+            case -1:
+                if (sign == 1) {
+                    return [BigInteger.ZERO, dividend];
+                } else {
+                    return [BigInteger.ZERO, divisor.sub(dividend)];
+                }
         }
 
         var digits = new Array<number>();
@@ -229,9 +243,9 @@
             var shifted = dividend.rightShiftAbs(index);
             if (shifted.compare(divisor) > -1) {
                 // Divide that number by the divisor, store the quotient, and keep the remainder
-                var quotient = divide(shifted, divisor);
-                remainder = shifted.sub(quotient.mul(divisor));
-                digits.unshift(quotient.toInt());
+                var quotientAndRemainder = inner(shifted, divisor);
+                remainder = quotientAndRemainder[1];
+                digits.unshift(quotientAndRemainder[0].toInt());
                 index--;
                 break;
             }
@@ -241,62 +255,21 @@
         for (; index >= 0; index--) {
             var newDigit = dividend._digits[index];
             var newDividend = remainder.pushRight(newDigit);
-            var quotient = divide(newDividend, divisor);
-            remainder = newDividend.sub(quotient.mul(divisor));
-            digits.unshift(quotient.toInt());
+            var quotientAndRemainder = inner(newDividend, divisor);
+            remainder = quotientAndRemainder[1];
+            digits.unshift(quotientAndRemainder[0].toInt());
         }
 
-        return BigInteger.create(sign, digits);
+        if (this._sign == -1) {
+            remainder = divisor.sub(remainder);
+        }
+
+        return [BigInteger.create(sign, digits), remainder];
     }
 
-    /** O(log(this)) */
-    mod(n: BigInteger): BigInteger {
-        if (this._sign == 1) {
-            if (this.compare(n) == -1) {
-                return this;
-            }
-
-            var low = BigInteger.ONE;
-            var high = BigInteger.TWO;
-            var fastGrowth = true;
-
-            while (low.compare(high) == -1) {
-                var guess = low.add(high).halve();
-                if (this.sub(n.mul(guess)).compare(n) > -1) {
-                    if (fastGrowth) {
-                        low = guess;
-                        high = high.mul(high);
-                    } else {
-                        low = guess.add(BigInteger.ONE);
-                    }
-                } else {
-                    high = guess;
-                    fastGrowth = false;
-                }
-            }
-
-            return this.sub(n.mul(low));
-        } else {
-            // TODO port code above
-            var low = BigInteger.ONE;
-            var high = BigInteger.TWO;
-
-            while (low.compare(high) == -1) {
-                var guess = low.add(high).halve();
-                var result = this.add(n.mul(guess));
-                if (result._sign == 1) {
-                    if (result.compare(n) == -1) {
-                        return result;
-                    } else {
-                        high = guess;
-                    }
-                } else {
-                    low = guess.add(BigInteger.ONE);
-                }
-            }
-
-            return this.add(n.mul(low));
-        }
+    /** ~O(1) */
+    smallRem(divisor: number): number {
+        return this._digits[0] % divisor;
     }
 
     /** O(log(n)^2) */
@@ -304,7 +277,7 @@
         var t = BigInteger.ZERO, newt = BigInteger.ONE;
         var r = n, newr = this;
         while (!newr.eq(BigInteger.ZERO)) {
-            var quotient = r.div(newr);
+            var quotient = r.divRem(newr)[0];
 
             var oldt = t;
             t = newt;

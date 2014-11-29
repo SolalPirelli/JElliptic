@@ -52,17 +52,11 @@ function bigIntegerSuite() {
     s("Multiply 34-digit and 20-digit numbers", () => i34_1.mul(i20_1));
     s("Multiply two 34-digit numbers", () => i34_1.mul(i34_2));
 
-    s("Divide two 1-digit numbers", () => i1_1.div(i1_2));
-    s("Divide 20-digit and 1-digit numbers", () => i20_1.div(i1_1));
-    s("Divide two 20-digit numbers", () => i20_1.div(i20_2));
-    s("Divide 34-digit and 20-digit numbers", () => i34_1.div(i20_1));
-    s("Divide two 34-digit numbers", () => i34_1.div(i34_2));
-
-    s("Modulo two 1-digit numbers", () => i1_1.mod(i1_2));
-    s("Modulo 20-digit and 1-digit numbers", () => i20_1.mod(i1_1));
-    s("Modulo two 20-digit numbers", () => i20_1.mod(i20_2));
-    s("Modulo 34-digit and 20-digit numbers", () => i34_1.mod(i20_1));
-    s("Modulo two 34-digit numbers", () => i34_1.mod(i34_2));
+    s("Div/rem of two 1-digit numbers", () => i1_1.divRem(i1_2));
+    s("Div/rem of 20-digit and 1-digit numbers", () => i20_1.divRem(i1_1));
+    s("Div/rem of two 20-digit numbers", () => i20_1.divRem(i20_2));
+    s("Div/rem of 34-digit and 20-digit numbers", () => i34_1.divRem(i20_1));
+    s("Div/rem of two 34-digit numbers", () => i34_1.divRem(i34_2));
 
     s("Modular inverse of a 1-digit number", () => i1_1.modInverse(i1_2));
     s("Modular inverse a 20-digit number", () => i20_1.modInverse(i20_2));

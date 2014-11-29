@@ -106,15 +106,15 @@ module BigIntegerTests {
         }
 
         if (s1 != "0") {
-            op("div", result, s1, s2, (b1, b2) => b1.div(b2));
+            op("div (via divRem)", result, s1, s2, (b1, b2) => b1.divRem(b2)[0]);
         }
         if (s1 != s2 && s2 != "0") {
-            op("div", result, s2, s1, (b1, b2) => b1.div(b2));
+            op("div (via divRem)", result, s2, s1, (b1, b2) => b1.divRem(b2)[0]);
         }
     }
 
     function mod(s1: string, s2: string, result: string) {
-        op("mod", s1, s2, result, (b1, b2) => b1.mod(b2));
+        op("mod (via divRem)", s1, s2, result, (b1, b2) => b1.divRem(b2)[1]);
     }
 
     function modInverse(s1: string, s2: string, result: string) {
@@ -249,6 +249,10 @@ module BigIntegerTests {
         mod("-2", "2", "0");
         mod("-5", "2", "1");
         mod("-2", "3", "1");
+        mod("-12", "60", "48");
+        mod("-1234", "12341234", "12340000");
+        mod("-123456789", "111111111", "98765433");
+        mod("-68575678987078985443355445433234", "735643790543057439", "409009853781827093");
 
         modInverse("1", "10", "1");
         modInverse("2", "3", "2");
