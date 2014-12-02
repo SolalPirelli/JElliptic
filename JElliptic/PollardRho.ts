@@ -28,6 +28,8 @@ module PollardRho {
     }
 
     export class SingleCurveWalk implements CurveWalk {
+        private static INDEX = 0;
+
         private _config: IConfig;
         private _table: Addition.Table;
 
@@ -42,11 +44,12 @@ module PollardRho {
             this._config = config;
             this._table = table;
 
-            // TODO the starting entry needs to be random, of course
-            var entry = this._table.at(0);
+            var entry = this._table.at(SingleCurveWalk.INDEX % this._table.length);
             this._u = entry.u;
             this._v = entry.v;
             this._current = entry.p;
+
+            SingleCurveWalk.INDEX++;
         }
 
 

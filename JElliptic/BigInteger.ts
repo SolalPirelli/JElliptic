@@ -71,6 +71,10 @@
         return BigInteger.create(isPositive, digits);
     }
 
+    get isPositive(): boolean {
+        return this._isPositive;
+    }
+
     /** O(1) */
     negate(): BigInteger {
         return BigInteger.create(!this._isPositive, this._digits);

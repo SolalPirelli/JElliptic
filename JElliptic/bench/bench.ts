@@ -81,16 +81,16 @@ function bigIntegerSuite() {
 
 function modNumberSuite() {
     var mod1 = BigInteger.parse("9");
-    var i1_1 = new ModNumber(BigInteger.parse("1"), mod1);
-    var i1_2 = new ModNumber(BigInteger.parse("7"), mod1);
+    var i1_1 = ModNumber.create(BigInteger.parse("1"), mod1);
+    var i1_2 = ModNumber.create(BigInteger.parse("7"), mod1);
 
     var mod20 = BigInteger.parse("99999999999999999999");
-    var i20_1 = new ModNumber(BigInteger.parse("12345678901234567890"), mod20);
-    var i20_2 = new ModNumber(BigInteger.parse("98765432109876543210"), mod20);
+    var i20_1 = ModNumber.create(BigInteger.parse("12345678901234567890"), mod20);
+    var i20_2 = ModNumber.create(BigInteger.parse("98765432109876543210"), mod20);
 
     var mod34 = BigInteger.parse("4451685225093714772084598273548427");
-    var i34_1 = new ModNumber(BigInteger.parse("2061118396808653202902996166388514"), mod34);
-    var i34_2 = new ModNumber(BigInteger.parse("4451685225093714772084598273548427"), mod34);
+    var i34_1 = ModNumber.create(BigInteger.parse("2061118396808653202902996166388514"), mod34);
+    var i34_2 = ModNumber.create(BigInteger.parse("4451685225093714772084598273548427"), mod34);
 
     var s = BenchmarkSuite.create("ModNumber");
 
@@ -199,7 +199,7 @@ function pollardRhoSuite() {
             generator: gen,
             target: target,
             additionTableSeed: 0,
-            distinguishedPointMask: BigInteger.parse("1"),
+            distinguishedPointMask: BigInteger.parse("4294967295"),
             parrallelWalksCount: count,
             useNegationMap: false
         };
@@ -221,6 +221,6 @@ function pollardRhoSuite() {
 }
 
 bigIntegerSuite();
-//modNumberSuite();
-//modPointSuite();
-//pollardRhoSuite();
+modNumberSuite();
+modPointSuite();
+pollardRhoSuite();

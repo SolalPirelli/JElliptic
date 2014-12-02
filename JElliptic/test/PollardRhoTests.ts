@@ -103,7 +103,7 @@ module PollardRhoTests {
 
         test(configName + ": " + points.expected + " * " + config.generator + " = " + config.target + " on " + config.curve, () => {
             PollardRho.run(config, sink);
-            ok(sink.result.eq(new ModNumber(BigInteger.parse(points.expected), curve.order)));
+            ok(sink.result.eq(ModNumber.create(BigInteger.parse(points.expected), curve.order)));
         });
     }
 

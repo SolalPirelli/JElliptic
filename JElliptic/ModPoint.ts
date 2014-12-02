@@ -15,8 +15,8 @@ class ModPoint {
 
     static create(x: BigInteger, y: BigInteger, curve: ModCurve): ModPoint {
         var point = new ModPoint();
-        point._x = new ModNumber(x, curve.n);
-        point._y = new ModNumber(y, curve.n);
+        point._x = ModNumber.create(x, curve.n);
+        point._y = ModNumber.create(y, curve.n);
         point._curve = curve;
         return point;
     }
