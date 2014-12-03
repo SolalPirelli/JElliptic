@@ -338,19 +338,17 @@ class BigInteger {
         return [BigInteger.create(isPositive, digits), remainder];
     }
 
-    /** O(log(divisor)) */
+    /** O(digits) */
     partition(divisor: number): number {
-        var index = 0;
         var result = 0;
-        while (divisor != 0) {
+        var max = Math.min(this._digits.length, Math.ceil(Math.log(divisor) / Math.LN2));
+        for (var n = max; n >= 0; n--) {
             result *= 2;
-            if (this._digits[index]) {
+            if (this._digits[n]) {
                 result += 1;
             }
-            divisor >>= 1;
-            index++;
         }
-        return result;
+        return result % divisor;
     }
 
     /** O(log(n)^2) */
