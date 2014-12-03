@@ -98,7 +98,7 @@
             if (hasRest) {
                 digits[n] += BigInteger.BASE;
             }
-            digits[n] /= 2;
+            digits[n] = Math.floor(digits[n] / 2);
 
             hasRest = this._digits[n] % 2 == 1;
         }
@@ -172,7 +172,7 @@
             return BigInteger.create(mulIsPositive == bi._isPositive, digits);
         }
 
-       var result = BigInteger.ZERO;
+        var result = BigInteger.ZERO;
         for (var n = 0; n < this._digits.length; n++) {
             result = result.add(singleDigitMul(other, this._digits[n], this._isPositive).leftShift(n));
         }
