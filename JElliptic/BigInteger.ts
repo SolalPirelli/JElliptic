@@ -322,10 +322,11 @@ class BigInteger {
         for (; index >= 0; index--) {
             var newDigit = dividend._digits[index];
             var newDividend = remainder.pushRight(newDigit);
-            if (newDividend > divisor) {
+            if (newDividend.compare(divisor) > -1) {
                 remainder = newDividend.sub(divisor);
                 digits[index] = true;
             } else {
+                remainder = newDividend;
                 digits[index] = false;
             }
         }
