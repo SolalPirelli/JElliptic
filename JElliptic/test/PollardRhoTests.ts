@@ -112,7 +112,7 @@ module PollardRhoTests {
 
         var correctResults = [
             new NonAlgorithmicConfig(
-                "0", "3", "31", "31", // Curve (A, B, N)
+                "0", "3", "31", "43", // Curve (A, B, N)
                 "11", "1", // Generator (X, Y)
                 "23", "24", // Target (X, Y)
                 "10") // Expected result
