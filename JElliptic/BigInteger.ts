@@ -120,76 +120,27 @@ class BigInteger {
         var thisIsGreater = thisComparedToOther == 1 || (thisComparedToOther == 0 && this._isPositive);
         var hi = thisIsGreater ? this : other;
         var lo = thisIsGreater ? other : this;
-        var loNeg = hi._isPositive == !lo._isPositive;
 
         var result = Array<boolean>(hi._digits.length + 1);
         var carry = false;
         var carryNeg = false;
 
-        for (var n = 0; n < lo._digits.length; n++) {
-            if (hi._digits[n]) { // 1
-                if (lo._digits[n]) {
-                    if (loNeg) { // 1 - 1
+        if (hi._isPositive == !lo._isPositive) {
+            for (var n = 0; n < lo._digits.length; n++) {
+                if (hi._digits[n]) { // 1
+                    if (lo._digits[n]) {
                         if (carry) {
                             if (carryNeg) { // 1 - 1 - 1
                                 result[n] = true;
                                 carry = true;
                                 carryNeg = true;
-                            } else {  // 1 - 1 + 1
+                            } else { // 1 - 1 + 1
                                 result[n] = true;
                                 carry = false;
                             }
                         } else { // 1 - 1
                             result[n] = false;
                             carry = false;
-                        }
-                    } else { // 1 + 1
-                        if (carry) {
-                            if (carryNeg) { // 1 + 1 - 1
-                                result[n] = true;
-                                carry = false;
-                            } else { // 1 + 1 + 1
-                                result[n] = true;
-                                carry = true;
-                                carryNeg = false;
-                            }
-                        } else { // 1 + 1
-                            result[n] = false;
-                            carry = true;
-                            carryNeg = false;
-                        }
-                    }
-                } else { // 1
-                    if (carry) {
-                        if (carryNeg) { // 1 - 1
-                            result[n] = false;
-                            carry = false;
-                        } else { // 1 + 1
-                            result[n] = false;
-                            carry = true;
-                            carryNeg = false;
-                        }
-                    } else { // 1
-                        result[n] = true;
-                        carry = false;
-                    }
-                }
-            } else {
-                if (lo._digits[n]) {
-                    if (loNeg) { // - 1
-                        if (carry) {
-                            if (carryNeg) { // - 1 - 1
-                                result[n] = false;
-                                carry = true;
-                                carryNeg = true;
-                            } else { // - 1 + 1
-                                result[n] = false;
-                                carry = false;
-                            }
-                        } else { // - 1
-                            result[n] = true;
-                            carry = true;
-                            carryNeg = true;
                         }
                     } else { // 1
                         if (carry) {
@@ -207,18 +158,100 @@ class BigInteger {
                         }
                     }
                 } else {
-                    if (carry) {
-                        if (carryNeg) { // - 1
+                    if (lo._digits[n]) {
+                        if (carry) {
+                            if (carryNeg) { // - 1 - 1
+                                result[n] = false;
+                                carry = true;
+                                carryNeg = true;
+                            } else { // - 1 + 1
+                                result[n] = false;
+                                carry = false;
+                            }
+                        } else { // - 1
                             result[n] = true;
                             carry = true;
                             carryNeg = true;
+                        }
+                    } else {
+                        if (carry) {
+                            if (carryNeg) { // - 1
+                                result[n] = true;
+                                carry = true;
+                                carryNeg = true;
+                            } else { // 1
+                                result[n] = true;
+                                carry = false;
+                            }
+                        } else { // 0
+                            result[n] = false;
+                            carry = false;
+                        }
+                    }
+                }
+            }
+        } else {
+            for (var n = 0; n < lo._digits.length; n++) {
+                if (hi._digits[n]) { // 1
+                    if (lo._digits[n]) {
+                        if (carry) {
+                            if (carryNeg) { // 1 + 1 - 1
+                                result[n] = true;
+                                carry = false;
+                            } else { // 1 + 1 + 1
+                                result[n] = true;
+                                carry = true;
+                                carryNeg = false;
+                            }
+                        } else { // 1 + 1
+                            result[n] = false;
+                            carry = true;
+                            carryNeg = false;
+                        }
+                    } else { // 1
+                        if (carry) {
+                            if (carryNeg) { // 1 - 1
+                                result[n] = false;
+                                carry = false;
+                            } else { // 1 + 1
+                                result[n] = false;
+                                carry = true;
+                                carryNeg = false;
+                            }
                         } else { // 1
                             result[n] = true;
                             carry = false;
                         }
-                    } else { // 0
-                        result[n] = false;
-                        carry = false;
+                    }
+                } else {
+                    if (lo._digits[n]) {
+                        if (carry) {
+                            if (carryNeg) { // 1 - 1
+                                result[n] = false;
+                                carry = false;
+                            } else { // 1 + 1
+                                result[n] = false;
+                                carry = true;
+                                carryNeg = false;
+                            }
+                        } else { // 1
+                            result[n] = true;
+                            carry = false;
+                        }
+                    } else {
+                        if (carry) {
+                            if (carryNeg) { // - 1
+                                result[n] = true;
+                                carry = true;
+                                carryNeg = true;
+                            } else { // 1
+                                result[n] = true;
+                                carry = false;
+                            }
+                        } else { // 0
+                            result[n] = false;
+                            carry = false;
+                        }
                     }
                 }
             }
