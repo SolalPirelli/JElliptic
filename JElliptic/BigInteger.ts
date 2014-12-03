@@ -1,17 +1,20 @@
-﻿class BigInteger {
-    private static MAX_SAFE_INT = 9007199254740991; // 2^53-1, where 53 is the mantissa size of IEEE-754 double-precision floating point numbers (what JS uses)
-    private static BASE = 10000000; // largest power of 10 smaller than sqrt(MAX_SAFE_INT) so that two digits can be multiplied in the safe space; also needs to be even
-    private static BASE_LOG10 = Math.floor(Math.log(BigInteger.BASE) / Math.log(10));
+﻿// Performance notes:
+// 
+// * n | 0 is equivalent to floor(n), but it's much faster on IE; however, it can only be used if -2^31 <= n < 2^31.
+// * Karatsuba multiplication isn't worth it for the integer sizes we're dealing with
 
+
+class BigInteger {
+    private static MAX_SAFE_INT = 9007199254740991; // 2^53-1, where 53 is the mantissa size of IEEE-754 double-precision floating point numbers (what JS uses)
 
     private _isPositive: boolean;
-    private _digits: number[]; // base BASE
+    private _digits: boolean[];
 
 
-    static MINUS_ONE = BigInteger.uncheckedCreate(false, [1]);
-    static ZERO = BigInteger.uncheckedCreate(true, [0]);
-    static ONE = BigInteger.uncheckedCreate(true, [1]);
-    static TWO = BigInteger.uncheckedCreate(true, [2]);
+    static MINUS_ONE = BigInteger.uncheckedCreate(false, [true]);
+    static ZERO = BigInteger.uncheckedCreate(true, [false]);
+    static ONE = BigInteger.uncheckedCreate(true, [true]);
+    static TWO = BigInteger.uncheckedCreate(true, [false, true]);
 
 
     /** O(1) */
@@ -21,13 +24,13 @@
         }
 
         var isPositive = n >= 0;
-        var digits = Array<number>();
+        var digits = Array<boolean>();
 
         n = Math.abs(n);
 
         do {
-            var rem = n % BigInteger.BASE;
-            n = Math.floor(n / BigInteger.BASE);
+            var rem = n % 2 == 1;
+            n = (n / 2) | 0;
 
             digits.push(rem);
         } while (n != 0);
@@ -37,6 +40,24 @@
 
     /** O(str.length) */
     static parse(str: string): BigInteger {
+        function isOdd(s: string): boolean {
+            return s[0] == "0" || s[0] == "2" || s[0] == "4" || s[0] == "6" || s[0] == "8";
+        }
+        function halve(s: string): string {
+            var result = "";
+            var hasRemainder = false;
+            for (var n = 0; n < s.length; n++) {
+                var asNum = parseInt(s[n]);
+                if (hasRemainder) {
+                    asNum += 2;
+                }
+                hasRemainder = asNum % 2 == 1;
+                asNum = (asNum / 2) | 0;
+                result = result + asNum;
+            }
+            return result;
+        }
+
         // This is a bit too complex for bases that are powers of ten, but it works with any base
         var isPositive = true;
         if (str[0] == "-") {
@@ -44,28 +65,10 @@
             str = str.substring(1);
         }
 
-        var digits = Array<number>();
-        var currentDigit = 0;
-        var currentMul = 1;
-
-        for (var n = str.length - 1; n >= 0; n--) {
-            currentDigit += parseInt(str[n], 10) * currentMul;
-            currentMul *= 10;
-
-            if (currentMul >= BigInteger.BASE) {
-                var nextDigit = Math.floor(currentDigit / BigInteger.BASE);
-                currentDigit %= BigInteger.BASE;
-
-                digits.push(currentDigit);
-
-                currentDigit = nextDigit;
-                currentMul = 1;
-            }
-        }
-
-        if (currentDigit != 0) {
-            digits.push(currentDigit % BigInteger.BASE);
-            digits.push(Math.floor(currentDigit / BigInteger.BASE));
+        var digits = Array<boolean>();
+        while (str != "0") {
+            digits.push(isOdd(str));
+            str = halve(str);
         }
 
         return BigInteger.create(isPositive, digits);
@@ -91,62 +94,124 @@
     /** O(this.digits)
         Rounds down. */
     halve(): BigInteger {
-        var digits = new Array<number>(this._digits.length);
-        var hasRest = false;
-        for (var n = this._digits.length - 1; n >= 0; n--) {
-            digits[n] = this._digits[n];
-            if (hasRest) {
-                digits[n] += BigInteger.BASE;
-            }
-            digits[n] = Math.floor(digits[n] / 2);
-
-            hasRest = this._digits[n] % 2 == 1;
-        }
-
-        return BigInteger.create(this._isPositive, digits);
+        return BigInteger.create(this._isPositive, this._digits.slice(1));
     }
 
     /** O(max(this.digits, other.digits)) */
     add(other: BigInteger): BigInteger {
         var thisAbs = this.abs();
         var otherAbs = other.abs();
-        var thisIsGreater = thisAbs.compare(otherAbs) == 1 || thisAbs.eq(otherAbs) && this._isPositive;
+        var thisComparedToOther = thisAbs.compare(otherAbs);
+        var thisIsGreater = thisComparedToOther == 1 || (thisComparedToOther == 0 && this._isPositive);
         var hi = thisIsGreater ? this : other;
         var lo = thisIsGreater ? other : this;
+        var loNeg = hi._isPositive = !lo._isPositive;
 
-        var digits = Array<number>();
-        var loIsPositive = hi._isPositive == lo._isPositive;
-
-        var carry: number = 0;
+        var result = Array<boolean>(hi._digits.length + 1);
+        var carry = false;
+        var carryNeg = false;
 
         for (var n = 0; n < hi._digits.length; n++) {
-            var current = hi._digits[n] + carry;
-            if (n < lo._digits.length) {
-                if (loIsPositive) {
-                    current += lo._digits[n];
+            if (hi._digits[n]) { // 1
+                if (lo._digits[n]) {
+                    if (loNeg) { // 1 - 1
+                        if (carry) {
+                            if (carryNeg) { // 1 - 1 - 1
+                                result[n] = true;
+                                carry = true;
+                                carryNeg = true;
+                            } else {  // 1 - 1 + 1
+                                result[n] = true;
+                                carry = false;
+                            }
+                        } else { // 1 - 1
+                            result[n] = false;
+                            carry = false;
+                        }
+                    } else { // 1 + 1
+                        if (carry) {
+                            if (carryNeg) { // 1 + 1 - 1
+                                result[n] = true;
+                                carry = false;
+                            } else { // 1 + 1 + 1
+                                result[n] = true;
+                                carry = true;
+                                carryNeg = false;
+                            }
+                        } else { // 1 + 1
+                            result[n] = false;
+                            carry = true;
+                            carryNeg = false;
+                        }
+                    }
+                } else { // 1
+                    if (carry) {
+                        if (carryNeg) { // 1 - 1
+                            result[n] = false;
+                            carry = false;
+                        } else { // 1 + 1
+                            result[n] = false;
+                            carry = true;
+                            carry = false;
+                        }
+                    } else { // 1
+                        result[n] = true;
+                        carry = false;
+                    }
+                }
+            } else {
+                if (lo._digits[n]) {
+                    if (loNeg) { // - 1
+                        if (carry) {
+                            if (carryNeg) { // - 1 - 1
+                                result[n] = false;
+                                carry = true;
+                                carryNeg = true;
+                            } else { // - 1 + 1
+                                result[n] = false;
+                                carry = false;
+                            }
+                        } else { // - 1
+                            result[n] = true;
+                            carry = true;
+                            carryNeg = true;
+                        }
+                    } else { // 1
+                        if (carry) {
+                            if (carryNeg) { // 1 - 1
+                                result[n] = false;
+                                carry = false;
+                            } else { // 1 + 1
+                                result[n] = false;
+                                carry = true;
+                                carryNeg = false;
+                            }
+                        } else { // 1
+                            result[n] = true;
+                            carry = false;
+                        }
+                    }
                 } else {
-                    current -= lo._digits[n];
+                    if (carry) {
+                        if (carryNeg) { // - 1
+                            result[n] = true;
+                            carry = true;
+                            carryNeg = true;
+                        } else { // 1
+                            result[n] = true;
+                            carry = false;
+                        }
+                    } else { // 0
+                        result[n] = false;
+                        carry = false;
+                    }
                 }
             }
-
-            if (current >= BigInteger.BASE) {
-                carry = 1;
-                current -= BigInteger.BASE;
-            } else if (current < 0) {
-                carry = -1;
-                current += BigInteger.BASE;
-            } else {
-                carry = 0;
-            }
-
-            digits[n] = current;
         }
 
-        if (carry != 0) {
-            digits[hi._digits.length] = carry;
-        }
+        result[hi._digits.length] = carry;
 
-        return BigInteger.create(hi._isPositive, digits);
+        return BigInteger.create(hi._isPositive, result);
     }
 
     /** O(max(this.digits, other.digits)) */
@@ -154,61 +219,23 @@
         return this.add(other.negate());
     }
 
-    /** O(max(this.digits, other.digits)^log_2(3)) */
+    /** O(this.digits * add) */
     mul(other: BigInteger): BigInteger {
-        function singleDigitMul(bi: BigInteger, mul: number, mulIsPositive: boolean): BigInteger {
-            var digits = Array<number>();
-            var carry = 0;
-            for (var n = 0; n < bi._digits.length; n++) {
-                var digit = bi._digits[n] * mul + carry;
-                carry = Math.floor(digit / BigInteger.BASE);
-                digit %= BigInteger.BASE;
-                digits.push(digit);
-            }
-            if (carry != 0) {
-                digits.push(carry);
-            }
-
-            return BigInteger.create(mulIsPositive == bi._isPositive, digits);
-        }
-
         var result = BigInteger.ZERO;
         for (var n = 0; n < this._digits.length; n++) {
-            result = result.add(singleDigitMul(other, this._digits[n], this._isPositive).leftShift(n));
+            if (other._digits[n]) {
+                result = result.add(this.leftShift(n));
+            }
         }
-        return result;
+
+        if (other._isPositive) {
+            return result;
+        }
+        return result.negate();
     }
 
     /** O(???) */
     divRem(other: BigInteger): BigInteger[] {
-        function inner(dividend: BigInteger, divisor: BigInteger): BigInteger[] {
-            if (dividend.eq(BigInteger.ZERO)) {
-                return [BigInteger.ZERO, BigInteger.ZERO]; // yes, even if divisor == 0
-            }
-
-            var low = BigInteger.ONE;
-            var high = BigInteger.TWO;
-            var fastGrowth = true;
-
-            while (low.compare(high) == -1) {
-                var guess = low.add(high).halve();
-                var remainder = dividend.sub(divisor.mul(guess));
-                if (remainder.compare(divisor) > -1) {
-                    if (fastGrowth) {
-                        low = guess.add(BigInteger.ONE);
-                        high = high.mul(high);
-                    } else {
-                        low = guess.add(BigInteger.ONE);
-                    }
-                } else {
-                    high = guess;
-                    fastGrowth = false;
-                }
-            }
-
-            return [low, dividend.sub(divisor.mul(low))];
-        }
-
         var isPositive = this._isPositive == other._isPositive;
         var divisor = other.abs();
         var dividend = this.abs();
@@ -229,30 +256,31 @@
                 }
         }
 
-        var digits = new Array<number>();
+        var digits = Array<boolean>(dividend._digits.length - divisor._digits.length + 1);
 
-        // First, take digits from the biggest one until the number they form is bigger than the divisor
         var index: number;
         var remainder: BigInteger;
         for (index = dividend._digits.length - divisor._digits.length; index >= 0; index--) {
             var shifted = dividend.rightShiftAbs(index);
             if (shifted.compare(divisor) > -1) {
-                // Divide that number by the divisor, store the quotient, and keep the remainder
-                var quotientAndRemainder = inner(shifted, divisor);
-                remainder = quotientAndRemainder[1];
-                digits.unshift(quotientAndRemainder[0].toInt());
+                remainder = shifted.sub(divisor);
+                digits[index] = true;
                 index--;
                 break;
+            } else {
+                digits[index] = false;
             }
         }
 
-        // Then, for each digit from the next, add it as the new smallest one and repeat
         for (; index >= 0; index--) {
             var newDigit = dividend._digits[index];
             var newDividend = remainder.pushRight(newDigit);
-            var quotientAndRemainder = inner(newDividend, divisor);
-            remainder = quotientAndRemainder[1];
-            digits.unshift(quotientAndRemainder[0].toInt());
+            if (newDividend > divisor) {
+                remainder = newDividend.sub(divisor);
+                digits[index] = true;
+            } else {
+                digits[index] = false;
+            }
         }
 
         if (!this._isPositive) {
@@ -262,9 +290,19 @@
         return [BigInteger.create(isPositive, digits), remainder];
     }
 
-    /** ~O(1) */
+    /** O(log(divisor)) */
     smallRem(divisor: number): number {
-        return this._digits[0] % divisor;
+        var index = 0;
+        var result = 0;
+        while (divisor != 0) {
+            result *= 2;
+            if (this._digits[index]) {
+                result += 1;
+            }
+            divisor >>= 1;
+            index++;
+        }
+        return result;
     }
 
     /** O(log(n)^2) */
@@ -306,10 +344,10 @@
             return this._isPositive ? 1 : -1;
         }
         for (var n = this._digits.length - 1; n >= 0; n--) {
-            if (this._digits[n] < other._digits[n]) {
+            if (!this._digits[n] && other._digits[n]) {
                 return this._isPositive ? -1 : 1;
             }
-            if (this._digits[n] > other._digits[n]) {
+            if (this._digits[n] && !other._digits[n]) {
                 return this._isPositive ? 1 : -1;
             }
         }
@@ -318,10 +356,11 @@
 
     /** O(min(this.digits, other.digits)) */
     and(other: BigInteger): BigInteger {
-        var digits = Array<number>();
+        var length = Math.min(this._digits.length, other._digits.length);
+        var digits = Array<boolean>(length);
 
-        for (var n = 0; n < this._digits.length && n < other._digits.length; n++) {
-            digits.push(this._digits[n] & other._digits[n]);
+        for (var n = 0; n < length; n++) {
+            digits[n] = this._digits[n] && other._digits[n];
         }
 
         return BigInteger.create(true, digits);
@@ -329,7 +368,7 @@
 
     /** O(min(this.digits, other.digits)) */
     eq(other: BigInteger) {
-        function arrayEquals(a: number[], b: number[]): boolean {
+        function arrayEquals(a: boolean[], b: boolean[]): boolean {
             if (a == b) {
                 return true;
             }
@@ -351,8 +390,7 @@
     /** O(this.digits) */
     toInt(): number {
         // Hack-y, but simple
-        var str = this.toString();
-        var n = parseInt(str);
+        var n = parseInt(this.toString());
         if (Math.abs(n) > BigInteger.MAX_SAFE_INT) {
             throw "toInt can only work with small BigIntegers.";
         }
@@ -362,34 +400,45 @@
 
     /** O(this.digits) */
     toString(): string {
-        var padNum = (n: number, len: number): string => {
-            var str = n.toString();
-            while (str.length < len) {
-                str = '0' + str;
+        function addOp(str: string, op: (n: number) => number): string {
+            var result = "";
+            var carry = false;
+            for (var n = 0; n < str.length; n++) {
+                var asNum = parseInt(str[n]);
+                op(asNum);
+                if (carry) {
+                    asNum += 1;
+                }
+                if (asNum > 9) {
+                    asNum -= 10;
+                    carry = true;
+                } else {
+                    carry = false;
+                }
+                result = asNum + result;
             }
-            return str;
+            if (carry) {
+                result = "1" + result;
+            }
+            return result;
         }
 
         var result = "";
-
-        for (var n = 0; n < this._digits.length - 1; n++) {
-            result = padNum(this._digits[n], BigInteger.BASE_LOG10) + result;
+        for (var n = 0; n < this._digits.length; n++) {
+            result = addOp(result, x => x * 2);
+            if (this._digits[n]) {
+                result = addOp(result, x => x + 1);
+            }
         }
-        result = this._digits[this._digits.length - 1].toString() + result;
-
-        if (!this._isPositive) {
-            result = "-" + result;
-        }
-
         return result;
     }
 
     /** O(this.digits + n) */
     private leftShift(n: number): BigInteger {
-        var digits = new Array(this._digits.length + n);
+        var digits = Array<boolean>(this._digits.length + n);
 
         for (var i = 0; i < n; i++) {
-            digits[i] = 0;
+            digits[i] = false;
         }
 
         for (var i = 0; i < this._digits.length; i++) {
@@ -399,11 +448,11 @@
         return BigInteger.create(this._isPositive, digits);
     }
 
-    /** O(this.digits + n) */
-    private pushRight(n: number): BigInteger {
-        var digits = new Array(this._digits.length + 1);
+    /** O(this.digits) */
+    private pushRight(b: boolean): BigInteger {
+        var digits = Array<boolean>(this._digits.length + 1);
 
-        digits[0] = n;
+        digits[0] = b;
         for (var i = 0; i < this._digits.length; i++) {
             digits[i + 1] = this._digits[i];
         }
@@ -413,7 +462,7 @@
 
     /** O(this.digits + n) */
     private rightShiftAbs(n: number): BigInteger {
-        var digits = new Array(this._digits.length - n);
+        var digits = Array<boolean>(this._digits.length - n);
 
         for (var i = 0; i < digits.length; i++) {
             digits[i] = this._digits[i + n];
@@ -423,10 +472,10 @@
     }
 
     /** O(digits) */
-    private static create(isPositive: boolean, digits: number[]): BigInteger {
+    private static create(isPositive: boolean, digits: boolean[]): BigInteger {
         // Remove useless digits
         var actualLength = digits.length;
-        while (actualLength > 0 && digits[actualLength - 1] == 0) {
+        while (actualLength > 0 && !digits[actualLength - 1]) {
             actualLength--;
         }
 
@@ -441,7 +490,7 @@
     }
 
     /** O(1) */
-    private static uncheckedCreate(isPositive: boolean, digits: number[]): BigInteger {
+    private static uncheckedCreate(isPositive: boolean, digits: boolean[]): BigInteger {
         var bi = new BigInteger();
         bi._isPositive = isPositive;
         bi._digits = digits;
