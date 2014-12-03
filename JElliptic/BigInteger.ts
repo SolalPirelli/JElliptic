@@ -30,8 +30,7 @@ class BigInteger {
 
         do {
             var rem = n % 2 == 1;
-            n = (n / 2) | 0;
-
+            n = Math.floor(n / 2);
             digits.push(rem);
         } while (n != 0);
 
@@ -41,7 +40,12 @@ class BigInteger {
     /** O(str.length) */
     static parse(str: string): BigInteger {
         function isOdd(s: string): boolean {
-            return s[0] == "0" || s[0] == "2" || s[0] == "4" || s[0] == "6" || s[0] == "8";
+            var lastChar = s[s.length - 1];
+            return lastChar == "1"
+                || lastChar == "3"
+                || lastChar == "5"
+                || lastChar == "7"
+                || lastChar == "9";
         }
         function halve(s: string): string {
             var result = "";
@@ -49,16 +53,27 @@ class BigInteger {
             for (var n = 0; n < s.length; n++) {
                 var asNum = parseInt(s[n]);
                 if (hasRemainder) {
-                    asNum += 2;
+                    asNum += 10;
                 }
                 hasRemainder = asNum % 2 == 1;
                 asNum = (asNum / 2) | 0;
-                result = result + asNum;
+
+                if (asNum != 0 || result != "") {
+                    result = result + asNum;
+                }
             }
+
+            if (result == "") {
+                result = "0";
+            }
+
             return result;
         }
 
-        // This is a bit too complex for bases that are powers of ten, but it works with any base
+        if (str == "0") {
+            return BigInteger.ZERO;
+        }
+
         var isPositive = true;
         if (str[0] == "-") {
             isPositive = false;
@@ -105,13 +120,13 @@ class BigInteger {
         var thisIsGreater = thisComparedToOther == 1 || (thisComparedToOther == 0 && this._isPositive);
         var hi = thisIsGreater ? this : other;
         var lo = thisIsGreater ? other : this;
-        var loNeg = hi._isPositive = !lo._isPositive;
+        var loNeg = hi._isPositive == !lo._isPositive;
 
         var result = Array<boolean>(hi._digits.length + 1);
         var carry = false;
         var carryNeg = false;
 
-        for (var n = 0; n < hi._digits.length; n++) {
+        for (var n = 0; n < lo._digits.length; n++) {
             if (hi._digits[n]) { // 1
                 if (lo._digits[n]) {
                     if (loNeg) { // 1 - 1
@@ -152,7 +167,7 @@ class BigInteger {
                         } else { // 1 + 1
                             result[n] = false;
                             carry = true;
-                            carry = false;
+                            carryNeg = false;
                         }
                     } else { // 1
                         result[n] = true;
@@ -209,6 +224,38 @@ class BigInteger {
             }
         }
 
+        for (var n = lo._digits.length; n < hi._digits.length; n++) {
+            if (hi._digits[n]) { // 1
+                if (carry) {
+                    if (carryNeg) { // 1 - 1
+                        result[n] = false;
+                        carry = false;
+                    } else { // 1 + 1
+                        result[n] = false;
+                        carry = true;
+                        carryNeg = false;
+                    }
+                } else { // 1
+                    result[n] = true;
+                    carry = false;
+                }
+            } else {
+                if (carry) {
+                    if (carryNeg) { // - 1
+                        result[n] = true;
+                        carry = true;
+                        carryNeg = true;
+                    } else { // 1
+                        result[n] = true;
+                        carry = false;
+                    }
+                } else { // 0
+                    result[n] = false;
+                    carry = false;
+                }
+            }
+        }
+
         result[hi._digits.length] = carry;
 
         return BigInteger.create(hi._isPositive, result);
@@ -222,7 +269,7 @@ class BigInteger {
     /** O(this.digits * add) */
     mul(other: BigInteger): BigInteger {
         var result = BigInteger.ZERO;
-        for (var n = 0; n < this._digits.length; n++) {
+        for (var n = 0; n < other._digits.length; n++) {
             if (other._digits[n]) {
                 result = result.add(this.leftShift(n));
             }
@@ -400,12 +447,12 @@ class BigInteger {
 
     /** O(this.digits) */
     toString(): string {
-        function addOp(str: string, op: (n: number) => number): string {
+        function addOp(str: string, op: (n: number, idx: number) => number): string {
             var result = "";
             var carry = false;
-            for (var n = 0; n < str.length; n++) {
+            for (var n = str.length - 1; n >= 0; n--) {
                 var asNum = parseInt(str[n]);
-                op(asNum);
+                asNum = op(asNum, n);
                 if (carry) {
                     asNum += 1;
                 }
@@ -423,13 +470,18 @@ class BigInteger {
             return result;
         }
 
-        var result = "";
-        for (var n = 0; n < this._digits.length; n++) {
-            result = addOp(result, x => x * 2);
+        var result = "0";
+        for (var n = this._digits.length - 1; n >= 0; n--) {
+            result = addOp(result, (x, _) => x * 2);
             if (this._digits[n]) {
-                result = addOp(result, x => x + 1);
+                result = addOp(result, (x, i) => x + (i == result.length - 1 ? 1 : 0));
             }
         }
+
+        if (!this._isPositive) {
+            result = "-" + result;
+        }
+
         return result;
     }
 
