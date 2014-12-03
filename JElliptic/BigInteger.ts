@@ -94,10 +94,12 @@
         var digits = new Array<number>(this._digits.length);
         var hasRest = false;
         for (var n = this._digits.length - 1; n >= 0; n--) {
-            digits[n] = Math.floor(this._digits[n] / 2);
+            digits[n] = this._digits[n];
             if (hasRest) {
-                digits[n] += BigInteger.BASE / 2;
+                digits[n] += BigInteger.BASE;
             }
+            digits[n] /= 2;
+
             hasRest = this._digits[n] % 2 == 1;
         }
 
@@ -175,30 +177,6 @@
             result = result.add(singleDigitMul(other, this._digits[n], this._isPositive).leftShift(n));
         }
         return result;
-
-        //if (this._digits.length == 1) {
-        //    return singleDigitMul(other, this._digits[0], this._sign);
-        //}
-
-        //if (other._digits.length == 1) {
-        //    return singleDigitMul(this, other._digits[0], other._sign);
-        //}
-
-        //// http://en.wikipedia.org/wiki/Karatsuba_algorithm
-
-        //var m = Math.max(this._digits.length, other._digits.length);
-        //var m2 = Math.ceil(m / 2);
-
-        //var lo1 = BigInteger.create(this._sign, this._digits.slice(0, m2));
-        //var hi1 = BigInteger.create(this._sign, this._digits.slice(m2));
-        //var lo2 = BigInteger.create(other._sign, other._digits.slice(0, m2));
-        //var hi2 = BigInteger.create(other._sign, other._digits.slice(m2));
-
-        //var z0 = lo1.mul(lo2);
-        //var z1 = lo1.add(hi1).mul(lo2.add(hi2));
-        //var z2 = hi1.mul(hi2);
-
-        //return (z2.leftShift(m2 * 2)).add(z1.sub(z2).sub(z0).leftShift(m2)).add(z0);
     }
 
     /** O(???) */
