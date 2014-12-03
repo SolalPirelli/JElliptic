@@ -9,7 +9,6 @@ interface IConfig {
     additionTableSeed: number;
     additionTableLength: number;
     parrallelWalksCount: number;
-    useNegationMap: boolean;
     distinguishedPointMask: BigInteger;
 }
 
