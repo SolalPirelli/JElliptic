@@ -208,16 +208,29 @@ function pollardRhoSuite() {
     var config_walks1 = configWithParrallelWalkCount(1);
     var config_walks8 = configWithParrallelWalkCount(8);
     var config_walks256 = configWithParrallelWalkCount(256);
-    var config_walks1024 = configWithParrallelWalkCount(1024);
     var table = new Addition.Table(config16);
     var walk1 = new PollardRho.SingleCurveWalk(config_walks1, table);
     var walk8 = new PollardRho.MultiCurveWalk(config_walks8, table);
     var walk256 = new PollardRho.MultiCurveWalk(config_walks256, table);
-    var walk1024 = new PollardRho.MultiCurveWalk(config_walks1024, table);
     s("Step of a single walk over a 112-bit curve", () => walk1.step());
     s("Step of 8 parrallel walks over a 112-bit curve", () => walk8.step());
     s("Step of 256 parrallel walks over a 112-bit curve", () => walk256.step());
-    s("Step of 1024 parrallel walks over a 112-bit curve", () => walk1024.step());
+    s("100 steps of a single walk over a 112-bit curve", () => {
+        for (var n = 0; n < 100; n++) {
+            walk1.step();
+        }
+    });
+    s("100 steps of 8 parrallel walks over a 112-bit curve", () => {
+        for (var n = 0; n < 100; n++) {
+            walk8.step();
+        }
+    });
+    // FIXME: Too slow!
+    //s("100 steps of 256 parrallel walks over a 112-bit curve", () => {
+    //    for (var n = 0; n < 100; n++) {
+    //        walk256.step();
+    //    }
+    //});
 }
 
 bigIntegerSuite();
