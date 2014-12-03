@@ -339,7 +339,7 @@ class BigInteger {
     }
 
     /** O(log(divisor)) */
-    smallRem(divisor: number): number {
+    partition(divisor: number): number {
         var index = 0;
         var result = 0;
         while (divisor != 0) {

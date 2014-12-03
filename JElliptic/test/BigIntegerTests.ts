@@ -113,6 +113,15 @@ module BigIntegerTests {
         }
     }
 
+    function partition(s: string, n: number) {
+        test("partition: " + s + " -> " + n, () => {
+            var bi = BigInteger.parse(s);
+            var part = bi.partition(n);
+
+            ok(part < n);
+        });
+    }
+
     function mod(s1: string, s2: string, result: string) {
         op("mod (via divRem)", s1, s2, result, (b1, b2) => b1.divRem(b2)[1]);
     }
@@ -253,6 +262,13 @@ module BigIntegerTests {
         mod("-1234", "12341234", "12340000");
         mod("-123456789", "111111111", "98765433");
         mod("-68575678987078985443355445433234", "735643790543057439", "409009853781827093");
+
+        partition("0", 1);
+        partition("1234", 64);
+        partition("12345", 5);
+        partition("3300", 99);
+        partition("234567897654", 1023);
+        partition("132423561232557824245478899974345", 23443);
 
         modInverse("1", "10", "1");
         modInverse("2", "3", "2");
