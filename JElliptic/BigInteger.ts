@@ -262,8 +262,8 @@
         return [BigInteger.create(isPositive, digits), remainder];
     }
 
-    /** ~O(1) */
-    smallRem(divisor: number): number {
+    /** O(1) */
+    partition(divisor: number): number {
         return this._digits[0] % divisor;
     }
 

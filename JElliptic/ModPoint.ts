@@ -136,7 +136,7 @@ class ModPoint {
         if (this == ModPoint.INF) {
             return 0;
         }
-        return this._x.value.smallRem(n);
+        return this._x.value.partition(n);
     }
 
     /** O(min(this.x.value.digits, other.x.value.digits) + min(this.y.value.digits, other.y.value.digits)) */
