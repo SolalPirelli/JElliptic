@@ -116,353 +116,353 @@ class BigInteger {
     // Result = 1 iff sum % 2 == 1
     // Carry = 1 iff sum == +3 | +2 | -1 | -2
     // CarryNeg = 1 iff sum == -1 | -2
-    private static ADD_LOOKUP_RESULT: any = {
-        true: {
-            true: {
-                true: {
-                    true: true, // 1 + 1 - 1 = +1
-                    false: true  // 1 + 1 + 1 = +3
-                },
-                false: {
-                    true: false, // 1 + 1 + 0 = +2
-                    false: false  // 1 + 1 - 0 = +2
-                }
-            },
-            false: {
-                true: {
-                    true: false, // 1 + 0 - 1 = 0
-                    false: false // 1 + 0 + 1 = +2
-                },
-                false: {
-                    true: true, // 1 + 0 + 0 = +1
-                    false: true // 1 + 0 - 0 = +1
-                }
-            }
-        },
-        false: {
-            true: {
-                true: {
-                    true: false, // 0 + 1 - 1 = 0
-                    false: false  // 0 + 1 + 1 = +2
-                },
-                false: {
-                    true: true, // 0 + 1 + 0 = +1
-                    false: true  // 0 + 1 - 0 = +1
-                }
-            },
-            false: {
-                true: {
-                    true: true, // 0 + 0 - 1 = -1
-                    false: true // 0 + 0 + 1 = +1
-                },
-                false: {
-                    true: false, // 0 + 0 + 0 = 0
-                    false: false // 0 + 0 - 0 = 0
-                }
-            }
-        }
-    };
-    private static ADD_LOOKUP_RESULT_LONEG: any = {
-        true: {
-            true: {
-                true: {
-                    true: true, // 1 - 1 - 1 = -1
-                    false: true  // 1 - 1 + 1 = +1
-                },
-                false: {
-                    true: false, // 1 - 1 + 0 = 0
-                    false: false  // 1 - 1 - 0 = 0
-                }
-            },
-            false: {
-                true: {
-                    true: false, // 1 - 0 - 1 = 0
-                    false: false // 1 - 0 + 1 = +2
-                },
-                false: {
-                    true: true, // 1 - 0 + 0 = +1
-                    false: true // 1 - 0 - 0 = +1
-                }
-            }
-        },
-        false: {
-            true: {
-                true: {
-                    true: false, // 0 - 1 - 1 = -2
-                    false: false  // 0 - 1 + 1 = 0
-                },
-                false: {
-                    true: true, // 0 - 1 + 0 = -1
-                    false: true  // 0 - 1 - 0 = -1
-                }
-            },
-            false: {
-                true: {
-                    true: true, // 0 - 0 - 1 = -1
-                    false: true // 0 - 0 + 1 = +1
-                },
-                false: {
-                    true: false, // 0 - 0 + 0 = 0
-                    false: false // 0 - 0 - 0 = 0
-                }
-            }
-        }
-    }
-    private static ADD_LOOKUP_CARRY: any = {
-        true: {
-            true: {
-                true: {
-                    true: false, // 1 + 1 - 1 = +1
-                    false: true  // 1 + 1 + 1 = +3
-                },
-                false: {
-                    true: true, // 1 + 1 + 0 = +2
-                    false: true  // 1 + 1 - 0 = +2
-                }
-            },
-            false: {
-                true: {
-                    true: false, // 1 + 0 - 1 = 0
-                    false: true // 1 + 0 + 1 = +2
-                },
-                false: {
-                    true: false, // 1 + 0 + 0 = +1
-                    false: false // 1 + 0 - 0 = +1
-                }
-            }
-        },
-        false: {
-            true: {
-                true: {
-                    true: false, // 0 + 1 - 1 = 0
-                    false: true  // 0 + 1 + 1 = +2
-                },
-                false: {
-                    true: false, // 0 + 1 + 0 = +1
-                    false: false  // 0 + 1 - 0 = +1
-                }
-            },
-            false: {
-                true: {
-                    true: true, // 0 + 0 - 1 = -1
-                    false: false // 0 + 0 + 1 = +1
-                },
-                false: {
-                    true: false, // 0 + 0 + 0 = 0
-                    false: false // 0 + 0 - 0 = 0
-                }
-            }
-        }
-    };
-    private static ADD_LOOKUP_CARRY_LONEG: any = {
-        true: {
-            true: {
-                true: {
-                    true: true, // 1 - 1 - 1 = -1
-                    false: false  // 1 - 1 + 1 = +1
-                },
-                false: {
-                    true: false, // 1 - 1 + 0 = 0
-                    false: false  // 1 - 1 - 0 = 0
-                }
-            },
-            false: {
-                true: {
-                    true: false, // 1 - 0 - 1 = 0
-                    false: true // 1 - 0 + 1 = +2
-                },
-                false: {
-                    true: false, // 1 - 0 + 0 = +1
-                    false: false // 1 - 0 - 0 = +1
-                }
-            }
-        },
-        false: {
-            true: {
-                true: {
-                    true: true, // 0 - 1 - 1 = -2
-                    false: false  // 0 - 1 + 1 = 0
-                },
-                false: {
-                    true: true, // 0 - 1 + 0 = -1
-                    false: true  // 0 - 1 - 0 = -1
-                }
-            },
-            false: {
-                true: {
-                    true: true, // 0 - 0 - 1 = -1
-                    false: false // 0 - 0 + 1 = +1
-                },
-                false: {
-                    true: false, // 0 - 0 + 0 = 0
-                    false: false // 0 - 0 - 0 = 0
-                }
-            }
-        }
-    }
-    private static ADD_LOOKUP_CARRYNEG: any = {
-        true: {
-            true: {
-                true: {
-                    true: false, // 1 + 1 - 1 = +1
-                    false: false  // 1 + 1 + 1 = +3
-                },
-                false: {
-                    true: false, // 1 + 1 + 0 = +2
-                    false: false  // 1 + 1 - 0 = +2
-                }
-            },
-            false: {
-                true: {
-                    true: false, // 1 + 0 - 1 = 0
-                    false: false // 1 + 0 + 1 = +2
-                },
-                false: {
-                    true: false, // 1 + 0 + 0 = +1
-                    false: false // 1 + 0 - 0 = +1
-                }
-            }
-        },
-        false: {
-            true: {
-                true: {
-                    true: false, // 0 + 1 - 1 = 0
-                    false: false  // 0 + 1 + 1 = +2
-                },
-                false: {
-                    true: false, // 0 + 1 + 0 = +1
-                    false: false  // 0 + 1 - 0 = +1
-                }
-            },
-            false: {
-                true: {
-                    true: true, // 0 + 0 - 1 = -1
-                    false: false // 0 + 0 + 1 = +1
-                },
-                false: {
-                    true: false, // 0 + 0 + 0 = 0
-                    false: false // 0 + 0 - 0 = 0
-                }
-            }
-        }
-    };
-    private static ADD_LOOKUP_CARRYNEG_LONEG: any = {
-        true: {
-            true: {
-                true: {
-                    true: true, // 1 - 1 - 1 = -1
-                    false: false  // 1 - 1 + 1 = +1
-                },
-                false: {
-                    true: false, // 1 - 1 + 0 = 0
-                    false: false  // 1 - 1 - 0 = 0
-                }
-            },
-            false: {
-                true: {
-                    true: false, // 1 - 0 - 1 = 0
-                    false: false // 1 - 0 + 1 = +2
-                },
-                false: {
-                    true: false, // 1 - 0 + 0 = +1
-                    false: false // 1 - 0 - 0 = +1
-                }
-            }
-        },
-        false: {
-            true: {
-                true: {
-                    true: true, // 0 - 1 - 1 = -2
-                    false: false  // 0 - 1 + 1 = 0
-                },
-                false: {
-                    true: true, // 0 - 1 + 0 = -1
-                    false: true  // 0 - 1 - 0 = -1
-                }
-            },
-            false: {
-                true: {
-                    true: true, // 0 - 0 - 1 = -1
-                    false: false // 0 - 0 + 1 = +1
-                },
-                false: {
-                    true: false, // 0 - 0 + 0 = 0
-                    false: false // 0 - 0 - 0 = 0
-                }
-            }
-        }
-    }
+    private static ADD_LOOKUP_RESULT: boolean[][][][] = [
+        [
+            [
+                [
+                    true, // 1 + 1 - 1 = +1
+                    true  // 1 + 1 + 1 = +3
+                ],
+                [
+                    false, // 1 + 1 + 0 = +2
+                    false  // 1 + 1 - 0 = +2
+                ]
+            ],
+            [
+                [
+                    false, // 1 + 0 - 1 = 0
+                    false // 1 + 0 + 1 = +2
+                ],
+                [
+                    true, // 1 + 0 + 0 = +1
+                    true // 1 + 0 - 0 = +1
+                ]
+            ]
+        ],
+        [
+            [
+                [
+                    false, // 0 + 1 - 1 = 0
+                    false  // 0 + 1 + 1 = +2
+                ],
+                [
+                    true, // 0 + 1 + 0 = +1
+                    true  // 0 + 1 - 0 = +1
+                ]
+            ],
+            [
+                [
+                    true, // 0 + 0 - 1 = -1
+                    true // 0 + 0 + 1 = +1
+                ],
+                [
+                    false, // 0 + 0 + 0 = 0
+                    false // 0 + 0 - 0 = 0
+                ]
+            ]
+        ]
+    ];
+    private static ADD_LOOKUP_RESULT_LONEG: boolean[][][][] = [
+        [
+            [
+                [
+                    true, // 1 - 1 - 1 = -1
+                    true  // 1 - 1 + 1 = +1
+                ],
+                [
+                    false, // 1 - 1 + 0 = 0
+                    false  // 1 - 1 - 0 = 0
+                ]
+            ],
+            [
+                [
+                    false, // 1 - 0 - 1 = 0
+                    false // 1 - 0 + 1 = +2
+                ],
+                [
+                    true, // 1 - 0 + 0 = +1
+                    true // 1 - 0 - 0 = +1
+                ]
+            ]
+        ],
+        [
+            [
+                [
+                    false, // 0 - 1 - 1 = -2
+                    false  // 0 - 1 + 1 = 0
+                ],
+                [
+                    true, // 0 - 1 + 0 = -1
+                    true  // 0 - 1 - 0 = -1
+                ]
+            ],
+            [
+                [
+                    true, // 0 - 0 - 1 = -1
+                    true // 0 - 0 + 1 = +1
+                ],
+                [
+                    false, // 0 - 0 + 0 = 0
+                    false // 0 - 0 - 0 = 0
+                ]
+            ]
+        ]
+    ]
+    private static ADD_LOOKUP_CARRY: boolean[][][][] = [
+        [
+            [
+                [
+                    false, // 1 + 1 - 1 = +1
+                    true  // 1 + 1 + 1 = +3
+                ],
+                [
+                    true, // 1 + 1 + 0 = +2
+                    true  // 1 + 1 - 0 = +2
+                ]
+            ],
+            [
+                [
+                    false, // 1 + 0 - 1 = 0
+                    true // 1 + 0 + 1 = +2
+                ],
+                [
+                    false, // 1 + 0 + 0 = +1
+                    false // 1 + 0 - 0 = +1
+                ]
+            ]
+        ],
+        [
+            [
+                [
+                    false, // 0 + 1 - 1 = 0
+                    true  // 0 + 1 + 1 = +2
+                ],
+                [
+                    false, // 0 + 1 + 0 = +1
+                    false  // 0 + 1 - 0 = +1
+                ]
+            ],
+            [
+                [
+                    true, // 0 + 0 - 1 = -1
+                    false // 0 + 0 + 1 = +1
+                ],
+                [
+                    false, // 0 + 0 + 0 = 0
+                    false // 0 + 0 - 0 = 0
+                ]
+            ]
+        ]
+    ];
+    private static ADD_LOOKUP_CARRY_LONEG: boolean[][][][] = [
+        [
+            [
+                [
+                    true, // 1 - 1 - 1 = -1
+                    false  // 1 - 1 + 1 = +1
+                ],
+                [
+                    false, // 1 - 1 + 0 = 0
+                    false  // 1 - 1 - 0 = 0
+                ]
+            ],
+            [
+                [
+                    false, // 1 - 0 - 1 = 0
+                    true // 1 - 0 + 1 = +2
+                ],
+                [
+                    false, // 1 - 0 + 0 = +1
+                    false // 1 - 0 - 0 = +1
+                ]
+            ]
+        ],
+        [
+            [
+                [
+                    true, // 0 - 1 - 1 = -2
+                    false  // 0 - 1 + 1 = 0
+                ],
+                [
+                    true, // 0 - 1 + 0 = -1
+                    true  // 0 - 1 - 0 = -1
+                ]
+            ],
+            [
+                [
+                    true, // 0 - 0 - 1 = -1
+                    false // 0 - 0 + 1 = +1
+                ],
+                [
+                    false, // 0 - 0 + 0 = 0
+                    false // 0 - 0 - 0 = 0
+                ]
+            ]
+        ]
+    ]
+    private static ADD_LOOKUP_CARRYNEG: boolean[][][][] = [
+        [
+            [
+                [
+                    false, // 1 + 1 - 1 = +1
+                    false  // 1 + 1 + 1 = +3
+                ],
+                [
+                    false, // 1 + 1 + 0 = +2
+                    false  // 1 + 1 - 0 = +2
+                ]
+            ],
+            [
+                [
+                    false, // 1 + 0 - 1 = 0
+                    false // 1 + 0 + 1 = +2
+                ],
+                [
+                    false, // 1 + 0 + 0 = +1
+                    false // 1 + 0 - 0 = +1
+                ]
+            ]
+        ],
+        [
+            [
+                [
+                    false, // 0 + 1 - 1 = 0
+                    false  // 0 + 1 + 1 = +2
+                ],
+                [
+                    false, // 0 + 1 + 0 = +1
+                    false  // 0 + 1 - 0 = +1
+                ]
+            ],
+            [
+                [
+                    true, // 0 + 0 - 1 = -1
+                    false // 0 + 0 + 1 = +1
+                ],
+                [
+                    false, // 0 + 0 + 0 = 0
+                    false // 0 + 0 - 0 = 0
+                ]
+            ]
+        ]
+    ];
+    private static ADD_LOOKUP_CARRYNEG_LONEG: boolean[][][][] = [
+        [
+            [
+                [
+                    true, // 1 - 1 - 1 = -1
+                    false  // 1 - 1 + 1 = +1
+                ],
+                [
+                    false, // 1 - 1 + 0 = 0
+                    false  // 1 - 1 - 0 = 0
+                ]
+            ],
+            [
+                [
+                    false, // 1 - 0 - 1 = 0
+                    false // 1 - 0 + 1 = +2
+                ],
+                [
+                    false, // 1 - 0 + 0 = +1
+                    false // 1 - 0 - 0 = +1
+                ]
+            ]
+        ],
+        [
+            [
+                [
+                    true, // 0 - 1 - 1 = -2
+                    false  // 0 - 1 + 1 = 0
+                ],
+                [
+                    true, // 0 - 1 + 0 = -1
+                    true  // 0 - 1 - 0 = -1
+                ]
+            ],
+            [
+                [
+                    true, // 0 - 0 - 1 = -1
+                    false // 0 - 0 + 1 = +1
+                ],
+                [
+                    false, // 0 - 0 + 0 = 0
+                    false // 0 - 0 - 0 = 0
+                ]
+            ]
+        ]
+    ]
 
     // Indices in order: hi, carry, carryNeg
     // Result = 1 iff sum = +1 | -1
     // Carry = 1 iff sum = +2 | -1
     // CarryNeg = 1 iff sum = -1
-    private static ADD_LOOKUP_RESULT_NOLO: any = {
-        true: {
-            true: {
-                true: false, // 1 - 1 = 0
-                false: false, // 1 + 1 = +2
-            },
-            false: {
-                true: true, // 1 + 0 = +1
-                false: true, // 1 - 0 = +1
-            }
-        },
-        false: {
-            true: {
-                true: true, // 0 - 1 = -1
-                false: true, // 0 + 1 = +1
-            },
-            false: {
-                true: false, // 0 - 0 = 0
-                false: false, // 0 + 0 = 0
-            }
-        }
-    };
-    private static ADD_LOOKUP_CARRY_NOLO: any = {
-        true: {
-            true: {
-                true: false, // 1 - 1 = 0
-                false: true, // 1 + 1 = +2
-            },
-            false: {
-                true: false, // 1 + 0 = +1
-                false: false, // 1 - 0 = +1
-            }
-        },
-        false: {
-            true: {
-                true: true, // 0 - 1 = -1
-                false: false, // 0 + 1 = +1
-            },
-            false: {
-                true: false, // 0 - 0 = 0
-                false: false, // 0 + 0 = 0
-            }
-        }
-    };
-    private static ADD_LOOKUP_CARRYNEG_NOLO: any = {
-        true: {
-            true: {
-                true: false, // 1 - 1 = 0
-                false: false, // 1 + 1 = +2
-            },
-            false: {
-                true: false, // 1 + 0 = +1
-                false: false, // 1 - 0 = +1
-            }
-        },
-        false: {
-            true: {
-                true: true, // 0 - 1 = -1
-                false: false, // 0 + 1 = +1
-            },
-            false: {
-                true: false, // 0 - 0 = 0
-                false: false, // 0 + 0 = 0
-            }
-        }
-    };
+    private static ADD_LOOKUP_RESULT_NOLO: boolean[][][] = [
+        [
+            [
+                false, // 1 - 1 = 0
+                false // 1 + 1 = +2
+            ],
+            [
+                true, // 1 + 0 = +1
+                true // 1 - 0 = +1
+            ]
+        ],
+        [
+            [
+                true, // 0 - 1 = -1
+                true // 0 + 1 = +1
+            ],
+            [
+                false, // 0 - 0 = 0
+                false // 0 + 0 = 0
+            ]
+        ]
+    ];
+    private static ADD_LOOKUP_CARRY_NOLO: boolean[][][] = [
+        [
+            [
+                false, // 1 - 1 = 0
+                true // 1 + 1 = +2
+            ],
+            [
+                false, // 1 + 0 = +1
+                false // 1 - 0 = +1
+            ]
+        ],
+        [
+            [
+                true, // 0 - 1 = -1
+                false // 0 + 1 = +1
+            ],
+            [
+                false, // 0 - 0 = 0
+                false // 0 + 0 = 0
+            ]
+        ]
+    ];
+    private static ADD_LOOKUP_CARRYNEG_NOLO: boolean[][][] = [
+        [
+            [
+                false, // 1 - 1 = 0
+                false // 1 + 1 = +2
+            ],
+            [
+                false, // 1 + 0 = +1
+                false // 1 - 0 = +1
+            ]
+        ],
+        [
+            [
+                true, // 0 - 1 = -1
+                false // 0 + 1 = +1
+            ],
+            [
+                false, // 0 - 0 = 0
+                false // 0 + 0 = 0
+            ]
+        ]
+    ];
 
     /** O(max(this.digits, other.digits)) */
     add(other: BigInteger): BigInteger {
@@ -479,24 +479,24 @@ class BigInteger {
 
         if (hi._isPositive == lo._isPositive) {
             for (var n = 0; n < lo._digits.length; n++) {
-                result[n] = BigInteger.ADD_LOOKUP_RESULT[hi._digits[n]][lo._digits[n]][carry][carryNeg];
-                var newCarry = BigInteger.ADD_LOOKUP_CARRY[hi._digits[n]][lo._digits[n]][carry][carryNeg];
-                carryNeg = BigInteger.ADD_LOOKUP_CARRYNEG[hi._digits[n]][lo._digits[n]][carry][carryNeg];
+                result[n] = BigInteger.ADD_LOOKUP_RESULT[hi._digits[n] ? 0 : 1][lo._digits[n] ? 0 : 1][carry ? 0 : 1][carryNeg ? 0 : 1];
+                var newCarry = BigInteger.ADD_LOOKUP_CARRY[hi._digits[n] ? 0 : 1][lo._digits[n] ? 0 : 1][carry ? 0 : 1][carryNeg ? 0 : 1];
+                carryNeg = BigInteger.ADD_LOOKUP_CARRYNEG[hi._digits[n] ? 0 : 1][lo._digits[n] ? 0 : 1][carry ? 0 : 1][carryNeg ? 0 : 1];
                 carry = newCarry;
             }
         } else {
             for (var n = 0; n < lo._digits.length; n++) {
-                result[n] = BigInteger.ADD_LOOKUP_RESULT_LONEG[hi._digits[n]][lo._digits[n]][carry][carryNeg];
-                var newCarry = BigInteger.ADD_LOOKUP_CARRY_LONEG[hi._digits[n]][lo._digits[n]][carry][carryNeg];
-                carryNeg = BigInteger.ADD_LOOKUP_CARRYNEG_LONEG[hi._digits[n]][lo._digits[n]][carry][carryNeg];
+                result[n] = BigInteger.ADD_LOOKUP_RESULT_LONEG[hi._digits[n] ? 0 : 1][lo._digits[n] ? 0 : 1][carry ? 0 : 1][carryNeg ? 0 : 1];
+                var newCarry = BigInteger.ADD_LOOKUP_CARRY_LONEG[hi._digits[n] ? 0 : 1][lo._digits[n] ? 0 : 1][carry ? 0 : 1][carryNeg ? 0 : 1];
+                carryNeg = BigInteger.ADD_LOOKUP_CARRYNEG_LONEG[hi._digits[n] ? 0 : 1][lo._digits[n] ? 0 : 1][carry ? 0 : 1][carryNeg ? 0 : 1];
                 carry = newCarry;
             }
         }
 
         for (var n = lo._digits.length; n < hi._digits.length; n++) {
-            result[n] = BigInteger.ADD_LOOKUP_RESULT_NOLO[hi._digits[n]][carry][carryNeg];
-            var newCarry = BigInteger.ADD_LOOKUP_CARRY_NOLO[hi._digits[n]][carry][carryNeg];
-            carryNeg = BigInteger.ADD_LOOKUP_CARRYNEG_NOLO[hi._digits[n]][carry][carryNeg];
+            result[n] = BigInteger.ADD_LOOKUP_RESULT_NOLO[hi._digits[n] ? 0 : 1][carry ? 0 : 1][carryNeg ? 0 : 1];
+            var newCarry = BigInteger.ADD_LOOKUP_CARRY_NOLO[hi._digits[n] ? 0 : 1][carry ? 0 : 1][carryNeg ? 0 : 1];
+            carryNeg = BigInteger.ADD_LOOKUP_CARRYNEG_NOLO[hi._digits[n] ? 0 : 1][carry ? 0 : 1][carryNeg ? 0 : 1];
             carry = newCarry;
         }
 
