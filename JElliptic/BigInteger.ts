@@ -8,13 +8,13 @@ class BigInteger {
     private static MAX_SAFE_INT = 9007199254740991; // 2^53-1, where 53 is the mantissa size of IEEE-754 double-precision floating point numbers (what JS uses)
 
     private _isPositive: boolean;
-    private _digits: boolean[];
+    private _digits: number[];
 
 
-    static MINUS_ONE = BigInteger.uncheckedCreate(false, [true]);
-    static ZERO = BigInteger.uncheckedCreate(true, [false]);
-    static ONE = BigInteger.uncheckedCreate(true, [true]);
-    static TWO = BigInteger.uncheckedCreate(true, [false, true]);
+    static MINUS_ONE = BigInteger.uncheckedCreate(false, [1]);
+    static ZERO = BigInteger.uncheckedCreate(true, [0]);
+    static ONE = BigInteger.uncheckedCreate(true, [1]);
+    static TWO = BigInteger.uncheckedCreate(true, [0, 1]);
 
 
     /** O(1) */
@@ -24,12 +24,12 @@ class BigInteger {
         }
 
         var isPositive = n >= 0;
-        var digits = Array<boolean>();
+        var digits = Array<number>();
 
         n = Math.abs(n);
 
         do {
-            var rem = n % 2 == 1;
+            var rem = n % 2;
             n = Math.floor(n / 2);
             digits.push(rem);
         } while (n != 0);
@@ -80,9 +80,9 @@ class BigInteger {
             str = str.substring(1);
         }
 
-        var digits = Array<boolean>();
+        var digits = Array<number>();
         while (str != "0") {
-            digits.push(isOdd(str));
+            digits.push(isOdd(str) ? 1 : 0);
             str = halve(str);
         }
 
@@ -112,282 +112,284 @@ class BigInteger {
         return BigInteger.create(this._isPositive, this._digits.slice(1));
     }
 
+    // TODO: Copy/paste the first, since it was inverted, and recompute 0/1s, also do it for the other three arrays
+
     // Indices in order: hi, lo, carry, carryNeg
     // Result = 1 iff sum % 2 == 1
     // Carry = 1 iff sum == +3 | +2 | -1 | -2
     // CarryNeg = 1 iff sum == -1 | -2
-    private static ADD_LOOKUP_RESULT: boolean[][][][] = [
+    private static ADD_LOOKUP_RESULT: number[][][][] = [
         [
             [
                 [
-                    true, // 1 + 1 - 1 = +1
-                    true  // 1 + 1 + 1 = +3
+                    0, // 0 + 0 + 0 = 0
+                    0  // 0 + 0 - 0 = 0
                 ],
                 [
-                    false, // 1 + 1 + 0 = +2
-                    false  // 1 + 1 - 0 = +2
+                    1, // 0 + 0 + 1 = +1
+                    1  // 0 + 0 - 1 = -1
                 ]
             ],
             [
                 [
-                    false, // 1 + 0 - 1 = 0
-                    false // 1 + 0 + 1 = +2
+                    1, // 0 + 1 + 0 = +1
+                    1  // 0 + 1 - 0 = +1
                 ],
                 [
-                    true, // 1 + 0 + 0 = +1
-                    true // 1 + 0 - 0 = +1
+                    0, // 0 + 1 + 1 = +2
+                    0  // 0 + 1 - 1 = 0
                 ]
             ]
         ],
         [
             [
                 [
-                    false, // 0 + 1 - 1 = 0
-                    false  // 0 + 1 + 1 = +2
+                    1, // 1 + 0 + 0 = +1
+                    1  // 1 + 0 - 0 = +1
                 ],
                 [
-                    true, // 0 + 1 + 0 = +1
-                    true  // 0 + 1 - 0 = +1
+                    0, // 1 + 0 + 1 = +2
+                    0  // 1 + 0 - 1 = 0
                 ]
             ],
             [
                 [
-                    true, // 0 + 0 - 1 = -1
-                    true // 0 + 0 + 1 = +1
+                    0, // 1 + 1 + 0 = +2
+                    0  // 1 + 1 - 0 = +2
                 ],
                 [
-                    false, // 0 + 0 + 0 = 0
-                    false // 0 + 0 - 0 = 0
+                    1, // 1 + 1 + 1 = +3
+                    1  // 1 + 1 - 1 = +1
                 ]
             ]
         ]
     ];
-    private static ADD_LOOKUP_RESULT_LONEG: boolean[][][][] = [
+    private static ADD_LOOKUP_RESULT_LONEG: number[][][][] = [
         [
             [
                 [
-                    true, // 1 - 1 - 1 = -1
-                    true  // 1 - 1 + 1 = +1
+                    1, // 1 - 1 - 1 = -1
+                    1  // 1 - 1 + 1 = +1
                 ],
                 [
-                    false, // 1 - 1 + 0 = 0
-                    false  // 1 - 1 - 0 = 0
+                    0, // 1 - 1 + 0 = 0
+                    0  // 1 - 1 - 0 = 0
                 ]
             ],
             [
                 [
-                    false, // 1 - 0 - 1 = 0
-                    false // 1 - 0 + 1 = +2
+                    0, // 1 - 0 - 1 = 0
+                    0 // 1 - 0 + 1 = +2
                 ],
                 [
-                    true, // 1 - 0 + 0 = +1
-                    true // 1 - 0 - 0 = +1
+                    1, // 1 - 0 + 0 = +1
+                    1 // 1 - 0 - 0 = +1
                 ]
             ]
         ],
         [
             [
                 [
-                    false, // 0 - 1 - 1 = -2
-                    false  // 0 - 1 + 1 = 0
+                    0, // 0 - 1 - 1 = -2
+                    0  // 0 - 1 + 1 = 0
                 ],
                 [
-                    true, // 0 - 1 + 0 = -1
-                    true  // 0 - 1 - 0 = -1
+                    1, // 0 - 1 + 0 = -1
+                    1  // 0 - 1 - 0 = -1
                 ]
             ],
             [
                 [
-                    true, // 0 - 0 - 1 = -1
-                    true // 0 - 0 + 1 = +1
+                    1, // 0 - 0 - 1 = -1
+                    1 // 0 - 0 + 1 = +1
                 ],
                 [
-                    false, // 0 - 0 + 0 = 0
-                    false // 0 - 0 - 0 = 0
+                    0, // 0 - 0 + 0 = 0
+                    0 // 0 - 0 - 0 = 0
                 ]
             ]
         ]
     ]
-    private static ADD_LOOKUP_CARRY: boolean[][][][] = [
+    private static ADD_LOOKUP_CARRY: number[][][][] = [
         [
             [
                 [
-                    false, // 1 + 1 - 1 = +1
-                    true  // 1 + 1 + 1 = +3
+                    0, // 1 + 1 - 1 = +1
+                    1  // 1 + 1 + 1 = +3
                 ],
                 [
-                    true, // 1 + 1 + 0 = +2
-                    true  // 1 + 1 - 0 = +2
+                    1, // 1 + 1 + 0 = +2
+                    1  // 1 + 1 - 0 = +2
                 ]
             ],
             [
                 [
-                    false, // 1 + 0 - 1 = 0
-                    true // 1 + 0 + 1 = +2
+                    0, // 1 + 0 - 1 = 0
+                    1 // 1 + 0 + 1 = +2
                 ],
                 [
-                    false, // 1 + 0 + 0 = +1
-                    false // 1 + 0 - 0 = +1
+                    0, // 1 + 0 + 0 = +1
+                    0 // 1 + 0 - 0 = +1
                 ]
             ]
         ],
         [
             [
                 [
-                    false, // 0 + 1 - 1 = 0
-                    true  // 0 + 1 + 1 = +2
+                    0, // 0 + 1 - 1 = 0
+                    1  // 0 + 1 + 1 = +2
                 ],
                 [
-                    false, // 0 + 1 + 0 = +1
-                    false  // 0 + 1 - 0 = +1
+                    0, // 0 + 1 + 0 = +1
+                    0  // 0 + 1 - 0 = +1
                 ]
             ],
             [
                 [
-                    true, // 0 + 0 - 1 = -1
-                    false // 0 + 0 + 1 = +1
+                    1, // 0 + 0 - 1 = -1
+                    0 // 0 + 0 + 1 = +1
                 ],
                 [
-                    false, // 0 + 0 + 0 = 0
-                    false // 0 + 0 - 0 = 0
+                    0, // 0 + 0 + 0 = 0
+                    0 // 0 + 0 - 0 = 0
                 ]
             ]
         ]
     ];
-    private static ADD_LOOKUP_CARRY_LONEG: boolean[][][][] = [
+    private static ADD_LOOKUP_CARRY_LONEG: number[][][][] = [
         [
             [
                 [
-                    true, // 1 - 1 - 1 = -1
-                    false  // 1 - 1 + 1 = +1
+                    1, // 1 - 1 - 1 = -1
+                    0  // 1 - 1 + 1 = +1
                 ],
                 [
-                    false, // 1 - 1 + 0 = 0
-                    false  // 1 - 1 - 0 = 0
+                    0, // 1 - 1 + 0 = 0
+                    0  // 1 - 1 - 0 = 0
                 ]
             ],
             [
                 [
-                    false, // 1 - 0 - 1 = 0
-                    true // 1 - 0 + 1 = +2
+                    0, // 1 - 0 - 1 = 0
+                    1 // 1 - 0 + 1 = +2
                 ],
                 [
-                    false, // 1 - 0 + 0 = +1
-                    false // 1 - 0 - 0 = +1
+                    0, // 1 - 0 + 0 = +1
+                    0 // 1 - 0 - 0 = +1
                 ]
             ]
         ],
         [
             [
                 [
-                    true, // 0 - 1 - 1 = -2
-                    false  // 0 - 1 + 1 = 0
+                    1, // 0 - 1 - 1 = -2
+                    0  // 0 - 1 + 1 = 0
                 ],
                 [
-                    true, // 0 - 1 + 0 = -1
-                    true  // 0 - 1 - 0 = -1
+                    1, // 0 - 1 + 0 = -1
+                    1  // 0 - 1 - 0 = -1
                 ]
             ],
             [
                 [
-                    true, // 0 - 0 - 1 = -1
-                    false // 0 - 0 + 1 = +1
+                    1, // 0 - 0 - 1 = -1
+                    0 // 0 - 0 + 1 = +1
                 ],
                 [
-                    false, // 0 - 0 + 0 = 0
-                    false // 0 - 0 - 0 = 0
+                    0, // 0 - 0 + 0 = 0
+                    0 // 0 - 0 - 0 = 0
                 ]
             ]
         ]
     ]
-    private static ADD_LOOKUP_CARRYNEG: boolean[][][][] = [
+    private static ADD_LOOKUP_CARRYNEG: number[][][][] = [
         [
             [
                 [
-                    false, // 1 + 1 - 1 = +1
-                    false  // 1 + 1 + 1 = +3
+                    0, // 1 + 1 - 1 = +1
+                    0  // 1 + 1 + 1 = +3
                 ],
                 [
-                    false, // 1 + 1 + 0 = +2
-                    false  // 1 + 1 - 0 = +2
+                    0, // 1 + 1 + 0 = +2
+                    0  // 1 + 1 - 0 = +2
                 ]
             ],
             [
                 [
-                    false, // 1 + 0 - 1 = 0
-                    false // 1 + 0 + 1 = +2
+                    0, // 1 + 0 - 1 = 0
+                    0 // 1 + 0 + 1 = +2
                 ],
                 [
-                    false, // 1 + 0 + 0 = +1
-                    false // 1 + 0 - 0 = +1
+                    0, // 1 + 0 + 0 = +1
+                    0 // 1 + 0 - 0 = +1
                 ]
             ]
         ],
         [
             [
                 [
-                    false, // 0 + 1 - 1 = 0
-                    false  // 0 + 1 + 1 = +2
+                    0, // 0 + 1 - 1 = 0
+                    0  // 0 + 1 + 1 = +2
                 ],
                 [
-                    false, // 0 + 1 + 0 = +1
-                    false  // 0 + 1 - 0 = +1
+                    0, // 0 + 1 + 0 = +1
+                    0  // 0 + 1 - 0 = +1
                 ]
             ],
             [
                 [
-                    true, // 0 + 0 - 1 = -1
-                    false // 0 + 0 + 1 = +1
+                    1, // 0 + 0 - 1 = -1
+                    0 // 0 + 0 + 1 = +1
                 ],
                 [
-                    false, // 0 + 0 + 0 = 0
-                    false // 0 + 0 - 0 = 0
+                    0, // 0 + 0 + 0 = 0
+                    0 // 0 + 0 - 0 = 0
                 ]
             ]
         ]
     ];
-    private static ADD_LOOKUP_CARRYNEG_LONEG: boolean[][][][] = [
+    private static ADD_LOOKUP_CARRYNEG_LONEG: number[][][][] = [
         [
             [
                 [
-                    true, // 1 - 1 - 1 = -1
-                    false  // 1 - 1 + 1 = +1
+                    1, // 1 - 1 - 1 = -1
+                    0  // 1 - 1 + 1 = +1
                 ],
                 [
-                    false, // 1 - 1 + 0 = 0
-                    false  // 1 - 1 - 0 = 0
+                    0, // 1 - 1 + 0 = 0
+                    0  // 1 - 1 - 0 = 0
                 ]
             ],
             [
                 [
-                    false, // 1 - 0 - 1 = 0
-                    false // 1 - 0 + 1 = +2
+                    0, // 1 - 0 - 1 = 0
+                    0 // 1 - 0 + 1 = +2
                 ],
                 [
-                    false, // 1 - 0 + 0 = +1
-                    false // 1 - 0 - 0 = +1
+                    0, // 1 - 0 + 0 = +1
+                    0 // 1 - 0 - 0 = +1
                 ]
             ]
         ],
         [
             [
                 [
-                    true, // 0 - 1 - 1 = -2
-                    false  // 0 - 1 + 1 = 0
+                    1, // 0 - 1 - 1 = -2
+                    0  // 0 - 1 + 1 = 0
                 ],
                 [
-                    true, // 0 - 1 + 0 = -1
-                    true  // 0 - 1 - 0 = -1
+                    1, // 0 - 1 + 0 = -1
+                    1  // 0 - 1 - 0 = -1
                 ]
             ],
             [
                 [
-                    true, // 0 - 0 - 1 = -1
-                    false // 0 - 0 + 1 = +1
+                    1, // 0 - 0 - 1 = -1
+                    0 // 0 - 0 + 1 = +1
                 ],
                 [
-                    false, // 0 - 0 + 0 = 0
-                    false // 0 - 0 - 0 = 0
+                    0, // 0 - 0 + 0 = 0
+                    0 // 0 - 0 - 0 = 0
                 ]
             ]
         ]
@@ -397,69 +399,69 @@ class BigInteger {
     // Result = 1 iff sum = +1 | -1
     // Carry = 1 iff sum = +2 | -1
     // CarryNeg = 1 iff sum = -1
-    private static ADD_LOOKUP_RESULT_NOLO: boolean[][][] = [
+    private static ADD_LOOKUP_RESULT_NOLO: number[][][] = [
         [
             [
-                false, // 1 - 1 = 0
-                false // 1 + 1 = +2
+                0, // 1 - 1 = 0
+                0 // 1 + 1 = +2
             ],
             [
-                true, // 1 + 0 = +1
-                true // 1 - 0 = +1
+                1, // 1 + 0 = +1
+                1 // 1 - 0 = +1
             ]
         ],
         [
             [
-                true, // 0 - 1 = -1
-                true // 0 + 1 = +1
+                1, // 0 - 1 = -1
+                1 // 0 + 1 = +1
             ],
             [
-                false, // 0 - 0 = 0
-                false // 0 + 0 = 0
+                0, // 0 - 0 = 0
+                0 // 0 + 0 = 0
             ]
         ]
     ];
-    private static ADD_LOOKUP_CARRY_NOLO: boolean[][][] = [
+    private static ADD_LOOKUP_CARRY_NOLO: number[][][] = [
         [
             [
-                false, // 1 - 1 = 0
-                true // 1 + 1 = +2
+                0, // 1 - 1 = 0
+                1 // 1 + 1 = +2
             ],
             [
-                false, // 1 + 0 = +1
-                false // 1 - 0 = +1
+                0, // 1 + 0 = +1
+                0 // 1 - 0 = +1
             ]
         ],
         [
             [
-                true, // 0 - 1 = -1
-                false // 0 + 1 = +1
+                1, // 0 - 1 = -1
+                0 // 0 + 1 = +1
             ],
             [
-                false, // 0 - 0 = 0
-                false // 0 + 0 = 0
+                0, // 0 - 0 = 0
+                0 // 0 + 0 = 0
             ]
         ]
     ];
-    private static ADD_LOOKUP_CARRYNEG_NOLO: boolean[][][] = [
+    private static ADD_LOOKUP_CARRYNEG_NOLO: number[][][] = [
         [
             [
-                false, // 1 - 1 = 0
-                false // 1 + 1 = +2
+                0, // 1 - 1 = 0
+                0 // 1 + 1 = +2
             ],
             [
-                false, // 1 + 0 = +1
-                false // 1 - 0 = +1
+                0, // 1 + 0 = +1
+                0 // 1 - 0 = +1
             ]
         ],
         [
             [
-                true, // 0 - 1 = -1
-                false // 0 + 1 = +1
+                1, // 0 - 1 = -1
+                0 // 0 + 1 = +1
             ],
             [
-                false, // 0 - 0 = 0
-                false // 0 + 0 = 0
+                0, // 0 - 0 = 0
+                0 // 0 + 0 = 0
             ]
         ]
     ];
@@ -473,30 +475,30 @@ class BigInteger {
         var hi = thisIsGreater ? this : other;
         var lo = thisIsGreater ? other : this;
 
-        var result = Array<boolean>(hi._digits.length + 1);
-        var carry = false;
-        var carryNeg = false;
+        var result = Array<number>(hi._digits.length + 1);
+        var carry = 0;
+        var carryNeg = 0;
 
         if (hi._isPositive == lo._isPositive) {
             for (var n = 0; n < lo._digits.length; n++) {
-                result[n] = BigInteger.ADD_LOOKUP_RESULT[hi._digits[n] ? 0 : 1][lo._digits[n] ? 0 : 1][carry ? 0 : 1][carryNeg ? 0 : 1];
-                var newCarry = BigInteger.ADD_LOOKUP_CARRY[hi._digits[n] ? 0 : 1][lo._digits[n] ? 0 : 1][carry ? 0 : 1][carryNeg ? 0 : 1];
-                carryNeg = BigInteger.ADD_LOOKUP_CARRYNEG[hi._digits[n] ? 0 : 1][lo._digits[n] ? 0 : 1][carry ? 0 : 1][carryNeg ? 0 : 1];
+                result[n] = BigInteger.ADD_LOOKUP_RESULT[hi._digits[n]][lo._digits[n]][carry][carryNeg];
+                var newCarry = BigInteger.ADD_LOOKUP_CARRY[hi._digits[n]][lo._digits[n]][carry][carryNeg];
+                carryNeg = BigInteger.ADD_LOOKUP_CARRYNEG[hi._digits[n]][lo._digits[n]][carry][carryNeg];
                 carry = newCarry;
             }
         } else {
             for (var n = 0; n < lo._digits.length; n++) {
-                result[n] = BigInteger.ADD_LOOKUP_RESULT_LONEG[hi._digits[n] ? 0 : 1][lo._digits[n] ? 0 : 1][carry ? 0 : 1][carryNeg ? 0 : 1];
-                var newCarry = BigInteger.ADD_LOOKUP_CARRY_LONEG[hi._digits[n] ? 0 : 1][lo._digits[n] ? 0 : 1][carry ? 0 : 1][carryNeg ? 0 : 1];
-                carryNeg = BigInteger.ADD_LOOKUP_CARRYNEG_LONEG[hi._digits[n] ? 0 : 1][lo._digits[n] ? 0 : 1][carry ? 0 : 1][carryNeg ? 0 : 1];
+                result[n] = BigInteger.ADD_LOOKUP_RESULT_LONEG[hi._digits[n]][lo._digits[n]][carry][carryNeg];
+                var newCarry = BigInteger.ADD_LOOKUP_CARRY_LONEG[hi._digits[n]][lo._digits[n]][carry][carryNeg];
+                carryNeg = BigInteger.ADD_LOOKUP_CARRYNEG_LONEG[hi._digits[n]][lo._digits[n]][carry][carryNeg];
                 carry = newCarry;
             }
         }
 
         for (var n = lo._digits.length; n < hi._digits.length; n++) {
-            result[n] = BigInteger.ADD_LOOKUP_RESULT_NOLO[hi._digits[n] ? 0 : 1][carry ? 0 : 1][carryNeg ? 0 : 1];
-            var newCarry = BigInteger.ADD_LOOKUP_CARRY_NOLO[hi._digits[n] ? 0 : 1][carry ? 0 : 1][carryNeg ? 0 : 1];
-            carryNeg = BigInteger.ADD_LOOKUP_CARRYNEG_NOLO[hi._digits[n] ? 0 : 1][carry ? 0 : 1][carryNeg ? 0 : 1];
+            result[n] = BigInteger.ADD_LOOKUP_RESULT_NOLO[hi._digits[n]][carry][carryNeg];
+            var newCarry = BigInteger.ADD_LOOKUP_CARRY_NOLO[hi._digits[n]][carry][carryNeg];
+            carryNeg = BigInteger.ADD_LOOKUP_CARRYNEG_NOLO[hi._digits[n]][carry][carryNeg];
             carry = newCarry;
         }
 
@@ -547,7 +549,7 @@ class BigInteger {
                 }
         }
 
-        var digits = Array<boolean>(dividend._digits.length - divisor._digits.length + 1);
+        var digits = Array<number>(dividend._digits.length - divisor._digits.length + 1);
 
         var index: number;
         var remainder: BigInteger;
@@ -555,11 +557,11 @@ class BigInteger {
             var shifted = dividend.rightShiftAbs(index);
             if (shifted.compare(divisor) > -1) {
                 remainder = shifted.sub(divisor);
-                digits[index] = true;
+                digits[index] = 1;
                 index--;
                 break;
             } else {
-                digits[index] = false;
+                digits[index] = 0;
             }
         }
 
@@ -568,10 +570,10 @@ class BigInteger {
             var newDividend = remainder.pushRight(newDigit);
             if (newDividend.compare(divisor) > -1) {
                 remainder = newDividend.sub(divisor);
-                digits[index] = true;
+                digits[index] = 1;
             } else {
                 remainder = newDividend;
-                digits[index] = false;
+                digits[index] = 0;
             }
         }
 
@@ -647,10 +649,10 @@ class BigInteger {
     /** O(min(this.digits, other.digits)) */
     and(other: BigInteger): BigInteger {
         var length = Math.min(this._digits.length, other._digits.length);
-        var digits = Array<boolean>(length);
+        var digits = Array<number>(length);
 
         for (var n = 0; n < length; n++) {
-            digits[n] = this._digits[n] && other._digits[n];
+            digits[n] = this._digits[n] & other._digits[n];
         }
 
         return BigInteger.create(true, digits);
@@ -658,7 +660,7 @@ class BigInteger {
 
     /** O(min(this.digits, other.digits)) */
     eq(other: BigInteger) {
-        function arrayEquals(a: boolean[], b: boolean[]): boolean {
+        function arrayEquals(a: number[], b: number[]): boolean {
             if (a == b) {
                 return true;
             }
@@ -730,10 +732,10 @@ class BigInteger {
 
     /** O(this.digits + n) */
     private leftShift(n: number): BigInteger {
-        var digits = Array<boolean>(this._digits.length + n);
+        var digits = Array<number>(this._digits.length + n);
 
         for (var i = 0; i < n; i++) {
-            digits[i] = false;
+            digits[i] = 0;
         }
 
         for (var i = 0; i < this._digits.length; i++) {
@@ -744,8 +746,8 @@ class BigInteger {
     }
 
     /** O(this.digits) */
-    private pushRight(b: boolean): BigInteger {
-        var digits = Array<boolean>(this._digits.length + 1);
+    private pushRight(b: number): BigInteger {
+        var digits = Array<number>(this._digits.length + 1);
 
         digits[0] = b;
         for (var i = 0; i < this._digits.length; i++) {
@@ -757,7 +759,7 @@ class BigInteger {
 
     /** O(this.digits + n) */
     private rightShiftAbs(n: number): BigInteger {
-        var digits = Array<boolean>(this._digits.length - n);
+        var digits = Array<number>(this._digits.length - n);
 
         for (var i = 0; i < digits.length; i++) {
             digits[i] = this._digits[i + n];
@@ -767,10 +769,10 @@ class BigInteger {
     }
 
     /** O(digits) */
-    private static create(isPositive: boolean, digits: boolean[]): BigInteger {
+    private static create(isPositive: boolean, digits: number[]): BigInteger {
         // Remove useless digits
         var actualLength = digits.length;
-        while (actualLength > 0 && !digits[actualLength - 1]) {
+        while (actualLength > 0 && digits[actualLength - 1] == 0) {
             actualLength--;
         }
 
@@ -785,7 +787,7 @@ class BigInteger {
     }
 
     /** O(1) */
-    private static uncheckedCreate(isPositive: boolean, digits: boolean[]): BigInteger {
+    private static uncheckedCreate(isPositive: boolean, digits: number[]): BigInteger {
         var bi = new BigInteger();
         bi._isPositive = isPositive;
         bi._digits = digits;
