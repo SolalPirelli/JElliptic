@@ -275,11 +275,7 @@ module BigIntegerTests {
 
         partition("0", 1);
         partition("0", 64);
-        //partition("27", 64);
         partition("12345", 5);
-        //partition("3300", 99);
-        //partition("234567897654", 1023);
-        //partition("132423561232557824245478899974345", 23443);
 
         modInverse("1", "10", "1");
         modInverse("2", "3", "2");

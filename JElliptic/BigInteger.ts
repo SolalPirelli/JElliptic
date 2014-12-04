@@ -477,26 +477,26 @@ class BigInteger {
         var carry = false;
         var carryNeg = false;
 
-        if (hi._isPositive == !lo._isPositive) {
+        if (hi._isPositive == lo._isPositive) {
             for (var n = 0; n < lo._digits.length; n++) {
                 result[n] = BigInteger.ADD_LOOKUP_RESULT[hi._digits[n]][lo._digits[n]][carry][carryNeg];
-                var newCarry = BigInteger.ADD_LOOKUP_RESULT[hi._digits[n]][lo._digits[n]][carry][carryNeg];
-                carryNeg = BigInteger.ADD_LOOKUP_RESULT[hi._digits[n]][lo._digits[n]][carry][carryNeg];
+                var newCarry = BigInteger.ADD_LOOKUP_CARRY[hi._digits[n]][lo._digits[n]][carry][carryNeg];
+                carryNeg = BigInteger.ADD_LOOKUP_CARRYNEG[hi._digits[n]][lo._digits[n]][carry][carryNeg];
                 carry = newCarry;
             }
         } else {
             for (var n = 0; n < lo._digits.length; n++) {
                 result[n] = BigInteger.ADD_LOOKUP_RESULT_LONEG[hi._digits[n]][lo._digits[n]][carry][carryNeg];
-                var newCarry = BigInteger.ADD_LOOKUP_RESULT_LONEG[hi._digits[n]][lo._digits[n]][carry][carryNeg];
-                carryNeg = BigInteger.ADD_LOOKUP_RESULT_LONEG[hi._digits[n]][lo._digits[n]][carry][carryNeg];
+                var newCarry = BigInteger.ADD_LOOKUP_CARRY_LONEG[hi._digits[n]][lo._digits[n]][carry][carryNeg];
+                carryNeg = BigInteger.ADD_LOOKUP_CARRYNEG_LONEG[hi._digits[n]][lo._digits[n]][carry][carryNeg];
                 carry = newCarry;
             }
         }
 
         for (var n = lo._digits.length; n < hi._digits.length; n++) {
             result[n] = BigInteger.ADD_LOOKUP_RESULT_NOLO[hi._digits[n]][carry][carryNeg];
-            var newCarry = BigInteger.ADD_LOOKUP_RESULT_NOLO[hi._digits[n]][carry][carryNeg];
-            carryNeg = BigInteger.ADD_LOOKUP_RESULT_NOLO[hi._digits[n]][carry][carryNeg];
+            var newCarry = BigInteger.ADD_LOOKUP_CARRY_NOLO[hi._digits[n]][carry][carryNeg];
+            carryNeg = BigInteger.ADD_LOOKUP_CARRYNEG_NOLO[hi._digits[n]][carry][carryNeg];
             carry = newCarry;
         }
 
