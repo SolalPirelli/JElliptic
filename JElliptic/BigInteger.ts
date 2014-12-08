@@ -118,353 +118,12 @@ class BigInteger {
     // Result = 1 iff sum % 2 == 1
     // Carry = 1 iff sum == +3 | +2 | -1 | -2
     // CarryNeg = 1 iff sum == -1 | -2
-    private static ADD_LOOKUP_RESULT: number[][][][] = [
-        [
-            [
-                [
-                    0, // 0 + 0 + 0 = 0
-                    0  // 0 + 0 - 0 = 0
-                ],
-                [
-                    1, // 0 + 0 + 1 = +1
-                    1  // 0 + 0 - 1 = -1
-                ]
-            ],
-            [
-                [
-                    1, // 0 + 1 + 0 = +1
-                    1  // 0 + 1 - 0 = +1
-                ],
-                [
-                    0, // 0 + 1 + 1 = +2
-                    0  // 0 + 1 - 1 = 0
-                ]
-            ]
-        ],
-        [
-            [
-                [
-                    1, // 1 + 0 + 0 = +1
-                    1  // 1 + 0 - 0 = +1
-                ],
-                [
-                    0, // 1 + 0 + 1 = +2
-                    0  // 1 + 0 - 1 = 0
-                ]
-            ],
-            [
-                [
-                    0, // 1 + 1 + 0 = +2
-                    0  // 1 + 1 - 0 = +2
-                ],
-                [
-                    1, // 1 + 1 + 1 = +3
-                    1  // 1 + 1 - 1 = +1
-                ]
-            ]
-        ]
-    ];
-    private static ADD_LOOKUP_RESULT_LONEG: number[][][][] = [
-        [
-            [
-                [
-                    0, // 0 - 0 + 0 = 0
-                    0  // 0 - 0 - 0 = 0
-                ],
-                [
-                    1, // 0 - 0 + 1 = +1
-                    1  // 0 - 0 - 1 = -1
-                ]
-            ],
-            [
-                [
-                    1, // 0 - 1 + 0 = -1
-                    1  // 0 - 1 - 0 = -1
-                ],
-                [
-                    0, // 0 - 1 + 1 = 0
-                    0  // 0 - 1 - 1 = -2
-                ]
-            ]
-        ],
-        [
-            [
-                [
-                    1, // 1 - 0 + 0 = +1
-                    1  // 1 - 0 - 0 = +1
-                ],
-                [
-                    0, // 1 - 0 + 1 = +2
-                    0  // 1 - 0 - 1 = 0
-                ]
-            ],
-            [
-                [
-                    0, // 1 - 1 + 0 = 0
-                    0  // 1 - 1 - 0 = 0
-                ],
-                [
-                    1, // 1 - 1 + 1 = +1
-                    1  // 1 - 1 - 1 = -1
-                ]
-            ]
-        ]
-    ];
-    private static ADD_LOOKUP_CARRY: number[][][][] = [
-        [
-            [
-                [
-                    0, // 0 + 0 + 0 = 0
-                    0  // 0 + 0 - 0 = 0
-                ],
-                [
-                    0, // 0 + 0 + 1 = +1
-                    1  // 0 + 0 - 1 = -1
-                ]
-            ],
-            [
-                [
-                    0, // 0 + 1 + 0 = +1
-                    0  // 0 + 1 - 0 = +1
-                ],
-                [
-                    1, // 0 + 1 + 1 = +2
-                    0  // 0 + 1 - 1 = 0
-                ]
-            ]
-        ],
-        [
-            [
-                [
-                    0, // 1 + 0 + 0 = +1
-                    0  // 1 + 0 - 0 = +1
-                ],
-                [
-                    1, // 1 + 0 + 1 = +2
-                    0  // 1 + 0 - 1 = 0
-                ]
-            ],
-            [
-                [
-                    1, // 1 + 1 + 0 = +2
-                    1  // 1 + 1 - 0 = +2
-                ],
-                [
-                    1, // 1 + 1 + 1 = +3
-                    0  // 1 + 1 - 1 = +1
-                ]
-            ]
-        ]
-    ];
-    private static ADD_LOOKUP_CARRY_LONEG: number[][][][] = [
-        [
-            [
-                [
-                    0, // 0 - 0 + 0 = 0
-                    0  // 0 - 0 - 0 = 0
-                ],
-                [
-                    0, // 0 - 0 + 1 = +1
-                    1  // 0 - 0 - 1 = -1
-                ]
-            ],
-            [
-                [
-                    1, // 0 - 1 + 0 = -1
-                    1  // 0 - 1 - 0 = -1
-                ],
-                [
-                    0, // 0 - 1 + 1 = 0
-                    1  // 0 - 1 - 1 = -2
-                ]
-            ]
-        ],
-        [
-            [
-                [
-                    0, // 1 - 0 + 0 = +1
-                    0  // 1 - 0 - 0 = +1
-                ],
-                [
-                    1, // 1 - 0 + 1 = +2
-                    0  // 1 - 0 - 1 = 0
-                ]
-            ],
-            [
-                [
-                    0, // 1 - 1 + 0 = 0
-                    0  // 1 - 1 - 0 = 0
-                ],
-                [
-                    0, // 1 - 1 + 1 = +1
-                    1  // 1 - 1 - 1 = -1
-                ]
-            ]
-        ]
-    ];
-    private static ADD_LOOKUP_CARRYNEG: number[][][][] = [
-        [
-            [
-                [
-                    0, // 0 + 0 + 0 = 0
-                    0  // 0 + 0 - 0 = 0
-                ],
-                [
-                    0, // 0 + 0 + 1 = +1
-                    1  // 0 + 0 - 1 = -1
-                ]
-            ],
-            [
-                [
-                    0, // 0 + 1 + 0 = +1
-                    0  // 0 + 1 - 0 = +1
-                ],
-                [
-                    0, // 0 + 1 + 1 = +2
-                    0  // 0 + 1 - 1 = 0
-                ]
-            ]
-        ],
-        [
-            [
-                [
-                    0, // 1 + 0 + 0 = +1
-                    0  // 1 + 0 - 0 = +1
-                ],
-                [
-                    0, // 1 + 0 + 1 = +2
-                    0  // 1 + 0 - 1 = 0
-                ]
-            ],
-            [
-                [
-                    0, // 1 + 1 + 0 = +2
-                    0  // 1 + 1 - 0 = +2
-                ],
-                [
-                    0, // 1 + 1 + 1 = +3
-                    0  // 1 + 1 - 1 = +1
-                ]
-            ]
-        ]
-    ];
-    private static ADD_LOOKUP_CARRYNEG_LONEG: number[][][][] = [
-        [
-            [
-                [
-                    0, // 0 - 0 + 0 = 0
-                    0  // 0 - 0 - 0 = 0
-                ],
-                [
-                    0, // 0 - 0 + 1 = +1
-                    1  // 0 - 0 - 1 = -1
-                ]
-            ],
-            [
-                [
-                    1, // 0 - 1 + 0 = -1
-                    1  // 0 - 1 - 0 = -1
-                ],
-                [
-                    0, // 0 - 1 + 1 = 0
-                    1  // 0 - 1 - 1 = -2
-                ]
-            ]
-        ],
-        [
-            [
-                [
-                    0, // 1 - 0 + 0 = +1
-                    0  // 1 - 0 - 0 = +1
-                ],
-                [
-                    0, // 1 - 0 + 1 = +2
-                    0  // 1 - 0 - 1 = 0
-                ]
-            ],
-            [
-                [
-                    0, // 1 - 1 + 0 = 0
-                    0  // 1 - 1 - 0 = 0
-                ],
-                [
-                    0, // 1 - 1 + 1 = +1
-                    1  // 1 - 1 - 1 = -1
-                ]
-            ]
-        ]
-    ];
 
     // Indices in order: hi, carry, carryNeg
     // Result = 1 iff sum = +1 | -1
     // Carry = 1 iff sum = +2 | -1
     // CarryNeg = 1 iff sum = -1
-    private static ADD_LOOKUP_RESULT_NOLO: number[][][] = [
-        [
-            [
-                0, // 0 + 0 = 0
-                0  // 0 - 0 = 0
-            ],
-            [
-                1, // 0 + 1 = +1
-                1  // 0 - 1 = -1
-            ]
-        ],
-        [
-            [
-                1, // 1 + 0 = +1
-                1  // 1 - 0 = +1
-            ],
-            [
-                0, // 1 + 1 = +2
-                0  // 1 - 1 = 0
-            ]
-        ]
-    ];
-    private static ADD_LOOKUP_CARRY_NOLO: number[][][] = [
-        [
-            [
-                0, // 0 + 0 = 0
-                0  // 0 - 0 = 0
-            ],
-            [
-                0, // 0 + 1 = +1
-                1  // 0 - 1 = -1
-            ]
-        ],
-        [
-            [
-                0, // 1 + 0 = +1
-                0  // 1 - 0 = +1
-            ],
-            [
-                1, // 1 + 1 = +2
-                0  // 1 - 1 = 0
-            ]
-        ]
-    ];
-    private static ADD_LOOKUP_CARRYNEG_NOLO: number[][][] = [
-        [
-            [
-                0, // 0 + 0 = 0
-                0  // 0 - 0 = 0
-            ],
-            [
-                0, // 0 + 1 = +1
-                1  // 0 - 1 = -1
-            ]
-        ],
-        [
-            [
-                0, // 1 + 0 = +1
-                0  // 1 - 0 = +1
-            ],
-            [
-                0, // 1 + 1 = +2
-                0  // 1 - 1 = 0
-            ]
-        ]
-    ];
+
 
     /** O(max(this.digits, other.digits)) */
     add(other: BigInteger): BigInteger {
@@ -477,29 +136,29 @@ class BigInteger {
 
         var result = Array<number>(hi._digits.length + 1);
         var carry = 0;
-        var carryNeg = 0;
+        var carryMul = 1;
 
         if (hi._isPositive == lo._isPositive) {
             for (var n = 0; n < lo._digits.length; n++) {
-                result[n] = BigInteger.ADD_LOOKUP_RESULT[hi._digits[n]][lo._digits[n]][carry][carryNeg];
-                var newCarry = BigInteger.ADD_LOOKUP_CARRY[hi._digits[n]][lo._digits[n]][carry][carryNeg];
-                carryNeg = BigInteger.ADD_LOOKUP_CARRYNEG[hi._digits[n]][lo._digits[n]][carry][carryNeg];
-                carry = newCarry;
+                var sum = hi._digits[n] + lo._digits[n] + carry * carryMul;
+                result[n] = (sum + 2) % 2; // ensure result is positive
+                carry = sum >= 2 || sum <= -1 ? 1 : 0;
+                carryMul = sum <= -1 ? -1 : 1;
             }
         } else {
             for (var n = 0; n < lo._digits.length; n++) {
-                result[n] = BigInteger.ADD_LOOKUP_RESULT_LONEG[hi._digits[n]][lo._digits[n]][carry][carryNeg];
-                var newCarry = BigInteger.ADD_LOOKUP_CARRY_LONEG[hi._digits[n]][lo._digits[n]][carry][carryNeg];
-                carryNeg = BigInteger.ADD_LOOKUP_CARRYNEG_LONEG[hi._digits[n]][lo._digits[n]][carry][carryNeg];
-                carry = newCarry;
+                var sum = hi._digits[n] - lo._digits[n] + carry * carryMul;
+                result[n] = (sum + 2) % 2; // ensure result is positive
+                carry = sum >= 2 || sum <= -1 ? 1 : 0;
+                carryMul = sum <= -1 ? -1 : 1;
             }
         }
 
         for (var n = lo._digits.length; n < hi._digits.length; n++) {
-            result[n] = BigInteger.ADD_LOOKUP_RESULT_NOLO[hi._digits[n]][carry][carryNeg];
-            var newCarry = BigInteger.ADD_LOOKUP_CARRY_NOLO[hi._digits[n]][carry][carryNeg];
-            carryNeg = BigInteger.ADD_LOOKUP_CARRYNEG_NOLO[hi._digits[n]][carry][carryNeg];
-            carry = newCarry;
+            var sum = hi._digits[n] + carry * carryMul;
+            result[n] = (sum + 2) % 2; // ensure result is positive
+            carry = sum == 2 || sum == -1 ? 1 : 0;
+            carryMul = sum == -1 ? -1 : 1;
         }
 
         result[hi._digits.length] = carry;
