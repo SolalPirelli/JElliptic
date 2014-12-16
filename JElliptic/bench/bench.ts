@@ -1,30 +1,31 @@
-﻿import BigInteger = require("BigInteger");
+﻿/// <reference path="../lib/biginteger.d.ts" />
+import BigIntegers = require("BigIntegers");
 import ModNumber = require("ModNumber");
 import ModCurve = require("ModCurve");
 import ModPoint = require("ModPoint");
 import IConfig = require("IConfig");
 import Addition = require("AdditionTable");
-import PollardRho =require("PollardRho");
+import PollardRho = require("PollardRho");
 import BenchmarkSuite = require("bench/BenchmarkSuite");
 
 function bigIntegerSuite() {
-    var i1_1 = BigInteger.parse("1");
-    var i1_2 = BigInteger.parse("9");
+    var i1_1 = new BigInteger("1");
+    var i1_2 = new BigInteger("9");
 
-    var i20_1 = BigInteger.parse("12345678901234567890");
-    var i20_2 = BigInteger.parse("71755440315342536873");
+    var i20_1 = new BigInteger("12345678901234567890");
+    var i20_2 = new BigInteger("71755440315342536873");
 
-    var i34_1 = BigInteger.parse("2061118396808653202902996166388514");
-    var i34_2 = BigInteger.parse("4451685225093714772084598273548427");
+    var i34_1 = new BigInteger("2061118396808653202902996166388514");
+    var i34_2 = new BigInteger("4451685225093714772084598273548427");
 
     var s = BenchmarkSuite.create("BigInteger");
 
-    s("Create from 1-digit int", () => BigInteger.fromInt(9));
-    s("Create from 16-digit int", () => BigInteger.fromInt(9007199254740991));
+    s("Create from 1-digit int", () => new BigInteger(9));
+    s("Create from 16-digit int", () => new BigInteger(9007199254740991));
 
-    s("Parse 1-digit number", () => BigInteger.parse("1"));
-    s("Parse 20-digit number", () => BigInteger.parse("1234578901234567890"));
-    s("Parse 34-digit number", () => BigInteger.parse("4451685225093714772084598273548427"));
+    s("Parse 1-digit number", () => new BigInteger("1"));
+    s("Parse 20-digit number", () => new BigInteger("1234578901234567890"));
+    s("Parse 34-digit number", () => new BigInteger("4451685225093714772084598273548427"));
 
     s("Negate a 1-digit number", () => i1_1.negate());
     s("Negate a 20-digit number", () => i20_1.negate());
@@ -40,17 +41,17 @@ function bigIntegerSuite() {
     s("Add 34-digit and 20-digit numbers", () => i34_1.add(i20_1));
     s("Add two 34-digit numbers", () => i34_1.add(i34_2));
 
-    s("Subtract two 1-digit numbers", () => i1_1.sub(i1_2));
-    s("Subtract 20-digit and 1-digit numbers", () => i20_1.sub(i1_1));
-    s("Subtract two 20-digit numbers", () => i20_1.sub(i20_2));
-    s("Subtract 34-digit and 20-digit numbers", () => i34_1.sub(i20_1));
-    s("Subtract two 34-digit numbers", () => i34_1.sub(i34_2));
+    s("Subtract two 1-digit numbers", () => i1_1.subtract(i1_2));
+    s("Subtract 20-digit and 1-digit numbers", () => i20_1.subtract(i1_1));
+    s("Subtract two 20-digit numbers", () => i20_1.subtract(i20_2));
+    s("Subtract 34-digit and 20-digit numbers", () => i34_1.subtract(i20_1));
+    s("Subtract two 34-digit numbers", () => i34_1.subtract(i34_2));
 
-    s("Multiply two 1-digit numbers", () => i1_1.mul(i1_2));
-    s("Multiply 20-digit and 1-digit numbers", () => i20_1.mul(i1_1));
-    s("Multiply two 20-digit numbers", () => i20_1.mul(i20_2));
-    s("Multiply 34-digit and 20-digit numbers", () => i34_1.mul(i20_1));
-    s("Multiply two 34-digit numbers", () => i34_1.mul(i34_2));
+    s("Multiply two 1-digit numbers", () => i1_1.multiply(i1_2));
+    s("Multiply 20-digit and 1-digit numbers", () => i20_1.multiply(i1_1));
+    s("Multiply two 20-digit numbers", () => i20_1.multiply(i20_2));
+    s("Multiply 34-digit and 20-digit numbers", () => i34_1.multiply(i20_1));
+    s("Multiply two 34-digit numbers", () => i34_1.multiply(i34_2));
 
     s("Div/rem of two 1-digit numbers", () => i1_1.divRem(i1_2));
     s("Div/rem of 20-digit and 1-digit numbers", () => i20_1.divRem(i1_1));
@@ -58,21 +59,21 @@ function bigIntegerSuite() {
     s("Div/rem of 34-digit and 20-digit numbers", () => i34_1.divRem(i20_1));
     s("Div/rem of two 34-digit numbers", () => i34_1.divRem(i34_2));
 
-    s("Modular inverse of a 1-digit number", () => i1_1.modInverse(i1_2));
-    s("Modular inverse a 20-digit number", () => i20_1.modInverse(i20_2));
-    s("Modular inverse a 34-digit number", () => i34_1.modInverse(i34_2));
+    s("Modular inverse of a 1-digit number", () => BigIntegers.modInverse(i1_1, i1_2));
+    s("Modular inverse a 20-digit number", () => BigIntegers.modInverse(i20_1, i20_2));
+    s("Modular inverse a 34-digit number", () => BigIntegers.modInverse(i34_1, i34_2));
 
-    s("Logical AND of two 1-digit numbers", () => i1_1.and(i1_2));
-    s("Logical AND of 20-digit and 1-digit numbers", () => i20_1.and(i1_1));
-    s("Logical AND of two 20-digit numbers", () => i20_1.and(i20_2));
-    s("Logical AND of 34-digit and 20-digit numbers", () => i34_1.and(i20_1));
-    s("Logical AND of two 34-digit numbers", () => i34_1.and(i34_2));
+    s("Logical AND of two 1-digit numbers", () => BigIntegers.and(i1_1, i1_2));
+    s("Logical AND of 20-digit and 1-digit numbers", () => BigIntegers.and(i20_1, i1_1));
+    s("Logical AND of two 20-digit numbers", () => BigIntegers.and(i20_1, i20_2));
+    s("Logical AND of 34-digit and 20-digit numbers", () => BigIntegers.and(i34_1, i20_1));
+    s("Logical AND of two 34-digit numbers", () => BigIntegers.and(i34_1, i34_2));
 
-    s("Compare two 1-digit numbers", () => i1_1.eq(i1_2));
-    s("Compare 20-digit and 1-digit numbers", () => i20_1.eq(i1_1));
-    s("Compare two 20-digit numbers", () => i20_1.eq(i20_2));
-    s("Compare 34-digit and 20-digit numbers", () => i34_1.eq(i20_1));
-    s("Compare two 34-digit numbers", () => i34_1.eq(i34_2));
+    s("Compare two 1-digit numbers", () => i1_1.compare(i1_2));
+    s("Compare 20-digit and 1-digit numbers", () => i20_1.compare(i1_1));
+    s("Compare two 20-digit numbers", () => i20_1.compare(i20_2));
+    s("Compare 34-digit and 20-digit numbers", () => i34_1.compare(i20_1));
+    s("Compare two 34-digit numbers", () => i34_1.compare(i34_2));
 
     s("Stringify a 1-digit number", () => i1_1.toString());
     s("Stringify a 20-digit number", () => i20_1.toString());
@@ -80,17 +81,17 @@ function bigIntegerSuite() {
 }
 
 function modNumberSuite() {
-    var mod1 = BigInteger.parse("9");
-    var i1_1 = ModNumber.create(BigInteger.parse("1"), mod1);
-    var i1_2 = ModNumber.create(BigInteger.parse("7"), mod1);
+    var mod1 = new BigInteger("9");
+    var i1_1 = ModNumber.create(new BigInteger("1"), mod1);
+    var i1_2 = ModNumber.create(new BigInteger("7"), mod1);
 
-    var mod20 = BigInteger.parse("71755440315342536873");
-    var i20_1 = ModNumber.create(BigInteger.parse("29497513910652490397"), mod20);
-    var i20_2 = ModNumber.create(BigInteger.parse("12345678901234567890"), mod20);
-    
-    var mod34 = BigInteger.parse("4451685225093714772084598273548427");
-    var i34_1 = ModNumber.create(BigInteger.parse("2061118396808653202902996166388514"), mod34);
-    var i34_2 = ModNumber.create(BigInteger.parse("4451685225093714772084598273548427"), mod34);
+    var mod20 = new BigInteger("71755440315342536873");
+    var i20_1 = ModNumber.create(new BigInteger("29497513910652490397"), mod20);
+    var i20_2 = ModNumber.create(new BigInteger("12345678901234567890"), mod20);
+
+    var mod34 = new BigInteger("4451685225093714772084598273548427");
+    var i34_1 = ModNumber.create(new BigInteger("2061118396808653202902996166388514"), mod34);
+    var i34_2 = ModNumber.create(new BigInteger("4451685225093714772084598273548427"), mod34);
 
     var s = BenchmarkSuite.create("ModNumber");
 
@@ -139,15 +140,15 @@ function modNumberSuite() {
 
 function modPointSuite() {
     // very simple curve and points generated with Wolfram|Alpha
-    var c1 = new ModCurve(BigInteger.parse("2"), BigInteger.parse("1"), BigInteger.parse("9"), BigInteger.parse("0")); // I don't know the order of that curve
-    var pSmall_1 = ModPoint.create(BigInteger.parse("4"), BigInteger.parse("1"), c1);
-    var pSmall_2 = ModPoint.create(BigInteger.parse("6"), BigInteger.parse("2"), c1);
+    var c1 = new ModCurve(new BigInteger("2"), new BigInteger("1"), new BigInteger("9"), new BigInteger("0")); // I don't know the order of that curve
+    var pSmall_1 = ModPoint.create(new BigInteger("4"), new BigInteger("1"), c1);
+    var pSmall_2 = ModPoint.create(new BigInteger("6"), new BigInteger("2"), c1);
 
     // using the values defined in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
-    var cBig = new ModCurve(BigInteger.parse("4451685225093714772084598273548424"), BigInteger.parse("2061118396808653202902996166388514"),
-        BigInteger.parse("4451685225093714772084598273548427"), BigInteger.parse("4451685225093714776491891542548933"));
-    var pBig_1 = ModPoint.create(BigInteger.parse("188281465057972534892223778713752"), BigInteger.parse("3419875491033170827167861896082688"), cBig);
-    var pBig_2 = ModPoint.create(BigInteger.parse("1415926535897932384626433832795028"), BigInteger.parse("3846759606494706724286139623885544"), cBig);
+    var cBig = new ModCurve(new BigInteger("4451685225093714772084598273548424"), new BigInteger("2061118396808653202902996166388514"),
+        new BigInteger("4451685225093714772084598273548427"), new BigInteger("4451685225093714776491891542548933"));
+    var pBig_1 = ModPoint.create(new BigInteger("188281465057972534892223778713752"), new BigInteger("3419875491033170827167861896082688"), cBig);
+    var pBig_2 = ModPoint.create(new BigInteger("1415926535897932384626433832795028"), new BigInteger("3846759606494706724286139623885544"), cBig);
 
     var s = BenchmarkSuite.create("ModPoint");
 
@@ -165,10 +166,10 @@ function modPointSuite() {
 function pollardRhoSuite() {
     var s = BenchmarkSuite.create("PollardRho");
 
-    var curve = new ModCurve(BigInteger.parse("4451685225093714772084598273548424"), BigInteger.parse("2061118396808653202902996166388514"),
-        BigInteger.parse("4451685225093714772084598273548427"), BigInteger.parse("4451685225093714776491891542548933"));
-    var gen = ModPoint.create(BigInteger.parse("188281465057972534892223778713752"), BigInteger.parse("3419875491033170827167861896082688"), curve);
-    var target = ModPoint.create(BigInteger.parse("1415926535897932384626433832795028"), BigInteger.parse("3846759606494706724286139623885544"), curve);
+    var curve = new ModCurve(new BigInteger("4451685225093714772084598273548424"), new BigInteger("2061118396808653202902996166388514"),
+        new BigInteger("4451685225093714772084598273548427"), new BigInteger("4451685225093714776491891542548933"));
+    var gen = ModPoint.create(new BigInteger("188281465057972534892223778713752"), new BigInteger("3419875491033170827167861896082688"), curve);
+    var target = ModPoint.create(new BigInteger("1415926535897932384626433832795028"), new BigInteger("3846759606494706724286139623885544"), curve);
 
 
     function configWithTableLength(length: number) {
@@ -178,7 +179,7 @@ function pollardRhoSuite() {
             generator: gen,
             target: target,
             additionTableSeed: 0,
-            distinguishedPointMask: BigInteger.parse("1"),
+            distinguishedPointMask: new BigInteger("1"),
             parrallelWalksCount: 1,
             useNegationMap: false
         };
@@ -199,7 +200,7 @@ function pollardRhoSuite() {
             generator: gen,
             target: target,
             additionTableSeed: 0,
-            distinguishedPointMask: BigInteger.parse("4294967295"),
+            distinguishedPointMask: new BigInteger("4294967295"),
             parrallelWalksCount: count,
             useNegationMap: false
         };

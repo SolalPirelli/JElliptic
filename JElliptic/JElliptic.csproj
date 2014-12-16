@@ -22,6 +22,7 @@
     <Content Include="bench\lib\benchmark.js" />
     <Content Include="bench\lib\lodash.js" />
     <Content Include="index.html" />
+    <Content Include="lib\biginteger.js" />
     <Content Include="lib\jquery.min.js" />
     <Content Include="lib\require.js" />
     <Content Include="test\config.js" />
@@ -37,9 +38,10 @@
     <Content Include="bench\config.js" />
     <TypeScriptCompile Include="bench\BenchmarkSuite.ts" />
     <TypeScriptCompile Include="bench\lib\benchmark.d.ts" />
-    <TypeScriptCompile Include="BigInteger.ts" />
+    <TypeScriptCompile Include="BigIntegers.ts" />
     <TypeScriptCompile Include="DeterministicRandom.ts" />
     <TypeScriptCompile Include="IResultSink.ts" />
+    <TypeScriptCompile Include="lib\biginteger.d.ts" />
     <TypeScriptCompile Include="ModPointAddPartialResult.ts" />
     <TypeScriptCompile Include="IConfig.ts" />
     <TypeScriptCompile Include="lib\jquery.d.ts" />

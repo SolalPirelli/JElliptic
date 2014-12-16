@@ -1,6 +1,6 @@
 ﻿/// <reference path="lib/require.d.ts" />
+/// <reference path="lib/biginteger.d.ts" />
 
-import BigInteger = require("BigInteger");
 import ModCurve = require("ModCurve");
 import ModPoint = require("ModPoint");
 import IConfig = require("IConfig");
@@ -8,7 +8,7 @@ import PollardRho = require("PollardRho");
 import ResultSinks = require("ResultSinks");
 
 function bigintValue(elemName: string): BigInteger {
-    return BigInteger.parse((<HTMLInputElement> document.getElementById(elemName)).value);
+    return new BigInteger((<HTMLInputElement> document.getElementById(elemName)).value);
 }
 
 document.getElementById("button").onclick = () => {
@@ -26,7 +26,7 @@ document.getElementById("button").onclick = () => {
         additionTableLength: 128,
         parrallelWalksCount: 10,
         useNegationMap: true,
-        distinguishedPointMask: BigInteger.fromInt(3)
+        distinguishedPointMask: new BigInteger(3)
     };
 
     var sink = ResultSinks.combine(ResultSinks.server(), ResultSinks.debug());

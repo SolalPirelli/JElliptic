@@ -1,4 +1,4 @@
-﻿import BigInteger = require("BigInteger");
+﻿/// <reference path="lib/biginteger.d.ts" />
 import ModNumber = require("ModNumber");
 import ModPoint = require("ModPoint");
 

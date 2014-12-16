@@ -1,4 +1,4 @@
-﻿import BigInteger = require("BigInteger");
+﻿/// <reference path="lib/biginteger.d.ts" />
 import ModNumber = require("ModNumber");
 import ModPoint = require("ModPoint");
 import DeterministicRandom = require("DeterministicRandom");
@@ -17,8 +17,8 @@ export class Table {
             var u = rng.next(this._entries.length);
             var v = rng.next(this._entries.length);
 
-            var um = ModNumber.create(BigInteger.fromInt(u), config.curve.order);
-            var vm = ModNumber.create(BigInteger.fromInt(v), config.curve.order);
+            var um = ModNumber.create(new BigInteger(u), config.curve.order);
+            var vm = ModNumber.create(new BigInteger(v), config.curve.order);
             var p = config.generator.mulNum(u).add(config.target.mulNum(v));
             this._entries[n] = new TableEntry(um, vm, p);
         }

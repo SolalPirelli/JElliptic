@@ -1,17 +1,17 @@
 ﻿/// <reference path="lib/qunit.d.ts" />
-
-import BigInteger = require("BigInteger");
+/// <reference path="../lib/biginteger.d.ts" />
+import BigIntegers = require("../BigIntegers");
 
 module BigIntegerTests {
     function equivalent(str: string, n: number) {
         test("parse toInt: " + n, () => {
-            var actual = BigInteger.parse(str).toInt();
+            var actual = new BigInteger(str).toJSValue();
 
             equal(actual, n);
         });
 
         test("fromInt toString: " + str, () => {
-            var actual = BigInteger.fromInt(n).toString();
+            var actual = new BigInteger(n).toString();
 
             equal(actual, str);
         });
@@ -19,7 +19,7 @@ module BigIntegerTests {
 
     function roundtripS(str: string) {
         test("string round-trip: " + str, () => {
-            var parsed = BigInteger.parse(str);
+            var parsed = new BigInteger(str);
             var actual = parsed.toString();
 
             equal(actual, str);
@@ -28,8 +28,8 @@ module BigIntegerTests {
 
     function roundtripI(n: number) {
         test("int round-trip: " + n, () => {
-            var parsed = BigInteger.fromInt(n);
-            var actual = parsed.toInt();
+            var parsed = new BigInteger(n);
+            var actual = parsed.toJSValue();
 
             equal(actual, n);
         });
@@ -37,19 +37,19 @@ module BigIntegerTests {
 
     function op(name: string, s1: string, s2: string, result: string, op: (b1: BigInteger, b2: BigInteger) => BigInteger) {
         test(name + ": " + s1 + ", " + s2 + " = " + result, () => {
-            var i1 = BigInteger.parse(s1);
-            var i2 = BigInteger.parse(s2);
-            var iResult = BigInteger.parse(result);
+            var i1 = new BigInteger(s1);
+            var i2 = new BigInteger(s2);
+            var iResult = new BigInteger(result);
 
             var actualResult = op(i1, i2);
-            ok(actualResult.eq(iResult), "Expected " + result + ", got " + actualResult.toString());
+            equal(0, actualResult.compare(iResult), "Expected " + result + ", got " + actualResult.toString());
         });
     }
 
     function binOp(name: string, s1: string, s2: string, result: boolean, op: (b1: BigInteger, b2: BigInteger) => boolean) {
         test(name + ": " + s1 + ", " + s2 + " = " + result, () => {
-            var i1 = BigInteger.parse(s1);
-            var i2 = BigInteger.parse(s2);
+            var i1 = new BigInteger(s1);
+            var i2 = new BigInteger(s2);
 
             var actualResult = op(i1, i2);
             equal(actualResult, result);
@@ -58,8 +58,8 @@ module BigIntegerTests {
 
     function intOp(name: string, s1: string, s2: string, result: number, op: (b1: BigInteger, b2: BigInteger) => number) {
         test(name + ": " + s1 + ", " + s2 + " = " + result, () => {
-            var i1 = BigInteger.parse(s1);
-            var i2 = BigInteger.parse(s2);
+            var i1 = new BigInteger(s1);
+            var i2 = new BigInteger(s2);
 
             var actualResult = op(i1, i2);
             equal(actualResult, result);
@@ -67,42 +67,32 @@ module BigIntegerTests {
     }
 
     function negate(s1: string, s2: string) {
-        var i1 = BigInteger.parse(s1);
-        var i2 = BigInteger.parse(s2);
+        var i1 = new BigInteger(s1);
+        var i2 = new BigInteger(s2);
 
         test("neg: " + s1, () => {
-            ok(i1.negate().eq(i2));
+            equal(i1.negate().toString(), i2.toString());
         });
         test("neg: " + s2, () => {
-            ok(i2.negate().eq(i1));
-        });
-    }
-
-    function halve(s: string, result: string) {
-        var i = BigInteger.parse(s);
-        var iResult = BigInteger.parse(result);
-
-        test("halve: " + s, () => {
-            var half = i.halve();
-            ok(half.eq(iResult), "Got " + half.toString());
+            equal(i2.negate().toString(), i1.toString());
         });
     }
 
     function add(s1: string, s2: string, result: string) {
         op("add", s1, s2, result, (b1, b2) => b1.add(b2));
-        op("sub", result, s2, s1, (b1, b2) => b1.sub(b2));
+        op("sub", result, s2, s1, (b1, b2) => b1.subtract(b2));
 
         if (s1 != s2) {
             op("add", s2, s1, result, (b1, b2) => b1.add(b2));
-            op("sub", result, s1, s2, (b1, b2) => b1.sub(b2));
+            op("sub", result, s1, s2, (b1, b2) => b1.subtract(b2));
         }
     }
 
     function mul(s1: string, s2: string, result: string) {
-        op("mul", s1, s2, result, (b1, b2) => b1.mul(b2));
+        op("mul", s1, s2, result, (b1, b2) => b1.multiply(b2));
 
         if (s1 != s2) {
-            op("mul", s2, s1, result, (b1, b2) => b1.mul(b2));
+            op("mul", s2, s1, result, (b1, b2) => b1.multiply(b2));
         }
 
         if (s1 != "0") {
@@ -115,11 +105,11 @@ module BigIntegerTests {
 
     function partition(s: string, count: number) {
         test("partition: starting with " + s + " partitioned in " + count, () => {
-            var bi = BigInteger.parse(s);
+            var bi = new BigInteger(s);
 
             var reached = Array<boolean>(count);
             for (var x = 0; x < count; x++) {
-                var part = bi.partition(count);
+                var part = BigIntegers.partition(bi, count);
                 ok(0 <= part, "partition must produce positive results. (for " + bi + " got " + part + ")");
                 ok(part < count, "partition must produce results lower than its argument. (for " + bi + " got " + part + ")");
                 reached[part] = true;
@@ -137,14 +127,14 @@ module BigIntegerTests {
     }
 
     function modInverse(s1: string, s2: string, result: string) {
-        op("modInverse", s1, s2, result, (b1, b2) => b1.modInverse(b2));
+        op("modInverse", s1, s2, result, (b1, b2) => BigIntegers.modInverse(b1, b2));
     }
 
     function and(s1: string, s2: string, result: string) {
-        op("and", s1, s2, result, (b1, b2) => b1.and(b2));
+        op("and", s1, s2, result, (b1, b2) => BigIntegers.and(b1, b2));
 
         if (s1 != s2) {
-            op("and", s2, s1, result, (b1, b2) => b1.and(b2));
+            op("and", s2, s1, result, (b1, b2) => BigIntegers.and(b1, b2));
         }
     }
 
@@ -152,13 +142,6 @@ module BigIntegerTests {
         intOp("compare", s1, s2, result, (b1, b2) => b1.compare(b2));
         if (s1 != s2) {
             intOp("compare", s2, s1, -result, (b1, b2) => b1.compare(b2));
-        }
-    }
-
-    function eq(s1: string, s2: string, result: boolean) {
-        binOp("eq", s1, s2, result, (b1, b2) => b1.eq(b2));
-        if (s1 != s2) {
-            binOp("eq", s2, s1, result, (b1, b2) => b1.eq(b2));
         }
     }
 
@@ -193,17 +176,6 @@ module BigIntegerTests {
         negate("1", "-1");
         negate("843654783738219391462891409156201482963598234021939235792375230490324365",
             "-843654783738219391462891409156201482963598234021939235792375230490324365");
-
-        halve("0", "0");
-        halve("1", "0");
-        halve("2", "1");
-        halve("-1", "0");
-        halve("-2", "-1");
-        halve("10", "5");
-        halve("888888888888888888888888888888888888888888888888888888888888888888888",
-            "444444444444444444444444444444444444444444444444444444444444444444444");
-        halve("-123456789123456789123456789123456789123456789123456789123456789",
-            "-61728394561728394561728394561728394561728394561728394561728394");
 
         add("0", "0", "0");
         add("1", "1", "2");
@@ -307,14 +279,6 @@ module BigIntegerTests {
         compare("-1", "-10", 1);
         compare("10000000000000000000000000000000", "100000", 1);
         compare("100000000000000000000000000001", "100000000000000000000000000000", 1);
-
-        eq("0", "0", true);
-        eq("-1", "-1", true);
-        eq("123", "123", true);
-        eq("123456789123456789123456789", "123456789123456789123456789", true);
-        eq("0", "1", false);
-        eq("-1", "1", false);
-        eq("123456789123456789123456789", "123456789123456789123456780", false);
     }
 }
 

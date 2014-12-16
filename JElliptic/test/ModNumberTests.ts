@@ -1,6 +1,5 @@
 ﻿/// <reference path="lib/qunit.d.ts" />
-
-import BigInteger = require("BigInteger");
+/// <reference path="../lib/biginteger.d.ts" />
 import ModNumber = require("ModNumber");
 
 module ModNumberTests {
@@ -8,9 +7,9 @@ module ModNumberTests {
         QUnit.module("ModNumber");
 
         test("constructor value is modulo-ed", () => {
-            var num = ModNumber.create(BigInteger.fromInt(10), BigInteger.fromInt(3));
+            var num = ModNumber.create(new BigInteger(10), new BigInteger(3));
 
-            ok(num.value.eq(BigInteger.fromInt(1)));
+            equal(0, BigInteger.ONE.compare(num.value));
         });
     }
 }

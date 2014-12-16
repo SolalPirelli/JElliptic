@@ -1,6 +1,5 @@
 ﻿/// <reference path="lib/qunit.d.ts" />
-
-import BigInteger = require("BigInteger");
+/// <reference path="../lib/biginteger.d.ts" />
 import ModNumber = require("ModNumber");
 import ModPoint = require("ModPoint");
 import ModCurve = require("ModCurve");
@@ -89,21 +88,21 @@ module PollardRhoTests {
         walksCount: number, useNegationMap: boolean,
         distinguishedMask: string) {
         var sink = new ComputingResultSink();
-        var curve = new ModCurve(BigInteger.parse(points.a), BigInteger.parse(points.b), BigInteger.parse(points.n), BigInteger.parse(points.order));
+        var curve = new ModCurve(new BigInteger(points.a), new BigInteger(points.b), new BigInteger(points.n), new BigInteger(points.order));
         var config = {
             curve: curve,
-            generator: ModPoint.create(BigInteger.parse(points.gx), BigInteger.parse(points.gy), curve),
-            target: ModPoint.create(BigInteger.parse(points.tx), BigInteger.parse(points.ty), curve),
+            generator: ModPoint.create(new BigInteger(points.gx), new BigInteger(points.gy), curve),
+            target: ModPoint.create(new BigInteger(points.tx), new BigInteger(points.ty), curve),
             additionTableSeed: tableSeed,
             additionTableLength: tableLength,
             parrallelWalksCount: walksCount,
             useNegationMap: useNegationMap,
-            distinguishedPointMask: BigInteger.parse(distinguishedMask)
+            distinguishedPointMask: new BigInteger(distinguishedMask)
         };
 
         test(configName + ": " + points.expected + " * " + config.generator + " = " + config.target + " on " + config.curve, () => {
             PollardRho.run(config, sink);
-            ok(sink.result.eq(ModNumber.create(BigInteger.parse(points.expected), curve.order)));
+            ok(sink.result.eq(ModNumber.create(new BigInteger(points.expected), curve.order)));
         });
     }
 

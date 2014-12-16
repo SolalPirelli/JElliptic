@@ -1,4 +1,5 @@
-﻿import BigInteger = require("BigInteger");
+﻿/// <reference path="lib/biginteger.d.ts" />
+import BigIntegers=require("BigIntegers");
 import ModNumber = require("ModNumber");
 import ModCurve = require("ModCurve");
 import ModPointAddPartialResult = require("ModPointAddPartialResult");
@@ -136,7 +137,7 @@ class ModPoint {
         if (this == ModPoint.INF) {
             return 0;
         }
-        return this._x.value.partition(n);
+        return BigIntegers.partition(this._x.value,n);
     }
 
     /** O(min(this.x.value.digits, other.x.value.digits) + min(this.y.value.digits, other.y.value.digits)) */
