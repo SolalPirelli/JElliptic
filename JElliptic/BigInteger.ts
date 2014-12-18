@@ -108,32 +108,110 @@
 
     /** O(max(this.digits, other.digits)) */
     add(other: BigInteger): BigInteger {
-        var thisAbs = this.abs();
-        var otherAbs = other.abs();
-        var thisIsGreater = thisAbs.compare(otherAbs) == 1 || thisAbs.eq(otherAbs) && this._isPositive;
-        var hi = thisIsGreater ? this : other;
-        var lo = thisIsGreater ? other : this;
+        if (this.compare(BigInteger.ZERO) == 0) {
+            return other;
+        }
+        if (other.compare(BigInteger.ZERO)==0) {
+            return this;
+        }
+
+        if (this._isPositive != other._isPositive) {
+            return this.sub(other.negate());
+        }
 
         var digits = Array<number>();
-        var loIsPositive = hi._isPositive == lo._isPositive;
+        var carry = 0;
 
-        var carry: number = 0;
+        var hi = this._digits;
+        var lo = other._digits;
 
-        for (var n = 0; n < hi._digits.length; n++) {
-            var current = hi._digits[n] + carry;
-            if (n < lo._digits.length) {
-                if (loIsPositive) {
-                    current += lo._digits[n];
-                } else {
-                    current -= lo._digits[n];
-                }
-            }
+        if (this._digits.length < other._digits.length) {
+            hi = other._digits;
+            lo = this._digits;
+        }
+
+        var n = 0;
+
+        for (; n < lo.length; n++) {
+            var current = hi[n] + lo[n] + carry;
 
             if (current >= BigInteger.BASE) {
                 carry = 1;
                 current -= BigInteger.BASE;
-            } else if (current < 0) {
-                carry = -1;
+            } else {
+                carry = 0;
+            }
+
+            digits[n] = current;
+        }
+
+        for (; carry == 1 && n < hi.length; n++) {
+            var current = hi[n] + carry;
+
+            if (current >= BigInteger.BASE) {
+                carry = 1;
+                current -= BigInteger.BASE;
+            } else {
+                carry = 0;
+            }
+
+            digits[n] = current;
+        }
+
+        if (carry == 0) {
+            for (; n < hi.length; n++) {
+                digits[n] = hi[n];
+            }
+        }
+        else {
+            digits[n] = 1;
+        }
+
+        return BigInteger.create(this._isPositive, digits);
+    }
+
+    /** O(max(this.digits, other.digits)) */
+    sub(other: BigInteger): BigInteger {
+        if (this.compare(BigInteger.ZERO) == 0) {
+            return other.negate();
+        }
+        if (other.compare(BigInteger.ZERO) == 0) {
+            return this;
+        }
+
+        if (this._isPositive != other._isPositive) {
+            return this.add(other.negate());
+        }
+
+        // Unlike add, sub is not symmetric, some more work is required
+        var hi = this;
+        var lo = other;
+        // First, if they're both negative, reverse them as -a - -b = -a + b = b - a for a,b >0
+        if (!this._isPositive) {
+            hi = other.abs();
+            lo = this.abs();
+        }
+        // Then, they need to be ordered
+        var absCompResult = hi.compareAbs(lo);
+        var resultIsPositive = true;
+        if (absCompResult == 0) {
+            return BigInteger.ZERO;
+        } else if (absCompResult < 0) {
+            resultIsPositive = false;
+            var temp = hi;
+            hi = lo;
+            lo = temp;
+        }
+
+        var digits = Array<number>();
+        var carry = 0;
+        var n = 0;
+
+        for (; n < lo._digits.length; n++) {
+            var current = hi._digits[n] - lo._digits[n] - carry;
+
+            if (current < 0) {
+                carry = 1;
                 current += BigInteger.BASE;
             } else {
                 carry = 0;
@@ -142,16 +220,24 @@
             digits[n] = current;
         }
 
-        if (carry != 0) {
-            digits[hi._digits.length] = carry;
+        for (; carry == 1 && n < hi._digits.length; n++) {
+            var current = hi._digits[n] - carry;
+
+            if (current < 0) {
+                carry = 1;
+                current += BigInteger.BASE;
+            } else {
+                carry = 0;
+            }
+
+            digits[n] = current;
         }
 
-        return BigInteger.create(hi._isPositive, digits);
-    }
+        for (; n < hi._digits.length; n++) {
+            digits[n] = hi._digits[n];
+        }
 
-    /** O(max(this.digits, other.digits)) */
-    sub(other: BigInteger): BigInteger {
-        return this.add(other.negate());
+        return BigInteger.create(resultIsPositive, digits);
     }
 
     /** O(max(this.digits, other.digits)^log_2(3)) */
@@ -311,6 +397,25 @@
             }
             if (this._digits[n] > other._digits[n]) {
                 return this._isPositive ? 1 : -1;
+            }
+        }
+        return 0;
+    }
+
+    /** O(min(this.digits, other.digits)) */
+    compareAbs(other: BigInteger): number {
+        if (this._digits.length < other._digits.length) {
+            return -1;
+        }
+        if (this._digits.length > other._digits.length) {
+            return 1;
+        }
+        for (var n = this._digits.length - 1; n >= 0; n--) {
+            if (this._digits[n] < other._digits[n]) {
+                return -1;
+            }
+            if (this._digits[n] > other._digits[n]) {
+                return 1;
             }
         }
         return 0;

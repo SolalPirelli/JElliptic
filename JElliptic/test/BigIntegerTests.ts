@@ -70,11 +70,9 @@ module BigIntegerTests {
         var i1 = BigInteger.parse(s1);
         var i2 = BigInteger.parse(s2);
 
-        test("neg: " + s1, () => {
-            ok(i1.negate().eq(i2));
-        });
-        test("neg: " + s2, () => {
-            ok(i2.negate().eq(i1));
+        test("neg: " + s1 + ", " + s2, () => {
+            ok(i1.negate().eq(i2), "-" + s1 + " = " + s2);
+            ok(i2.negate().eq(i1), "-" + s2 + " = " + s1);
         });
     }
 
