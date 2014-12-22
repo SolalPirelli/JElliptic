@@ -1,6 +1,6 @@
 ﻿class BigInteger {
     private static MAX_SAFE_INT = 9007199254740991; // 2^53-1, where 53 is the mantissa size of IEEE-754 double-precision floating point numbers (what JS uses)
-    private static BASE = 10000000; // largest power of 10 smaller than sqrt(MAX_SAFE_INT) so that two digits can be multiplied in the safe space; also needs to be even
+    private static BASE = 10000000; // largest power of 10 smaller than sqrt(MAX_SAFE_INT)/2; also needs to be even
     private static BASE_LOG10 = Math.floor(Math.log(BigInteger.BASE) / Math.log(10));
 
 
@@ -111,7 +111,7 @@
         if (this.compare(BigInteger.ZERO) == 0) {
             return other;
         }
-        if (other.compare(BigInteger.ZERO)==0) {
+        if (other.compare(BigInteger.ZERO) == 0) {
             return this;
         }
 
@@ -242,27 +242,27 @@
 
     /** O(max(this.digits, other.digits)^log_2(3)) */
     mul(other: BigInteger): BigInteger {
-        function singleDigitMul(bi: BigInteger, mul: number, mulIsPositive: boolean): BigInteger {
-            var digits = Array<number>();
+        var digits = Array<number>(this._digits.length + other._digits.length);
+        // Initialize all digits, otherwise funky stuff happens with 'undefined'
+        for (var n = 0; n < digits.length; n++) {
+            digits[n] = 0;
+        }
+
+        for (var n = 0; n < this._digits.length; n++) {
             var carry = 0;
-            for (var n = 0; n < bi._digits.length; n++) {
-                var digit = bi._digits[n] * mul + carry;
-                carry = Math.floor(digit / BigInteger.BASE);
-                digit %= BigInteger.BASE;
-                digits.push(digit);
+            for (var k = 0; k < other._digits.length; k++) {
+                var sum = digits[n + k] + this._digits[n] * other._digits[k] + carry;
+                carry = Math.floor(sum / BigInteger.BASE);
+                sum = sum - BigInteger.BASE * carry;
+                digits[n + k] = sum;
             }
             if (carry != 0) {
-                digits.push(carry);
+                // We can safely use = and no + here, as this cell hasn't been set yet
+                digits[n + other._digits.length] = carry;
             }
-
-            return BigInteger.create(mulIsPositive == bi._isPositive, digits);
         }
 
-        var result = BigInteger.ZERO;
-        for (var n = 0; n < this._digits.length; n++) {
-            result = result.add(singleDigitMul(other, this._digits[n], this._isPositive).leftShift(n));
-        }
-        return result;
+        return BigInteger.create(this._isPositive == other._isPositive, digits);
     }
 
     /** O(???) */

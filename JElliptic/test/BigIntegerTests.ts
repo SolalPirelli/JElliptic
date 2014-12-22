@@ -46,16 +46,6 @@ module BigIntegerTests {
         });
     }
 
-    function binOp(name: string, s1: string, s2: string, result: boolean, op: (b1: BigInteger, b2: BigInteger) => boolean) {
-        test(name + ": " + s1 + ", " + s2 + " = " + result, () => {
-            var i1 = BigInteger.parse(s1);
-            var i2 = BigInteger.parse(s2);
-
-            var actualResult = op(i1, i2);
-            equal(actualResult, result);
-        });
-    }
-
     function intOp(name: string, s1: string, s2: string, result: number, op: (b1: BigInteger, b2: BigInteger) => number) {
         test(name + ": " + s1 + ", " + s2 + " = " + result, () => {
             var i1 = BigInteger.parse(s1);
@@ -140,13 +130,6 @@ module BigIntegerTests {
         intOp("compare", s1, s2, result, (b1, b2) => b1.compare(b2));
         if (s1 != s2) {
             intOp("compare", s2, s1, -result, (b1, b2) => b1.compare(b2));
-        }
-    }
-
-    function eq(s1: string, s2: string, result: boolean) {
-        binOp("eq", s1, s2, result, (b1, b2) => b1.eq(b2));
-        if (s1 != s2) {
-            binOp("eq", s2, s1, result, (b1, b2) => b1.eq(b2));
         }
     }
 
@@ -298,14 +281,10 @@ module BigIntegerTests {
         compare("-1", "-10", 1);
         compare("10000000000000000000000000000000", "100000", 1);
         compare("100000000000000000000000000001", "100000000000000000000000000000", 1);
-
-        eq("0", "0", true);
-        eq("-1", "-1", true);
-        eq("123", "123", true);
-        eq("123456789123456789123456789", "123456789123456789123456789", true);
-        eq("0", "1", false);
-        eq("-1", "1", false);
-        eq("123456789123456789123456789", "123456789123456789123456780", false);
+        compare("0", "0", 0);
+        compare("-1", "-1", 0);
+        compare("123", "123", 0);
+        compare("123456789123456789123456789", "123456789123456789123456789", 0);
     }
 }
 
