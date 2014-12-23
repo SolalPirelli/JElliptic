@@ -85,7 +85,7 @@
         if (this._isPositive) {
             return this;
         }
-        return BigInteger.create(true, this._digits);
+        return BigInteger.uncheckedCreate(true, this._digits);
     }
 
     /** O(this.digits)
@@ -316,29 +316,16 @@
         }
 
         var digits = new Array<number>();
-
-        // First, take digits from the biggest one until the number they form is bigger than the divisor
-        var index: number;
-        var remainder: BigInteger;
-        for (index = dividend._digits.length - divisor._digits.length; index >= 0; index--) {
-            var shifted = dividend.rightShiftAbs(index);
-            if (shifted.compare(divisor) > -1) {
-                // Divide that number by the divisor, store the quotient, and keep the remainder
-                var quotientAndRemainder = inner(shifted, divisor);
+        var remainder = BigInteger.ZERO;
+        for (var n = dividend._digits.length - 1; n >= 0; n--) {
+            remainder = remainder.pushRight(dividend._digits[n]);
+            if (remainder.compare(divisor) == -1) {
+                digits.unshift(0);
+            } else {
+                var quotientAndRemainder = inner(remainder, divisor);
                 remainder = quotientAndRemainder[1];
                 digits.unshift(quotientAndRemainder[0].toInt());
-                index--;
-                break;
             }
-        }
-
-        // Then, for each digit from the next, add it as the new smallest one and repeat
-        for (; index >= 0; index--) {
-            var newDigit = dividend._digits[index];
-            var newDividend = remainder.pushRight(newDigit);
-            var quotientAndRemainder = inner(newDividend, divisor);
-            remainder = quotientAndRemainder[1];
-            digits.unshift(quotientAndRemainder[0].toInt());
         }
 
         if (!this._isPositive) {
