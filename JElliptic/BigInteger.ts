@@ -267,34 +267,6 @@
 
     /** O(???) */
     divRem(other: BigInteger): BigInteger[] {
-        function inner(dividend: BigInteger, divisor: BigInteger): BigInteger[] {
-            if (dividend.eq(BigInteger.ZERO)) {
-                return [BigInteger.ZERO, BigInteger.ZERO]; // yes, even if divisor == 0
-            }
-
-            var low = BigInteger.ONE;
-            var high = BigInteger.TWO;
-            var fastGrowth = true;
-
-            while (low.compare(high) == -1) {
-                var guess = low.add(high).halve();
-                var remainder = dividend.sub(divisor.mul(guess));
-                if (remainder.compare(divisor) > -1) {
-                    if (fastGrowth) {
-                        low = guess.add(BigInteger.ONE);
-                        high = high.mul(high);
-                    } else {
-                        low = guess.add(BigInteger.ONE);
-                    }
-                } else {
-                    high = guess;
-                    fastGrowth = false;
-                }
-            }
-
-            return [low, dividend.sub(divisor.mul(low))];
-        }
-
         var isPositive = this._isPositive == other._isPositive;
         var divisor = other.abs();
         var dividend = this.abs();
@@ -320,11 +292,30 @@
         for (var n = dividend._digits.length - 1; n >= 0; n--) {
             remainder = remainder.pushRight(dividend._digits[n]);
             if (remainder.compare(divisor) == -1) {
-                digits.unshift(0);
+                digits.push(0);
             } else {
-                var quotientAndRemainder = inner(remainder, divisor);
-                remainder = quotientAndRemainder[1];
-                digits.unshift(quotientAndRemainder[0].toInt());
+                // Since remainder just became bigger than divisor,
+                // its length is either divisor's or one more
+                var highRemainder = remainder._digits[remainder._digits.length - 1];
+                if (remainder._digits.length > divisor._digits.length) {
+                    highRemainder *= BigInteger.BASE;
+                    highRemainder += remainder._digits[remainder._digits.length - 2];
+                }
+                var highDivisor = divisor._digits[divisor._digits.length - 1];
+
+                var guess = Math.ceil(highRemainder / highDivisor);
+
+                var actual: BigInteger;
+                while (guess > 0) {
+                    actual = divisor.singleDigitMul(guess);
+                    if (actual.compareAbs(remainder) < 1) {
+                        break;
+                    }
+                    guess--;
+                }
+
+                remainder = remainder.sub(actual);
+                digits.push(guess);
             }
         }
 
@@ -332,7 +323,7 @@
             remainder = divisor.sub(remainder);
         }
 
-        return [BigInteger.create(isPositive, digits), remainder];
+        return [BigInteger.create(isPositive, digits.reverse()), remainder];
     }
 
     /** O(1) */
@@ -514,11 +505,30 @@
         return BigInteger.create(true, digits);
     }
 
+    /** O(digits). Assumes that mul is positive. */
+    private singleDigitMul(mul: number): BigInteger {
+        var digits = Array<number>(this._digits.length + 1);
+        var carry = 0;
+        var n = 0;
+        for (; n < this._digits.length; n++) {
+            var sum = this._digits[n] * mul + carry;
+            carry = Math.floor(sum / BigInteger.BASE);
+            sum = sum - BigInteger.BASE * carry;
+            digits[n] = sum;
+        }
+        if (carry != 0) {
+            digits[n] = carry;
+        }
+
+        return BigInteger.create(this._isPositive, digits);
+    }
+
     /** O(digits) */
     private static create(isPositive: boolean, digits: number[]): BigInteger {
         // Remove useless digits
         var actualLength = digits.length;
-        while (actualLength > 0 && digits[actualLength - 1] == 0) {
+        // Boolean NOT on a number also takes care of undefined
+        while (actualLength > 0 && !digits[actualLength - 1]) {
             actualLength--;
         }
 
