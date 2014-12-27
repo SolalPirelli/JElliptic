@@ -1,9 +1,8 @@
 ﻿define(["require", "exports", "ModNumber"], function(require, exports, ModNumber) {
     var ModCurve = (function () {
         function ModCurve(a, b, n, order) {
-            this._a = new ModNumber(a, n);
-            this._b = new ModNumber(b, n);
-            this._n = n;
+            this._a = ModNumber.create(a, n);
+            this._b = ModNumber.create(b, n);
             this._order = order;
         }
         Object.defineProperty(ModCurve.prototype, "a", {
@@ -24,7 +23,7 @@
 
         Object.defineProperty(ModCurve.prototype, "n", {
             get: function () {
-                return this._n;
+                return this._a.n;
             },
             enumerable: true,
             configurable: true
@@ -39,7 +38,7 @@
         });
 
         ModCurve.prototype.toString = function () {
-            return "y² = x³ + " + this._a.value + "x + " + this._b.value + " (mod " + this._n + ")";
+            return "y² = x³ + " + this.a.value + "x + " + this.b.value + " (mod " + this.n + ")";
         };
         return ModCurve;
     })();

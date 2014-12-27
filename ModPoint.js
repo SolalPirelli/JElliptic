@@ -1,4 +1,4 @@
-﻿define(["require", "exports", "BigInteger", "ModNumber", "ModPointAddPartialResult"], function(require, exports, BigInteger, ModNumber, ModPointAddPartialResult) {
+﻿define(["require", "exports", "ModNumber", "ModPointAddPartialResult"], function(require, exports, ModNumber, ModPointAddPartialResult) {
     // N.B.: Ensuring the validity of a point on a curve is simply too slow
     //       Unit tests will have to do...
     var ModPoint = (function () {
@@ -6,8 +6,8 @@
         }
         ModPoint.create = function (x, y, curve) {
             var point = new ModPoint();
-            point._x = new ModNumber(x, curve.n);
-            point._y = new ModNumber(y, curve.n);
+            point._x = ModNumber.create(x, curve.n);
+            point._y = ModNumber.create(y, curve.n);
             point._curve = curve;
             return point;
         };
@@ -142,7 +142,7 @@
             if (this == ModPoint.INF) {
                 return 0;
             }
-            return this._x.value.mod(BigInteger.fromInt(n)).toInt();
+            return this._x.value.partition(n);
         };
 
         /** O(min(this.x.value.digits, other.x.value.digits) + min(this.y.value.digits, other.y.value.digits)) */

@@ -17,8 +17,8 @@ export class Table {
             var u = rng.next(this._entries.length);
             var v = rng.next(this._entries.length);
 
-            var um = new ModNumber(BigInteger.fromInt(u), config.curve.order);
-            var vm = new ModNumber(BigInteger.fromInt(v), config.curve.order);
+            var um = ModNumber.create(BigInteger.fromInt(u), config.curve.order);
+            var vm = ModNumber.create(BigInteger.fromInt(v), config.curve.order);
             var p = config.generator.mulNum(u).add(config.target.mulNum(v));
             this._entries[n] = new TableEntry(um, vm, p);
         }

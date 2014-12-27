@@ -4,7 +4,7 @@
         var i1_2 = BigInteger.parse("9");
 
         var i20_1 = BigInteger.parse("12345678901234567890");
-        var i20_2 = BigInteger.parse("99999999999999999999");
+        var i20_2 = BigInteger.parse("71755440315342536873");
 
         var i34_1 = BigInteger.parse("2061118396808653202902996166388514");
         var i34_2 = BigInteger.parse("4451685225093714772084598273548427");
@@ -96,36 +96,20 @@
             return i34_1.mul(i34_2);
         });
 
-        s("Divide two 1-digit numbers", function () {
-            return i1_1.div(i1_2);
+        s("Div/rem of two 1-digit numbers", function () {
+            return i1_1.divRem(i1_2);
         });
-        s("Divide 20-digit and 1-digit numbers", function () {
-            return i20_1.div(i1_1);
+        s("Div/rem of 20-digit and 1-digit numbers", function () {
+            return i20_1.divRem(i1_1);
         });
-        s("Divide two 20-digit numbers", function () {
-            return i20_1.div(i20_2);
+        s("Div/rem of two 20-digit numbers", function () {
+            return i20_1.divRem(i20_2);
         });
-        s("Divide 34-digit and 20-digit numbers", function () {
-            return i34_1.div(i20_1);
+        s("Div/rem of 34-digit and 20-digit numbers", function () {
+            return i34_1.divRem(i20_1);
         });
-        s("Divide two 34-digit numbers", function () {
-            return i34_1.div(i34_2);
-        });
-
-        s("Modulo two 1-digit numbers", function () {
-            return i1_1.mod(i1_2);
-        });
-        s("Modulo 20-digit and 1-digit numbers", function () {
-            return i20_1.mod(i1_1);
-        });
-        s("Modulo two 20-digit numbers", function () {
-            return i20_1.mod(i20_2);
-        });
-        s("Modulo 34-digit and 20-digit numbers", function () {
-            return i34_1.mod(i20_1);
-        });
-        s("Modulo two 34-digit numbers", function () {
-            return i34_1.mod(i34_2);
+        s("Div/rem of two 34-digit numbers", function () {
+            return i34_1.divRem(i34_2);
         });
 
         s("Modular inverse of a 1-digit number", function () {
@@ -183,16 +167,16 @@
 
     function modNumberSuite() {
         var mod1 = BigInteger.parse("9");
-        var i1_1 = new ModNumber(BigInteger.parse("1"), mod1);
-        var i1_2 = new ModNumber(BigInteger.parse("7"), mod1);
+        var i1_1 = ModNumber.create(BigInteger.parse("1"), mod1);
+        var i1_2 = ModNumber.create(BigInteger.parse("7"), mod1);
 
-        var mod20 = BigInteger.parse("99999999999999999999");
-        var i20_1 = new ModNumber(BigInteger.parse("12345678901234567890"), mod20);
-        var i20_2 = new ModNumber(BigInteger.parse("98765432109876543210"), mod20);
+        var mod20 = BigInteger.parse("71755440315342536873");
+        var i20_1 = ModNumber.create(BigInteger.parse("29497513910652490397"), mod20);
+        var i20_2 = ModNumber.create(BigInteger.parse("12345678901234567890"), mod20);
 
         var mod34 = BigInteger.parse("4451685225093714772084598273548427");
-        var i34_1 = new ModNumber(BigInteger.parse("2061118396808653202902996166388514"), mod34);
-        var i34_2 = new ModNumber(BigInteger.parse("4451685225093714772084598273548427"), mod34);
+        var i34_1 = ModNumber.create(BigInteger.parse("2061118396808653202902996166388514"), mod34);
+        var i34_2 = ModNumber.create(BigInteger.parse("4451685225093714772084598273548427"), mod34);
 
         var s = BenchmarkSuite.create("ModNumber");
 
@@ -380,32 +364,57 @@
                 generator: gen,
                 target: target,
                 additionTableSeed: 0,
-                distinguishedPointMask: BigInteger.parse("1"),
+                distinguishedPointMask: BigInteger.parse("4294967295"),
                 parrallelWalksCount: count,
                 useNegationMap: false
             };
         }
 
         var config_walks1 = configWithParrallelWalkCount(1);
-        var config_walks2 = configWithParrallelWalkCount(2);
-        var config_walks4 = configWithParrallelWalkCount(4);
         var config_walks8 = configWithParrallelWalkCount(8);
+        var config_walks16 = configWithParrallelWalkCount(16);
+        var config_walks32 = configWithParrallelWalkCount(32);
+        var config_walks64 = configWithParrallelWalkCount(64);
+        var config_walks128 = configWithParrallelWalkCount(128);
+        var config_walks256 = configWithParrallelWalkCount(256);
+        var config_walks512 = configWithParrallelWalkCount(512);
+        var config_walks1024 = configWithParrallelWalkCount(1024);
         var table = new Addition.Table(config16);
         var walk1 = new PollardRho.SingleCurveWalk(config_walks1, table);
-        var walk2 = new PollardRho.MultiCurveWalk(config_walks2, table);
-        var walk4 = new PollardRho.MultiCurveWalk(config_walks4, table);
         var walk8 = new PollardRho.MultiCurveWalk(config_walks8, table);
+        var walk16 = new PollardRho.MultiCurveWalk(config_walks16, table);
+        var walk32 = new PollardRho.MultiCurveWalk(config_walks32, table);
+        var walk64 = new PollardRho.MultiCurveWalk(config_walks64, table);
+        var walk128 = new PollardRho.MultiCurveWalk(config_walks128, table);
+        var walk256 = new PollardRho.MultiCurveWalk(config_walks256, table);
+        var walk512 = new PollardRho.MultiCurveWalk(config_walks512, table);
+        var walk1024 = new PollardRho.MultiCurveWalk(config_walks1024, table);
         s("Step of a single walk over a 112-bit curve", function () {
             return walk1.step();
         });
-        s("Step of 2 parrallel walks over a 112-bit curve", function () {
-            return walk2.step();
-        });
-        s("Step of 4 parrallel walks over a 112-bit curve", function () {
-            return walk4.step();
-        });
         s("Step of 8 parrallel walks over a 112-bit curve", function () {
             return walk8.step();
+        });
+        s("Step of 16 parrallel walks over a 112-bit curve", function () {
+            return walk16.step();
+        });
+        s("Step of 32 parrallel walks over a 112-bit curve", function () {
+            return walk32.step();
+        });
+        s("Step of 64 parrallel walks over a 112-bit curve", function () {
+            return walk64.step();
+        });
+        s("Step of 128 parrallel walks over a 112-bit curve", function () {
+            return walk128.step();
+        });
+        s("Step of 256 parrallel walks over a 112-bit curve", function () {
+            return walk256.step();
+        });
+        s("Step of 512 parrallel walks over a 112-bit curve", function () {
+            return walk512.step();
+        });
+        s("Step of 1024 parrallel walks over a 112-bit curve", function () {
+            return walk1024.step();
         });
     }
 

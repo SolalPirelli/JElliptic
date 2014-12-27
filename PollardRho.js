@@ -20,11 +20,12 @@
                 this._config = config;
                 this._table = table;
 
-                // TODO the starting entry needs to be random, of course
-                var entry = this._table.at(0);
+                var entry = this._table.at(SingleCurveWalk.INDEX % this._table.length);
                 this._u = entry.u;
                 this._v = entry.v;
                 this._current = entry.p;
+
+                SingleCurveWalk.INDEX++;
             }
             Object.defineProperty(SingleCurveWalk.prototype, "u", {
                 get: function () {
@@ -55,7 +56,7 @@
                 this._currentEntry = this._table.at(index);
                 this._u = this._u.add(this._currentEntry.u);
                 this._v = this._v.add(this._currentEntry.v);
-                this.setCurrent(this._current.add(this._currentEntry.p));
+                this._current = this._current.add(this._currentEntry.p);
             };
 
             SingleCurveWalk.prototype.send = function (sink) {
@@ -74,23 +75,9 @@
             };
 
             SingleCurveWalk.prototype.endStep = function (lambda) {
-                this.setCurrent(this._current.endAdd(this._currentEntry.p, lambda));
+                this._current = this._current.endAdd(this._currentEntry.p, lambda);
             };
-
-            SingleCurveWalk.prototype.setCurrent = function (candidate) {
-                if (this._config.useNegationMap) {
-                    var candidateNeg = candidate.negate();
-                    if (candidate.y.compare(candidateNeg.y) == 1) {
-                        this._current = candidate;
-                    } else {
-                        this._current = candidateNeg;
-                        this._u = this._u.negate();
-                        this._v = this._v.negate();
-                    }
-                } else {
-                    this._current = candidate;
-                }
-            };
+            SingleCurveWalk.INDEX = 0;
             return SingleCurveWalk;
         })();
         PollardRho.SingleCurveWalk = SingleCurveWalk;

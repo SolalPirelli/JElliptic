@@ -28,6 +28,8 @@ module PollardRho {
     }
 
     export class SingleCurveWalk implements CurveWalk {
+        private static INDEX = 0;
+
         private _config: IConfig;
         private _table: Addition.Table;
 
@@ -42,11 +44,12 @@ module PollardRho {
             this._config = config;
             this._table = table;
 
-            // TODO the starting entry needs to be random, of course
-            var entry = this._table.at(0);
+            var entry = this._table.at(SingleCurveWalk.INDEX % this._table.length);
             this._u = entry.u;
             this._v = entry.v;
             this._current = entry.p;
+
+            SingleCurveWalk.INDEX++;
         }
 
 
@@ -67,7 +70,7 @@ module PollardRho {
             this._currentEntry = this._table.at(index);
             this._u = this._u.add(this._currentEntry.u);
             this._v = this._v.add(this._currentEntry.v);
-            this.setCurrent(this._current.add(this._currentEntry.p));
+            this._current = this._current.add(this._currentEntry.p);
         }
 
         send(sink: IResultSink): void {
@@ -88,22 +91,7 @@ module PollardRho {
         }
 
         endStep(lambda: ModNumber): void {
-            this.setCurrent(this._current.endAdd(this._currentEntry.p, lambda));
-        }
-
-        private setCurrent(candidate: ModPoint) {
-            if (this._config.useNegationMap) {
-                var candidateNeg = candidate.negate();
-                if (candidate.y.compare(candidateNeg.y) == 1) {
-                    this._current = candidate;
-                } else {
-                    this._current = candidateNeg;
-                    this._u = this._u.negate();
-                    this._v = this._v.negate();
-                }
-            } else {
-                this._current = candidate;
-            }
+            this._current = this._current.endAdd(this._currentEntry.p, lambda);
         }
     }
 

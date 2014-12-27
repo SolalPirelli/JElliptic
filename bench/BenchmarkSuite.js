@@ -80,7 +80,7 @@ define(["require", "exports"], function(require, exports) {
                 // Add a button to run the suite
                 var runButton = document.createElement("a");
                 runButton.text = "run";
-                runButton.href = "#"; // force the browser to use the default style for links
+                runButton.href = "javascript:;"; // force the browser to use the default style for links
                 runButton.onclick = function () {
                     _this.reset();
                     _this.run(0, function () {
@@ -161,7 +161,7 @@ define(["require", "exports"], function(require, exports) {
                 // Add an hyperlink to run the test
                 var runButton = document.createElement("a");
                 runButton.text = "run";
-                runButton.href = "#"; // forces the browser to use the default style for links
+                runButton.href = "javascript:;"; // forces the browser to use the default style for links
                 runButton.onclick = function () {
                     _this.reset();
                     _this.run(function () {

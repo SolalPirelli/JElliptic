@@ -84,7 +84,7 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModPoint", "ModCurve",
 
             test(configName + ": " + points.expected + " * " + config.generator + " = " + config.target + " on " + config.curve, function () {
                 PollardRho.run(config, sink);
-                ok(sink.result.eq(new ModNumber(BigInteger.parse(points.expected), curve.order)));
+                ok(sink.result.eq(ModNumber.create(BigInteger.parse(points.expected), curve.order)));
             });
         }
 
@@ -92,7 +92,7 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModPoint", "ModCurve",
             QUnit.module("PollardRho");
 
             var correctResults = [
-                new NonAlgorithmicConfig("0", "3", "31", "31", "11", "1", "23", "24", "10")
+                new NonAlgorithmicConfig("0", "3", "31", "43", "11", "1", "23", "24", "10")
             ];
 
             correctResults.forEach(function (r) {

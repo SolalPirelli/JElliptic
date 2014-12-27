@@ -46,16 +46,6 @@ module BigIntegerTests {
         });
     }
 
-    function binOp(name: string, s1: string, s2: string, result: boolean, op: (b1: BigInteger, b2: BigInteger) => boolean) {
-        test(name + ": " + s1 + ", " + s2 + " = " + result, () => {
-            var i1 = BigInteger.parse(s1);
-            var i2 = BigInteger.parse(s2);
-
-            var actualResult = op(i1, i2);
-            equal(actualResult, result);
-        });
-    }
-
     function intOp(name: string, s1: string, s2: string, result: number, op: (b1: BigInteger, b2: BigInteger) => number) {
         test(name + ": " + s1 + ", " + s2 + " = " + result, () => {
             var i1 = BigInteger.parse(s1);
@@ -70,11 +60,9 @@ module BigIntegerTests {
         var i1 = BigInteger.parse(s1);
         var i2 = BigInteger.parse(s2);
 
-        test("neg: " + s1, () => {
-            ok(i1.negate().eq(i2));
-        });
-        test("neg: " + s2, () => {
-            ok(i2.negate().eq(i1));
+        test("neg: " + s1 + ", " + s2, () => {
+            ok(i1.negate().eq(i2), "-" + s1 + " = " + s2);
+            ok(i2.negate().eq(i1), "-" + s2 + " = " + s1);
         });
     }
 
@@ -106,15 +94,24 @@ module BigIntegerTests {
         }
 
         if (s1 != "0") {
-            op("div", result, s1, s2, (b1, b2) => b1.div(b2));
+            op("div (via divRem)", result, s1, s2, (b1, b2) => b1.divRem(b2)[0]);
         }
         if (s1 != s2 && s2 != "0") {
-            op("div", result, s2, s1, (b1, b2) => b1.div(b2));
+            op("div (via divRem)", result, s2, s1, (b1, b2) => b1.divRem(b2)[0]);
         }
     }
 
+    function partition(s: string, n: number) {
+        test("partition: " + s + " -> " + n, () => {
+            var bi = BigInteger.parse(s);
+            var part = bi.partition(n);
+
+            ok(part < n);
+        });
+    }
+
     function mod(s1: string, s2: string, result: string) {
-        op("mod", s1, s2, result, (b1, b2) => b1.mod(b2));
+        op("mod (via divRem)", s1, s2, result, (b1, b2) => b1.divRem(b2)[1]);
     }
 
     function modInverse(s1: string, s2: string, result: string) {
@@ -133,13 +130,6 @@ module BigIntegerTests {
         intOp("compare", s1, s2, result, (b1, b2) => b1.compare(b2));
         if (s1 != s2) {
             intOp("compare", s2, s1, -result, (b1, b2) => b1.compare(b2));
-        }
-    }
-
-    function eq(s1: string, s2: string, result: boolean) {
-        binOp("eq", s1, s2, result, (b1, b2) => b1.eq(b2));
-        if (s1 != s2) {
-            binOp("eq", s2, s1, result, (b1, b2) => b1.eq(b2));
         }
     }
 
@@ -249,6 +239,17 @@ module BigIntegerTests {
         mod("-2", "2", "0");
         mod("-5", "2", "1");
         mod("-2", "3", "1");
+        mod("-12", "60", "48");
+        mod("-1234", "12341234", "12340000");
+        mod("-123456789", "111111111", "98765433");
+        mod("-68575678987078985443355445433234", "735643790543057439", "409009853781827093");
+
+        partition("0", 1);
+        partition("1234", 64);
+        partition("12345", 5);
+        partition("3300", 99);
+        partition("234567897654", 1023);
+        partition("132423561232557824245478899974345", 23443);
 
         modInverse("1", "10", "1");
         modInverse("2", "3", "2");
@@ -280,14 +281,10 @@ module BigIntegerTests {
         compare("-1", "-10", 1);
         compare("10000000000000000000000000000000", "100000", 1);
         compare("100000000000000000000000000001", "100000000000000000000000000000", 1);
-
-        eq("0", "0", true);
-        eq("-1", "-1", true);
-        eq("123", "123", true);
-        eq("123456789123456789123456789", "123456789123456789123456789", true);
-        eq("0", "1", false);
-        eq("-1", "1", false);
-        eq("123456789123456789123456789", "123456789123456789123456780", false);
+        compare("0", "0", 0);
+        compare("-1", "-1", 0);
+        compare("123", "123", 0);
+        compare("123456789123456789123456789", "123456789123456789123456789", 0);
     }
 }
 
