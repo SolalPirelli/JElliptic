@@ -22,7 +22,6 @@
     <Content Include="bench\lib\benchmark.js" />
     <Content Include="bench\lib\lodash.js" />
     <Content Include="index.html" />
-    <Content Include="lib\jquery.js" />
     <Content Include="lib\require.js" />
     <Content Include="test\config.js" />
     <Content Include="test\css\qunit.css" />
@@ -44,7 +43,6 @@
     <TypeScriptCompile Include="IWorkerMessage.ts" />
     <TypeScriptCompile Include="ModPointAddPartialResult.ts" />
     <TypeScriptCompile Include="IConfig.ts" />
-    <TypeScriptCompile Include="lib\jquery.d.ts" />
     <TypeScriptCompile Include="lib\require.d.ts" />
     <TypeScriptCompile Include="ModCurve.ts" />
     <TypeScriptCompile Include="ModNumber.ts" />
