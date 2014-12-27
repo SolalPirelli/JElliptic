@@ -233,22 +233,6 @@ function pollardRhoSuite() {
     s("Step of 256 parrallel walks over a 112-bit curve", () => walk256.step());
     s("Step of 512 parrallel walks over a 112-bit curve", () => walk512.step());
     s("Step of 1024 parrallel walks over a 112-bit curve", () => walk1024.step());
-    s("100 steps of a single walk over a 112-bit curve", () => {
-        for (var n = 0; n < 100; n++) {
-            walk1.step();
-        }
-    });
-    s("100 steps of 8 parrallel walks over a 112-bit curve", () => {
-        for (var n = 0; n < 100; n++) {
-            walk8.step();
-        }
-    });
-    // FIXME: Too slow!
-    //s("100 steps of 256 parrallel walks over a 112-bit curve", () => {
-    //    for (var n = 0; n < 100; n++) {
-    //        walk256.step();
-    //    }
-    //});
 }
 
 bigIntegerSuite();
