@@ -4,7 +4,7 @@ import ModCurve = require("ModCurve");
 import ModPoint = require("ModPoint");
 import IConfig = require("IConfig");
 import Addition = require("AdditionTable");
-import PollardRho =require("PollardRho");
+import PollardRho = require("PollardRho");
 import BenchmarkSuite = require("bench/BenchmarkSuite");
 
 function bigIntegerSuite() {
@@ -87,7 +87,7 @@ function modNumberSuite() {
     var mod20 = BigInteger.parse("71755440315342536873");
     var i20_1 = ModNumber.create(BigInteger.parse("29497513910652490397"), mod20);
     var i20_2 = ModNumber.create(BigInteger.parse("12345678901234567890"), mod20);
-    
+
     var mod34 = BigInteger.parse("4451685225093714772084598273548427");
     var i34_1 = ModNumber.create(BigInteger.parse("2061118396808653202902996166388514"), mod34);
     var i34_2 = ModNumber.create(BigInteger.parse("4451685225093714772084598273548427"), mod34);
@@ -233,6 +233,31 @@ function pollardRhoSuite() {
     s("Step of 256 parrallel walks over a 112-bit curve", () => walk256.step());
     s("Step of 512 parrallel walks over a 112-bit curve", () => walk512.step());
     s("Step of 1024 parrallel walks over a 112-bit curve", () => walk1024.step());
+    s("100 steps of a single walk over a 112-bit curve", () => {
+        for (var n = 0; n < 100; n++) {
+            walk1.step();
+        }
+    });
+    s("100 steps of 8 parrallel walks over a 112-bit curve", () => {
+        for (var n = 0; n < 100; n++) {
+            walk8.step();
+        }
+    });
+    s("100 steps of 16 parrallel walks over a 112-bit curve", () => {
+        for (var n = 0; n < 100; n++) {
+            walk16.step();
+        }
+    });
+    s("100 steps of 32 parrallel walks over a 112-bit curve", () => {
+        for (var n = 0; n < 100; n++) {
+            walk32.step();
+        }
+    });
+    s("100 steps of 64 parrallel walks over a 112-bit curve", () => {
+        for (var n = 0; n < 100; n++) {
+            walk64.step();
+        }
+    });
 }
 
 bigIntegerSuite();
