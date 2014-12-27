@@ -10,6 +10,7 @@ interface IConfig {
     additionTableLength: number;
     parrallelWalksCount: number;
     distinguishedPointMask: BigInteger;
+    computePointsUniqueFraction: boolean;
 }
 
 export = IConfig;

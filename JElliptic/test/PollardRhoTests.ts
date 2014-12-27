@@ -86,7 +86,7 @@ module PollardRhoTests {
     function result(configName: string,
         points: NonAlgorithmicConfig,
         tableSeed: number, tableLength: number,
-        walksCount: number, useNegationMap: boolean,
+        walksCount: number,
         distinguishedMask: string) {
         var sink = new ComputingResultSink();
         var curve = new ModCurve(BigInteger.parse(points.a), BigInteger.parse(points.b), BigInteger.parse(points.n), BigInteger.parse(points.order));
@@ -97,8 +97,8 @@ module PollardRhoTests {
             additionTableSeed: tableSeed,
             additionTableLength: tableLength,
             parrallelWalksCount: walksCount,
-            useNegationMap: useNegationMap,
-            distinguishedPointMask: BigInteger.parse(distinguishedMask)
+            distinguishedPointMask: BigInteger.parse(distinguishedMask),
+            computePointsUniqueFraction: false
         };
 
         test(configName + ": " + points.expected + " * " + config.generator + " = " + config.target + " on " + config.curve, () => {
@@ -118,8 +118,8 @@ module PollardRhoTests {
                 "10") // Expected result
         ];
 
-        correctResults.forEach(r => result("1 walk", r, 0, 64, 1, true, "1"));
-        correctResults.forEach(r => result("2 walks", r, 0, 64, 2, true, "1"));
+        correctResults.forEach(r => result("1 walk", r, 0, 64, 1, "1"));
+        correctResults.forEach(r => result("2 walks", r, 0, 64, 2, "1"));
     }
 }
 

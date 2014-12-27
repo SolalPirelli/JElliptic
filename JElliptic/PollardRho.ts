@@ -2,6 +2,7 @@
 import ModNumber = require("ModNumber");
 import ModPoint = require("ModPoint");
 import ModPointAddPartialResult = require("ModPointAddPartialResult");
+import ModPointSet = require("ModPointSet");
 import IConfig = require("IConfig");
 import IResultSink = require("IResultSink");
 import Addition = require("AdditionTable");
@@ -33,21 +34,29 @@ module PollardRho {
         private _config: IConfig;
         private _table: Addition.Table;
 
+        private _index: number;
         private _u: ModNumber;
         private _v: ModNumber;
         private _current: ModPoint;
 
         private _currentEntry: Addition.TableEntry;
 
+        private _allPoints: ModPointSet;
+
 
         constructor(config: IConfig, table: Addition.Table) {
             this._config = config;
             this._table = table;
 
-            var entry = this._table.at(SingleCurveWalk.INDEX % this._table.length);
+            this._index = SingleCurveWalk.INDEX;
+            var entry = this._table.at(this._index % this._table.length);
             this._u = entry.u;
             this._v = entry.v;
             this._current = entry.p;
+
+            if (config.computePointsUniqueFraction) {
+                this._allPoints = new ModPointSet();
+            }
 
             SingleCurveWalk.INDEX++;
         }
@@ -70,12 +79,16 @@ module PollardRho {
             this._currentEntry = this._table.at(index);
             this._u = this._u.add(this._currentEntry.u);
             this._v = this._v.add(this._currentEntry.v);
-            this._current = this._current.add(this._currentEntry.p);
+            this.setCurrent(this._current.add(this._currentEntry.p));
         }
 
         send(sink: IResultSink): void {
             if (this._current != ModPoint.INFINITY && (this._current.x.value.and(this._config.distinguishedPointMask)).compare(this._config.distinguishedPointMask) == 0) {
                 sink.send(this._u, this._v, this._current);
+
+                if (this._config.computePointsUniqueFraction) {
+                    console.log("% of unique points for walk " + this._index + ": " + (this._allPoints.uniqueFraction * 100.0));
+                }
             }
         }
 
@@ -91,7 +104,14 @@ module PollardRho {
         }
 
         endStep(lambda: ModNumber): void {
-            this._current = this._current.endAdd(this._currentEntry.p, lambda);
+            this.setCurrent(this._current.endAdd(this._currentEntry.p, lambda));
+        }
+
+        private setCurrent(point: ModPoint) {
+            if (this._config.computePointsUniqueFraction) {
+                this._allPoints.add(point);
+            }
+            this._current = point;
         }
     }
 

@@ -25,8 +25,8 @@ document.getElementById("button").onclick = () => {
         additionTableSeed: 0,
         additionTableLength: 128,
         parrallelWalksCount: 10,
-        useNegationMap: true,
-        distinguishedPointMask: BigInteger.fromInt(3)
+        distinguishedPointMask: BigInteger.fromInt(3),
+        computePointsUniqueFraction: true
     };
 
     var sink = ResultSinks.combine(ResultSinks.server(), ResultSinks.debug());
