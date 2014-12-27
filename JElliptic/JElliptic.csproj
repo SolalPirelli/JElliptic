@@ -22,13 +22,14 @@
     <Content Include="bench\lib\benchmark.js" />
     <Content Include="bench\lib\lodash.js" />
     <Content Include="index.html" />
-    <Content Include="lib\jquery.min.js" />
+    <Content Include="lib\jquery.js" />
     <Content Include="lib\require.js" />
     <Content Include="test\config.js" />
     <Content Include="test\css\qunit.css" />
     <Content Include="test\test.html" />
     <Content Include="test\lib\qunit.js" />
     <Content Include="web.config" />
+    <Content Include="worker.js" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="AdditionTable.ts" />
@@ -40,6 +41,7 @@
     <TypeScriptCompile Include="BigInteger.ts" />
     <TypeScriptCompile Include="DeterministicRandom.ts" />
     <TypeScriptCompile Include="IResultSink.ts" />
+    <TypeScriptCompile Include="IWorkerMessage.ts" />
     <TypeScriptCompile Include="ModPointAddPartialResult.ts" />
     <TypeScriptCompile Include="IConfig.ts" />
     <TypeScriptCompile Include="lib\jquery.d.ts" />

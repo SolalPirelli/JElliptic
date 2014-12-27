@@ -1,35 +1,27 @@
 ﻿/// <reference path="lib/require.d.ts" />
 
-import BigInteger = require("BigInteger");
-import ModCurve = require("ModCurve");
-import ModPoint = require("ModPoint");
-import IConfig = require("IConfig");
-import PollardRho = require("PollardRho");
-import ResultSinks = require("ResultSinks");
+import IWorkerMessage = require("IWorkerMessage");
 
-function bigintValue(elemName: string): BigInteger {
-    return BigInteger.parse((<HTMLInputElement> document.getElementById(elemName)).value);
+function value(elemName: string): string {
+    return (<HTMLInputElement> document.getElementById(elemName)).value;
 }
 
 document.getElementById("button").onclick = () => {
-    var a = bigintValue("a"), b = bigintValue("b"), n = bigintValue("n"), order=bigintValue("order");
-    var gx = bigintValue("gx"), gy = bigintValue("gy");
-    var hx = bigintValue("hx"), hy = bigintValue("hy");
-
-    var curve = new ModCurve(a, b, n, order);
-
-    var config: IConfig = {
-        curve: curve,
-        generator: ModPoint.create(gx, gy, curve),
-        target: ModPoint.create(hx, hy, curve),
+    var msg: IWorkerMessage = {
+        curveA: value("a"),
+        curveB: value("b"),
+        curveN: value("n"),
+        curveOrder: value("order"),
+        generatorX: value("gx"),
+        generatorY: value("gy"),
+        targetX: value("hx"),
+        targetY: value("hy"),
         additionTableSeed: 0,
         additionTableLength: 128,
         parrallelWalksCount: 10,
-        distinguishedPointMask: BigInteger.fromInt(3),
+        distinguishedPointMask: "3",
         computePointsUniqueFraction: true
-    };
-
-    var sink = ResultSinks.combine(ResultSinks.server(), ResultSinks.debug());
-
-    PollardRho.run(config, sink);
+    }
+    var worker = new Worker("worker.js");
+    worker.postMessage([msg]);
 };
