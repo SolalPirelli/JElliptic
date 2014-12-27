@@ -335,7 +335,7 @@
     modInverse(n: BigInteger): BigInteger {
         var t = BigInteger.ZERO, newt = BigInteger.ONE;
         var r = n, newr = this;
-        while (!newr.eq(BigInteger.ZERO)) {
+        while (newr.compare(BigInteger.ZERO) != 0) {
             var quotient = r.divRem(newr)[0];
 
             var oldt = t;
@@ -408,27 +408,6 @@
         }
 
         return BigInteger.create(true, digits);
-    }
-
-    /** O(min(this.digits, other.digits)) */
-    eq(other: BigInteger) {
-        function arrayEquals(a: number[], b: number[]): boolean {
-            if (a == b) {
-                return true;
-            }
-            if (a.length != b.length) {
-                return false;
-            }
-
-            for (var i = 0; i < a.length; ++i) {
-                if (a[i] != b[i]) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        return this._isPositive == other._isPositive && arrayEquals(this._digits, other._digits);
     }
 
     /** O(this.digits) */

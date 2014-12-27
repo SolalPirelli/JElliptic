@@ -74,7 +74,7 @@ module PollardRho {
         }
 
         send(sink: IResultSink): void {
-            if (this._current != ModPoint.INFINITY && (this._current.x.value.and(this._config.distinguishedPointMask)).eq(this._config.distinguishedPointMask)) {
+            if (this._current != ModPoint.INFINITY && (this._current.x.value.and(this._config.distinguishedPointMask)).compare(this._config.distinguishedPointMask) == 0) {
                 sink.send(this._u, this._v, this._current);
             }
         }

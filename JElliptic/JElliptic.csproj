@@ -47,6 +47,7 @@
     <TypeScriptCompile Include="ModCurve.ts" />
     <TypeScriptCompile Include="ModNumber.ts" />
     <TypeScriptCompile Include="ModPoint.ts" />
+    <TypeScriptCompile Include="ModPointSet.ts" />
     <TypeScriptCompile Include="PollardRho.ts" />
     <TypeScriptCompile Include="ResultSinks.ts" />
     <TypeScriptCompile Include="test\BigIntegerTests.ts" />

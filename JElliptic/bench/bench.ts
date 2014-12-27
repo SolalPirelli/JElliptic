@@ -68,11 +68,11 @@ function bigIntegerSuite() {
     s("Logical AND of 34-digit and 20-digit numbers", () => i34_1.and(i20_1));
     s("Logical AND of two 34-digit numbers", () => i34_1.and(i34_2));
 
-    s("Compare two 1-digit numbers", () => i1_1.eq(i1_2));
-    s("Compare 20-digit and 1-digit numbers", () => i20_1.eq(i1_1));
-    s("Compare two 20-digit numbers", () => i20_1.eq(i20_2));
-    s("Compare 34-digit and 20-digit numbers", () => i34_1.eq(i20_1));
-    s("Compare two 34-digit numbers", () => i34_1.eq(i34_2));
+    s("Compare two 1-digit numbers", () => i1_1.compare(i1_2));
+    s("Compare 20-digit and 1-digit numbers", () => i20_1.compare(i1_1));
+    s("Compare two 20-digit numbers", () => i20_1.compare(i20_2));
+    s("Compare 34-digit and 20-digit numbers", () => i34_1.compare(i20_1));
+    s("Compare two 34-digit numbers", () => i34_1.compare(i34_2));
 
     s("Stringify a 1-digit number", () => i1_1.toString());
     s("Stringify a 20-digit number", () => i20_1.toString());

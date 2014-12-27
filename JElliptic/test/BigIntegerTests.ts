@@ -42,7 +42,7 @@ module BigIntegerTests {
             var iResult = BigInteger.parse(result);
 
             var actualResult = op(i1, i2);
-            ok(actualResult.eq(iResult), "Expected " + result + ", got " + actualResult.toString());
+            equal(0, actualResult.compare(iResult), "Expected " + result + ", got " + actualResult.toString());
         });
     }
 
@@ -61,8 +61,8 @@ module BigIntegerTests {
         var i2 = BigInteger.parse(s2);
 
         test("neg: " + s1 + ", " + s2, () => {
-            ok(i1.negate().eq(i2), "-" + s1 + " = " + s2);
-            ok(i2.negate().eq(i1), "-" + s2 + " = " + s1);
+            equal(0, i1.negate().compare(i2), "-" + s1 + " = " + s2);
+            equal(0, i2.negate().compare(i1), "-" + s2 + " = " + s1);
         });
     }
 
@@ -72,7 +72,7 @@ module BigIntegerTests {
 
         test("halve: " + s, () => {
             var half = i.halve();
-            ok(half.eq(iResult), "Got " + half.toString());
+            equal(0, half.compare(iResult), "Got " + half.toString());
         });
     }
 
