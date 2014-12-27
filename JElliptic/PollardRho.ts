@@ -92,22 +92,25 @@ module PollardRho {
             }
         }
 
-
-        // beginStep and endStep are used by the multi-walk
-
+        /** If the result can already be computed, returns null; endStep must then not be called. */
         beginStep(): ModPointAddPartialResult {
             var index = this._current.partition(this._table.length);
             this._currentEntry = this._table.at(index);
             this._u = this._u.add(this._currentEntry.u);
             this._v = this._v.add(this._currentEntry.v);
-            return this._current.beginAdd(this._currentEntry.p);
+            var partialResult = this._current.beginAdd(this._currentEntry.p);
+            if (partialResult.result == undefined) {
+                return partialResult;
+            }
+            this.setCurrent(partialResult.result);
+            return null;
         }
 
         endStep(lambda: ModNumber): void {
             this.setCurrent(this._current.endAdd(this._currentEntry.p, lambda));
         }
 
-        private setCurrent(point: ModPoint) {
+        private setCurrent(point: ModPoint): void {
             if (this._config.computePointsUniqueFraction) {
                 this._allPoints.add(point);
             }
@@ -126,33 +129,43 @@ module PollardRho {
         }
 
         step(): void {
-            var N = this._walks.length; // alias, for convenience
+            var x = Array<ModPointAddPartialResult>(this._walks.length);
 
-            var x = Array<ModPointAddPartialResult>(N);
-
-            for (var n = 0; n < N; n++) {
+            for (var n = 0; n < this._walks.length; n++) {
                 x[n] = this._walks[n].beginStep();
             }
 
-            var a = Array<ModNumber>(N);
+            // Bit of a hack here, since some x[n] need not be inverted (the result could already be computed, without inversion)
+            // so we have to keep track both of the actual iterating index from x[],
+            // and of the one from the new arrays that may contain less elements
+
+            var a = Array<ModNumber>();
             a[0] = x[0].denominator;
-            for (var n = 1; n < N; n++) {
-                a[n] = a[n - 1].mul(x[n].denominator);
+            for (var n = 1, realN = n; n < this._walks.length; n++) {
+                if (x[n] != null) {
+                    a[realN] = a[realN - 1].mul(x[n].denominator);
+                    realN++;
+                }
             }
 
-            var xinv = Array<ModNumber>(N);
-            var ainv = Array<ModNumber>(N);
-            ainv[N - 1] = a[N - 1].invert();
-            for (var n = N - 1; n > 0; n--) {
-                xinv[n] = ainv[n].mul(a[n - 1]);
-                ainv[n - 1] = ainv[n].mul(x[n].denominator);
+            var xinv = Array<ModNumber>(a.length);
+            var ainv = Array<ModNumber>(a.length);
+            ainv[a.length - 1] = a[a.length - 1].invert();
+            for (var n = this._walks.length - 1, realN = ainv.length - 1; realN > 0; n--) {
+                if (x[n] != null) {
+                    xinv[realN] = ainv[realN].mul(a[realN - 1]);
+                    ainv[realN - 1] = ainv[realN].mul(x[n].denominator);
+                    realN--;
+                }
             }
             xinv[0] = ainv[0];
 
-            for (var n = 0; n < this._walks.length; n++) {
-                var lambda = x[n].numerator.mul(xinv[n]);
-
-                this._walks[n].endStep(lambda);
+            for (var n = 0, realN = 0; n < this._walks.length; n++) {
+                if (x[n] != null) {
+                    var lambda = x[n].numerator.mul(xinv[realN]);
+                    this._walks[n].endStep(lambda);
+                    realN++;
+                }
             }
         }
 
