@@ -21,7 +21,7 @@ onmessage = function (e) {
             };
 
 
-            var sink = resultSinks.combine(resultSinks.server(), resultSinks.debug());
+            var sink = resultSinks.debug(); //resultSinks.combine(resultSinks.server(), resultSinks.debug());
 
             pollardRho.run(config, sink);
         });

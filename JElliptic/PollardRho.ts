@@ -17,7 +17,21 @@ module PollardRho {
             config.parrallelWalksCount == 1 ?
             new SingleCurveWalk(config, table) : new MultiCurveWalk(config, table);
 
-        for (var step = BigInteger.ZERO; step.compare(config.curve.n) == -1; step = step.add(BigInteger.ONE)) {
+        while (true) {
+            walk.step();
+            walk.send(resultSink);
+        }
+    }
+
+    // For unit tests, a version of run that finishes after a little while
+    export function runLimited(config: IConfig, resultSink: IResultSink): void {
+        var table = new Addition.Table(config);
+
+        var walk: CurveWalk =
+            config.parrallelWalksCount == 1 ?
+            new SingleCurveWalk(config, table) : new MultiCurveWalk(config, table);
+
+        for (var n = 0; n < 100; n++) {
             walk.step();
             walk.send(resultSink);
         }

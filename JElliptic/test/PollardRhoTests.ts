@@ -77,7 +77,7 @@ module PollardRhoTests {
     function exactSteps(name: string, config: IConfig, ...expected: Result[]) {
         test(name, () => {
             var sink = new StoreResultSink();
-            PollardRho.run(config, sink);
+            PollardRho.runLimited(config, sink);
 
             equal(sink.results, expected);
         });
@@ -102,7 +102,7 @@ module PollardRhoTests {
         };
 
         test(configName + ": " + points.expected + " * " + config.generator + " = " + config.target + " on " + config.curve, () => {
-            PollardRho.run(config, sink);
+            PollardRho.runLimited(config, sink);
             ok(sink.result.eq(ModNumber.create(BigInteger.parse(points.expected), curve.order)));
         });
     }

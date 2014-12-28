@@ -6,7 +6,9 @@ function value(elemName: string): string {
     return (<HTMLInputElement> document.getElementById(elemName)).value;
 }
 
-document.getElementById("button").onclick = () => {
+var worker: Worker = null;
+
+document.getElementById("start").onclick = () => {
     var msg: IWorkerMessage = {
         curveA: value("a"),
         curveB: value("b"),
@@ -22,6 +24,17 @@ document.getElementById("button").onclick = () => {
         distinguishedPointMask: "3",
         computePointsUniqueFraction: true
     }
-    var worker = new Worker("worker.js");
+
+    if (worker != null) {
+        worker.terminate();
+    }
+    worker = new Worker("worker.js");
     worker.postMessage([msg]);
+};
+
+document.getElementById("cancel").onclick = () => {
+    if (worker != null) {
+        worker.terminate();
+        worker = null;
+    }
 };
