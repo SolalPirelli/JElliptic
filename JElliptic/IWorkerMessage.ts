@@ -16,6 +16,8 @@ interface IWorkerMessage {
     parrallelWalksCount: number;
     distinguishedPointMask: string;
     computePointsUniqueFraction: boolean;
+    checkCycleLength: number;
+    checkCyclePeriod: number;
 }
 
 export = IWorkerMessage;

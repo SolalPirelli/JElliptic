@@ -17,9 +17,27 @@ module PollardRho {
             config.parrallelWalksCount == 1 ?
             new SingleCurveWalk(config, table) : new MultiCurveWalk(config, table);
 
+        var checkCycleIndex = 0;
+
         while (true) {
-            walk.step();
-            walk.send(resultSink);
+            while (checkCycleIndex != config.checkCyclePeriod) {
+                walk.step();
+                walk.send(resultSink);
+                checkCycleIndex++;
+            }
+
+            checkCycleIndex = 0;
+
+            var encountered = new ModPointSet();
+            for (var n = 0; n < config.checkCycleLength; n++) {
+                walk.step();
+                walk.send(resultSink);
+
+                if (!walk.addTo(encountered)) {
+                    walk.escape();
+                    break;
+                }
+            }
         }
     }
 
@@ -38,8 +56,10 @@ module PollardRho {
     }
 
     export interface CurveWalk {
-        send(sink: IResultSink): void;
         step(): void;
+        addTo(pointSet: ModPointSet): boolean;
+        escape(): void;
+        send(sink: IResultSink): void;
     }
 
     export class SingleCurveWalk implements CurveWalk {
@@ -94,6 +114,14 @@ module PollardRho {
             this._u = this._u.add(this._currentEntry.u);
             this._v = this._v.add(this._currentEntry.v);
             this.setCurrent(this._current.add(this._currentEntry.p));
+        }
+
+        addTo(pointSet: ModPointSet) {
+            return pointSet.add(this._current);
+        }
+
+        escape() {
+            this.setCurrent(this._current.add(this._current));
         }
 
         send(sink: IResultSink): void {
@@ -187,6 +215,19 @@ module PollardRho {
                     realN++;
                 }
             }
+        }
+
+        addTo(pointSet: ModPointSet) {
+            for (var n = 0; n < this._walks.length; n++) {
+                if (!this._walks[n].addTo(pointSet)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        escape() {
+            this._walks.forEach(w => w.escape());
         }
 
         send(sink: IResultSink): void {

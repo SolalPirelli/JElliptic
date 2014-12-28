@@ -180,7 +180,9 @@ function pollardRhoSuite() {
             additionTableSeed: 0,
             distinguishedPointMask: BigInteger.parse("1"),
             parrallelWalksCount: 1,
-            computePointsUniqueFraction: false
+            computePointsUniqueFraction: false,
+            checkCyclePeriod: length * 2,
+            checkCycleLength: length
         };
     }
 
@@ -201,7 +203,9 @@ function pollardRhoSuite() {
             additionTableSeed: 0,
             distinguishedPointMask: BigInteger.parse("4294967295"),
             parrallelWalksCount: count,
-            computePointsUniqueFraction: false
+            computePointsUniqueFraction: false,
+            checkCyclePeriod: 32,
+            checkCycleLength: 16
         };
     }
 

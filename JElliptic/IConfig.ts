@@ -11,6 +11,8 @@ interface IConfig {
     parrallelWalksCount: number;
     distinguishedPointMask: BigInteger;
     computePointsUniqueFraction: boolean;
+    checkCyclePeriod: number;
+    checkCycleLength: number;
 }
 
 export = IConfig;

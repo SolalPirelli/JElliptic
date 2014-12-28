@@ -17,7 +17,9 @@ onmessage = function (e) {
                 additionTableLength: msg.additionTableLength,
                 parrallelWalksCount: msg.parrallelWalksCount,
                 distinguishedPointMask: bigInt.parse(msg.distinguishedPointMask),
-                computePointsUniqueFraction: msg.computePointsUniqueFraction
+                computePointsUniqueFraction: msg.computePointsUniqueFraction,
+                checkCycleLength: msg.checkCycleLength,
+                checkCyclePeriod: msg.checkCyclePeriod
             };
 
 

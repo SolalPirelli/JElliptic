@@ -24,14 +24,16 @@ class ModPointSet {
         return false;
     }
 
-    add(point: ModPoint): void {
+    add(point: ModPoint): boolean {
         this._totalCount++;
 
         if (this.contains(point)) {
             this._duplicatesCount++;
-        } else {
-            this._points.push(point);
+            return false;
         }
+
+        this._points.push(point);
+        return true;
     }
 }
 

@@ -22,7 +22,9 @@ document.getElementById("start").onclick = () => {
         additionTableLength: 128,
         parrallelWalksCount: 1,
         distinguishedPointMask: "0",
-        computePointsUniqueFraction: true
+        computePointsUniqueFraction: true,
+        checkCycleLength: 256,
+        checkCyclePeriod: 128
     }
 
     if (worker != null) {

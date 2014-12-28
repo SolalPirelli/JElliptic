@@ -98,7 +98,9 @@ module PollardRhoTests {
             additionTableLength: tableLength,
             parrallelWalksCount: walksCount,
             distinguishedPointMask: BigInteger.parse(distinguishedMask),
-            computePointsUniqueFraction: false
+            computePointsUniqueFraction: false,
+            checkCyclePeriod: tableLength * 2,
+            checkCycleLength: tableLength
         };
 
         test(configName + ": " + points.expected + " * " + config.generator + " = " + config.target + " on " + config.curve, () => {
