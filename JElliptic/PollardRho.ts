@@ -125,6 +125,12 @@ module PollardRho {
         }
 
         private setCurrent(point: ModPoint): void {
+            var reflected = point.negate();
+            if (point.compareY(reflected) == 1) {
+                // take the smallest y
+                point = reflected;
+            }
+
             if (this._config.computePointsUniqueFraction) {
                 this._allPoints.add(point);
             }

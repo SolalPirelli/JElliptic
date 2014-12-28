@@ -20,8 +20,8 @@ document.getElementById("start").onclick = () => {
         targetY: value("hy"),
         additionTableSeed: 0,
         additionTableLength: 128,
-        parrallelWalksCount: 10,
-        distinguishedPointMask: "3",
+        parrallelWalksCount: 1,
+        distinguishedPointMask: "0",
         computePointsUniqueFraction: true
     }
 
