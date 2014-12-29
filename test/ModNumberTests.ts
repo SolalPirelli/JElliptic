@@ -10,7 +10,7 @@ module ModNumberTests {
         test("constructor value is modulo-ed", () => {
             var num = ModNumber.create(BigInteger.fromInt(10), BigInteger.fromInt(3));
 
-            ok(num.value.eq(BigInteger.fromInt(1)));
+            equal(0, num.value.compare(BigInteger.fromInt(1)));
         });
     }
 }

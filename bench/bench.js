@@ -139,19 +139,19 @@
         });
 
         s("Compare two 1-digit numbers", function () {
-            return i1_1.eq(i1_2);
+            return i1_1.compare(i1_2);
         });
         s("Compare 20-digit and 1-digit numbers", function () {
-            return i20_1.eq(i1_1);
+            return i20_1.compare(i1_1);
         });
         s("Compare two 20-digit numbers", function () {
-            return i20_1.eq(i20_2);
+            return i20_1.compare(i20_2);
         });
         s("Compare 34-digit and 20-digit numbers", function () {
-            return i34_1.eq(i20_1);
+            return i34_1.compare(i20_1);
         });
         s("Compare two 34-digit numbers", function () {
-            return i34_1.eq(i34_2);
+            return i34_1.compare(i34_2);
         });
 
         s("Stringify a 1-digit number", function () {
@@ -345,7 +345,9 @@
                 additionTableSeed: 0,
                 distinguishedPointMask: BigInteger.parse("1"),
                 parrallelWalksCount: 1,
-                useNegationMap: false
+                computePointsUniqueFraction: false,
+                checkCyclePeriod: length * 2,
+                checkCycleLength: length
             };
         }
 
@@ -366,7 +368,9 @@
                 additionTableSeed: 0,
                 distinguishedPointMask: BigInteger.parse("4294967295"),
                 parrallelWalksCount: count,
-                useNegationMap: false
+                computePointsUniqueFraction: false,
+                checkCyclePeriod: 32,
+                checkCycleLength: 16
             };
         }
 
@@ -415,6 +419,31 @@
         });
         s("Step of 1024 parrallel walks over a 112-bit curve", function () {
             return walk1024.step();
+        });
+        s("100 steps of a single walk over a 112-bit curve", function () {
+            for (var n = 0; n < 100; n++) {
+                walk1.step();
+            }
+        });
+        s("100 steps of 8 parrallel walks over a 112-bit curve", function () {
+            for (var n = 0; n < 100; n++) {
+                walk8.step();
+            }
+        });
+        s("100 steps of 16 parrallel walks over a 112-bit curve", function () {
+            for (var n = 0; n < 100; n++) {
+                walk16.step();
+            }
+        });
+        s("100 steps of 32 parrallel walks over a 112-bit curve", function () {
+            for (var n = 0; n < 100; n++) {
+                walk32.step();
+            }
+        });
+        s("100 steps of 64 parrallel walks over a 112-bit curve", function () {
+            for (var n = 0; n < 100; n++) {
+                walk64.step();
+            }
         });
     }
 

@@ -4,7 +4,7 @@ import ModCurve = require("ModCurve");
 import ModPoint = require("ModPoint");
 import IConfig = require("IConfig");
 import Addition = require("AdditionTable");
-import PollardRho =require("PollardRho");
+import PollardRho = require("PollardRho");
 import BenchmarkSuite = require("bench/BenchmarkSuite");
 
 function bigIntegerSuite() {
@@ -68,11 +68,11 @@ function bigIntegerSuite() {
     s("Logical AND of 34-digit and 20-digit numbers", () => i34_1.and(i20_1));
     s("Logical AND of two 34-digit numbers", () => i34_1.and(i34_2));
 
-    s("Compare two 1-digit numbers", () => i1_1.eq(i1_2));
-    s("Compare 20-digit and 1-digit numbers", () => i20_1.eq(i1_1));
-    s("Compare two 20-digit numbers", () => i20_1.eq(i20_2));
-    s("Compare 34-digit and 20-digit numbers", () => i34_1.eq(i20_1));
-    s("Compare two 34-digit numbers", () => i34_1.eq(i34_2));
+    s("Compare two 1-digit numbers", () => i1_1.compare(i1_2));
+    s("Compare 20-digit and 1-digit numbers", () => i20_1.compare(i1_1));
+    s("Compare two 20-digit numbers", () => i20_1.compare(i20_2));
+    s("Compare 34-digit and 20-digit numbers", () => i34_1.compare(i20_1));
+    s("Compare two 34-digit numbers", () => i34_1.compare(i34_2));
 
     s("Stringify a 1-digit number", () => i1_1.toString());
     s("Stringify a 20-digit number", () => i20_1.toString());
@@ -87,7 +87,7 @@ function modNumberSuite() {
     var mod20 = BigInteger.parse("71755440315342536873");
     var i20_1 = ModNumber.create(BigInteger.parse("29497513910652490397"), mod20);
     var i20_2 = ModNumber.create(BigInteger.parse("12345678901234567890"), mod20);
-    
+
     var mod34 = BigInteger.parse("4451685225093714772084598273548427");
     var i34_1 = ModNumber.create(BigInteger.parse("2061118396808653202902996166388514"), mod34);
     var i34_2 = ModNumber.create(BigInteger.parse("4451685225093714772084598273548427"), mod34);
@@ -180,7 +180,9 @@ function pollardRhoSuite() {
             additionTableSeed: 0,
             distinguishedPointMask: BigInteger.parse("1"),
             parrallelWalksCount: 1,
-            useNegationMap: false
+            computePointsUniqueFraction: false,
+            checkCyclePeriod: length * 2,
+            checkCycleLength: length
         };
     }
 
@@ -201,7 +203,9 @@ function pollardRhoSuite() {
             additionTableSeed: 0,
             distinguishedPointMask: BigInteger.parse("4294967295"),
             parrallelWalksCount: count,
-            useNegationMap: false
+            computePointsUniqueFraction: false,
+            checkCyclePeriod: 32,
+            checkCycleLength: 16
         };
     }
 
@@ -233,6 +237,31 @@ function pollardRhoSuite() {
     s("Step of 256 parrallel walks over a 112-bit curve", () => walk256.step());
     s("Step of 512 parrallel walks over a 112-bit curve", () => walk512.step());
     s("Step of 1024 parrallel walks over a 112-bit curve", () => walk1024.step());
+    s("100 steps of a single walk over a 112-bit curve", () => {
+        for (var n = 0; n < 100; n++) {
+            walk1.step();
+        }
+    });
+    s("100 steps of 8 parrallel walks over a 112-bit curve", () => {
+        for (var n = 0; n < 100; n++) {
+            walk8.step();
+        }
+    });
+    s("100 steps of 16 parrallel walks over a 112-bit curve", () => {
+        for (var n = 0; n < 100; n++) {
+            walk16.step();
+        }
+    });
+    s("100 steps of 32 parrallel walks over a 112-bit curve", () => {
+        for (var n = 0; n < 100; n++) {
+            walk32.step();
+        }
+    });
+    s("100 steps of 64 parrallel walks over a 112-bit curve", () => {
+        for (var n = 0; n < 100; n++) {
+            walk64.step();
+        }
+    });
 }
 
 bigIntegerSuite();

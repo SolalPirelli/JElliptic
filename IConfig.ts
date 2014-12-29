@@ -10,6 +10,9 @@ interface IConfig {
     additionTableLength: number;
     parrallelWalksCount: number;
     distinguishedPointMask: BigInteger;
+    computePointsUniqueFraction: boolean;
+    checkCyclePeriod: number;
+    checkCycleLength: number;
 }
 
 export = IConfig;

@@ -93,7 +93,7 @@
 
         /** eq */
         ModNumber.prototype.eq = function (other) {
-            return this._value.eq(other._value);
+            return this._value.compare(other._value) == 0;
         };
 
         /** toString */

@@ -2,6 +2,7 @@
 import ModNumber = require("ModNumber");
 import ModPoint = require("ModPoint");
 import ModPointAddPartialResult = require("ModPointAddPartialResult");
+import ModPointSet = require("ModPointSet");
 import IConfig = require("IConfig");
 import IResultSink = require("IResultSink");
 import Addition = require("AdditionTable");
@@ -16,15 +17,57 @@ module PollardRho {
             config.parrallelWalksCount == 1 ?
             new SingleCurveWalk(config, table) : new MultiCurveWalk(config, table);
 
-        for (var step = BigInteger.ZERO; step.compare(config.curve.n) == -1; step = step.add(BigInteger.ONE)) {
-            walk.step();
-            walk.send(resultSink);
+        while (true) {
+            for (var n = 0; n < config.checkCyclePeriod; n++) {
+                walk.step();
+                walk.send(resultSink);
+            }
+
+            var encountered = new ModPointSet();
+            for (var n = 0; n < config.checkCycleLength; n++) {
+                walk.step();
+                walk.send(resultSink);
+
+                if (!walk.addTo(encountered)) {
+                    walk.escape();
+                    break;
+                }
+            }
+        }
+    }
+
+    // For tests, a version of run that finishes after a little while, and continuously checks for cycles
+    export function runLimited(config: IConfig, resultSink: IResultSink): void {
+        var table = new Addition.Table(config);
+
+        var walk: CurveWalk =
+            config.parrallelWalksCount == 1 ?
+            new SingleCurveWalk(config, table) : new MultiCurveWalk(config, table);
+
+        for (var x = 0; x < 100; x++) {
+            for (var n = 0; n < config.checkCyclePeriod; n++) {
+                walk.step();
+                walk.send(resultSink);
+            }
+
+            var encountered = new ModPointSet();
+            for (var n = 0; n < config.checkCycleLength; n++) {
+                walk.step();
+                walk.send(resultSink);
+
+                if (!walk.addTo(encountered)) {
+                    walk.escape();
+                    break;
+                }
+            }
         }
     }
 
     export interface CurveWalk {
-        send(sink: IResultSink): void;
         step(): void;
+        addTo(pointSet: ModPointSet): boolean;
+        escape(): void;
+        send(sink: IResultSink): void;
     }
 
     export class SingleCurveWalk implements CurveWalk {
@@ -33,21 +76,28 @@ module PollardRho {
         private _config: IConfig;
         private _table: Addition.Table;
 
+        private _index: number;
         private _u: ModNumber;
         private _v: ModNumber;
         private _current: ModPoint;
+        private _currentIndex: number;
 
-        private _currentEntry: Addition.TableEntry;
+        private _allPoints: ModPointSet;
 
 
         constructor(config: IConfig, table: Addition.Table) {
             this._config = config;
             this._table = table;
 
-            var entry = this._table.at(SingleCurveWalk.INDEX % this._table.length);
+            this._index = SingleCurveWalk.INDEX;
+            var entry = this._table.at(this._index % this._table.length);
             this._u = entry.u;
             this._v = entry.v;
             this._current = entry.p;
+
+            if (config.computePointsUniqueFraction) {
+                this._allPoints = new ModPointSet();
+            }
 
             SingleCurveWalk.INDEX++;
         }
@@ -67,31 +117,66 @@ module PollardRho {
 
         step() {
             var index = this._current.partition(this._table.length);
-            this._currentEntry = this._table.at(index);
-            this._u = this._u.add(this._currentEntry.u);
-            this._v = this._v.add(this._currentEntry.v);
-            this._current = this._current.add(this._currentEntry.p);
+            var entry = this._table.at(index);
+
+            var candidate = this._current.add(entry.p);
+            this.setCurrent(candidate, entry.u, entry.v);
+        }
+
+        addTo(pointSet: ModPointSet) {
+            return pointSet.add(this._current);
+        }
+
+        escape() {
+            this.setCurrent(this._current.add(this._current), this._u, this._v);
         }
 
         send(sink: IResultSink): void {
-            if (this._current != ModPoint.INFINITY && (this._current.x.value.and(this._config.distinguishedPointMask)).eq(this._config.distinguishedPointMask)) {
+            if (this._current != ModPoint.INFINITY && (this._current.x.value.and(this._config.distinguishedPointMask)).compare(this._config.distinguishedPointMask) == 0) {
                 sink.send(this._u, this._v, this._current);
+
+                if (this._config.computePointsUniqueFraction) {
+                    console.log("% of unique points for walk " + this._index + ": " + (this._allPoints.uniqueFraction * 100.0));
+                }
             }
         }
 
-
-        // beginStep and endStep are used by the multi-walk
-
+        /** If the result can already be computed, returns null; endStep must then not be called. */
         beginStep(): ModPointAddPartialResult {
             var index = this._current.partition(this._table.length);
-            this._currentEntry = this._table.at(index);
-            this._u = this._u.add(this._currentEntry.u);
-            this._v = this._v.add(this._currentEntry.v);
-            return this._current.beginAdd(this._currentEntry.p);
+            var entry = this._table.at(index);
+
+            var partialResult = this._current.beginAdd(entry.p);
+            if (partialResult.result == undefined) {
+                return partialResult;
+            }
+            this.setCurrent(partialResult.result, entry.u, entry.v);
+            return null;
         }
 
         endStep(lambda: ModNumber): void {
-            this._current = this._current.endAdd(this._currentEntry.p, lambda);
+            var index = this._current.partition(this._table.length);
+            var entry = this._table.at(index);
+            this.setCurrent(this._current.endAdd(entry.p, lambda), entry.u, entry.v);
+        }
+
+        private setCurrent(candidate: ModPoint, u: ModNumber, v: ModNumber): void {
+            var reflected = candidate.negate();
+
+            this._u = this._u.add(u);
+            this._v = this._v.add(v);
+
+            if (candidate.compareY(reflected) == -1) {
+                // take the smallest y
+                candidate = reflected;
+                this._u = this._u.negate();
+                this._v = this._v.negate();
+            }
+
+            if (this._config.computePointsUniqueFraction) {
+                this._allPoints.add(candidate);
+            }
+            this._current = candidate;
         }
     }
 
@@ -106,34 +191,51 @@ module PollardRho {
         }
 
         step(): void {
-            var N = this._walks.length; // alias, for convenience
-
-            var x = Array<ModPointAddPartialResult>(N);
-
-            for (var n = 0; n < N; n++) {
-                x[n] = this._walks[n].beginStep();
-            }
-
-            var a = Array<ModNumber>(N);
-            a[0] = x[0].denominator;
-            for (var n = 1; n < N; n++) {
-                a[n] = a[n - 1].mul(x[n].denominator);
-            }
-
-            var xinv = Array<ModNumber>(N);
-            var ainv = Array<ModNumber>(N);
-            ainv[N - 1] = a[N - 1].invert();
-            for (var n = N - 1; n > 0; n--) {
-                xinv[n] = ainv[n].mul(a[n - 1]);
-                ainv[n - 1] = ainv[n].mul(x[n].denominator);
-            }
-            xinv[0] = ainv[0];
+            var x = Array<ModPointAddPartialResult>();
+            var unfinishedWalks = new Array<SingleCurveWalk>();
 
             for (var n = 0; n < this._walks.length; n++) {
-                var lambda = x[n].numerator.mul(xinv[n]);
-
-                this._walks[n].endStep(lambda);
+                var result = this._walks[n].beginStep();
+                if (result != null) {
+                    x.push(result);
+                    unfinishedWalks.push(this._walks[n]);
+                }
             }
+
+            if (unfinishedWalks.length != 0) {
+                var a = Array<ModNumber>();
+                a[0] = x[0].denominator;
+                for (var n = 1; n < unfinishedWalks.length; n++) {
+                    a[n] = a[n - 1].mul(x[n].denominator);
+                }
+
+                var xinv = Array<ModNumber>(a.length);
+                var ainv = Array<ModNumber>(a.length);
+                ainv[a.length - 1] = a[a.length - 1].invert();
+                for (var n = unfinishedWalks.length - 1; n > 0; n--) {
+                    xinv[n] = ainv[n].mul(a[n - 1]);
+                    ainv[n - 1] = ainv[n].mul(x[n].denominator);
+                }
+                xinv[0] = ainv[0];
+
+                for (var n = 0; n < unfinishedWalks.length; n++) {
+                    var lambda = x[n].numerator.mul(xinv[n]);
+                    unfinishedWalks[n].endStep(lambda);
+                }
+            }
+        }
+
+        addTo(pointSet: ModPointSet) {
+            for (var n = 0; n < this._walks.length; n++) {
+                if (!this._walks[n].addTo(pointSet)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        escape() {
+            this._walks.forEach(w => w.escape());
         }
 
         send(sink: IResultSink): void {

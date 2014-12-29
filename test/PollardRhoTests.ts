@@ -62,6 +62,7 @@ module PollardRhoTests {
         result: ModNumber = null;
 
         send(u: ModNumber, v: ModNumber, p: ModPoint): void {
+            console.log("received " + p);
             var ps = p.toString();
             if (this._map[ps] == undefined) {
                 this._map[ps] = new Result(u, v, p);
@@ -77,7 +78,7 @@ module PollardRhoTests {
     function exactSteps(name: string, config: IConfig, ...expected: Result[]) {
         test(name, () => {
             var sink = new StoreResultSink();
-            PollardRho.run(config, sink);
+            PollardRho.runLimited(config, sink);
 
             equal(sink.results, expected);
         });
@@ -86,8 +87,7 @@ module PollardRhoTests {
     function result(configName: string,
         points: NonAlgorithmicConfig,
         tableSeed: number, tableLength: number,
-        walksCount: number, useNegationMap: boolean,
-        distinguishedMask: string) {
+        walksCount: number) {
         var sink = new ComputingResultSink();
         var curve = new ModCurve(BigInteger.parse(points.a), BigInteger.parse(points.b), BigInteger.parse(points.n), BigInteger.parse(points.order));
         var config = {
@@ -97,12 +97,14 @@ module PollardRhoTests {
             additionTableSeed: tableSeed,
             additionTableLength: tableLength,
             parrallelWalksCount: walksCount,
-            useNegationMap: useNegationMap,
-            distinguishedPointMask: BigInteger.parse(distinguishedMask)
+            distinguishedPointMask: BigInteger.parse("0"),
+            computePointsUniqueFraction: true,
+            checkCyclePeriod: tableLength,
+            checkCycleLength: tableLength
         };
 
         test(configName + ": " + points.expected + " * " + config.generator + " = " + config.target + " on " + config.curve, () => {
-            PollardRho.run(config, sink);
+            PollardRho.runLimited(config, sink);
             ok(sink.result.eq(ModNumber.create(BigInteger.parse(points.expected), curve.order)));
         });
     }
@@ -118,8 +120,8 @@ module PollardRhoTests {
                 "10") // Expected result
         ];
 
-        correctResults.forEach(r => result("1 walk", r, 0, 64, 1, true, "1"));
-        correctResults.forEach(r => result("2 walks", r, 0, 64, 2, true, "1"));
+        correctResults.forEach(r => result("1 walk", r, 0, 64, 1));
+        correctResults.forEach(r => result("2 walks", r, 0, 64, 2));
     }
 }
 

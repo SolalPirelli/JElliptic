@@ -328,7 +328,7 @@
         BigInteger.prototype.modInverse = function (n) {
             var t = BigInteger.ZERO, newt = BigInteger.ONE;
             var r = n, newr = this;
-            while (!newr.eq(BigInteger.ZERO)) {
+            while (newr.compare(BigInteger.ZERO) != 0) {
                 var quotient = r.divRem(newr)[0];
 
                 var oldt = t;
@@ -401,27 +401,6 @@
             }
 
             return BigInteger.create(true, digits);
-        };
-
-        /** O(min(this.digits, other.digits)) */
-        BigInteger.prototype.eq = function (other) {
-            function arrayEquals(a, b) {
-                if (a == b) {
-                    return true;
-                }
-                if (a.length != b.length) {
-                    return false;
-                }
-
-                for (var i = 0; i < a.length; ++i) {
-                    if (a[i] != b[i]) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-
-            return this._isPositive == other._isPositive && arrayEquals(this._digits, other._digits);
         };
 
         /** O(this.digits) */

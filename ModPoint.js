@@ -46,6 +46,9 @@
 
         /** O(1) */
         ModPoint.prototype.negate = function () {
+            if (this == ModPoint.INF) {
+                return this;
+            }
             return ModPoint.fromModNumbers(this._x, this._y.negate(), this._curve);
         };
 
@@ -143,6 +146,17 @@
                 return 0;
             }
             return this._x.value.partition(n);
+        };
+
+        ModPoint.prototype.compareY = function (other) {
+            if (this == ModPoint.INF) {
+                return other == ModPoint.INF ? 0 : 1;
+            }
+            if (other == ModPoint.INF) {
+                return -1;
+            }
+
+            return this._y.compare(other._y);
         };
 
         /** O(min(this.x.value.digits, other.x.value.digits) + min(this.y.value.digits, other.y.value.digits)) */

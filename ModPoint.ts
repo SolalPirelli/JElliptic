@@ -40,6 +40,9 @@ class ModPoint {
 
     /** O(1) */
     negate(): ModPoint {
+        if (this == ModPoint.INF) {
+            return this;
+        }
         return ModPoint.fromModNumbers(this._x, this._y.negate(), this._curve);
     }
 
@@ -137,6 +140,17 @@ class ModPoint {
             return 0;
         }
         return this._x.value.partition(n);
+    }
+
+    compareY(other: ModPoint): number {
+        if (this == ModPoint.INF) {
+            return other == ModPoint.INF ? 0 : 1;
+        }
+        if (other == ModPoint.INF) {
+            return -1;
+        }
+
+        return this._y.compare(other._y);
     }
 
     /** O(min(this.x.value.digits, other.x.value.digits) + min(this.y.value.digits, other.y.value.digits)) */

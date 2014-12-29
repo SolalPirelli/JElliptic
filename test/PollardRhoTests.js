@@ -42,6 +42,7 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModPoint", "ModCurve",
                 this.result = null;
             }
             ComputingResultSink.prototype.send = function (u, v, p) {
+                console.log("received " + p);
                 var ps = p.toString();
                 if (this._map[ps] == undefined) {
                     this._map[ps] = new Result(u, v, p);
@@ -62,13 +63,13 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModPoint", "ModCurve",
             }
             test(name, function () {
                 var sink = new StoreResultSink();
-                PollardRho.run(config, sink);
+                PollardRho.runLimited(config, sink);
 
                 equal(sink.results, expected);
             });
         }
 
-        function result(configName, points, tableSeed, tableLength, walksCount, useNegationMap, distinguishedMask) {
+        function result(configName, points, tableSeed, tableLength, walksCount) {
             var sink = new ComputingResultSink();
             var curve = new ModCurve(BigInteger.parse(points.a), BigInteger.parse(points.b), BigInteger.parse(points.n), BigInteger.parse(points.order));
             var config = {
@@ -78,12 +79,14 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModPoint", "ModCurve",
                 additionTableSeed: tableSeed,
                 additionTableLength: tableLength,
                 parrallelWalksCount: walksCount,
-                useNegationMap: useNegationMap,
-                distinguishedPointMask: BigInteger.parse(distinguishedMask)
+                distinguishedPointMask: BigInteger.parse("0"),
+                computePointsUniqueFraction: true,
+                checkCyclePeriod: tableLength,
+                checkCycleLength: tableLength
             };
 
             test(configName + ": " + points.expected + " * " + config.generator + " = " + config.target + " on " + config.curve, function () {
-                PollardRho.run(config, sink);
+                PollardRho.runLimited(config, sink);
                 ok(sink.result.eq(ModNumber.create(BigInteger.parse(points.expected), curve.order)));
             });
         }
@@ -96,10 +99,10 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModPoint", "ModCurve",
             ];
 
             correctResults.forEach(function (r) {
-                return result("1 walk", r, 0, 64, 1, true, "1");
+                return result("1 walk", r, 0, 64, 1);
             });
             correctResults.forEach(function (r) {
-                return result("2 walks", r, 0, 64, 2, true, "1");
+                return result("2 walks", r, 0, 64, 2);
             });
         }
         PollardRhoTests.run = run;

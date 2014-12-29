@@ -3,39 +3,51 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>JElliptic v0.000001</title>
+    <title>JElliptic</title>
     
-    <!-- TEMP -->
-    <script type="text/javascript" src="BigInteger.js"></script>
-
-    <script type="text/javascript" src="lib/jquery.min.js"></script>
-    <script type="text/javascript" data-main="app" src="lib/require.js"></script>
+    <script type="text/javascript" data-main="index" src="lib/require.js"></script>
 </head>
     <body>
         <a href="./test/test.html">Run tests</a>
         <br />
         <a href="./bench/bench.html">Run benchmarks</a>
+
         <br />
         <br />
 
         Curve: 
         y²
         = x³
-        + <input id="a" type="number" value="0" /> · x 
-        + <input id="b" type="number" value="3" /> 
-        (mod <input id="n" type="number" value="31" />)
-        with order <input id="order" type="number" value="31" />
-
+        + <input id="a" type="number" /> · x 
+        + <input id="b" type="number" /> 
+        (mod <input id="n" type="number" />)
+        with order <input id="order" type="number" />
+        <br />
+        G: <input id="gx" type="number" />, <input id="gy" type="number" />
+        <br />
+        H: <input id="hx" type="number" />, <input id="hy" type="number" />
         <br />
 
-        G: <input id="gx" type="number" value="11" />, <input id="gy" type="number" value="1" />
+        <button id="useSmall">Small curve</button>
+        <button id="useLarge">Large curve</button>
 
         <br />
-
-        H: <input id="hx" type="number" value="23" />, <input id="hy" type="number" value="24" />
-
         <br />
 
-        <button id="button">Start Pollard Rho</button>
+        Config:
+        <br />
+        Table seed: <input id="tableSeed" type="number" />, length: <input id="tableLength" type="number" />
+        <br />
+        Number of walks: <input id="walksCount" type="number" />
+        <br />
+        AND mask for distinguished points: <input id="mask" type="number" />
+        <br />
+        Cycle detection every: <input id="cyclePeriod" type="number" /> steps, for a duration of <input id="cycleLength" type="number" /> steps.
+        
+        <br />
+        <br />
+
+        <button id="start">Start Pollard Rho</button>
+        <button id="cancel">Cancel</button>
     </body>
 </html>
