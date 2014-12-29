@@ -62,6 +62,7 @@ module PollardRhoTests {
         result: ModNumber = null;
 
         send(u: ModNumber, v: ModNumber, p: ModPoint): void {
+            console.log("received " + p);
             var ps = p.toString();
             if (this._map[ps] == undefined) {
                 this._map[ps] = new Result(u, v, p);
@@ -86,8 +87,7 @@ module PollardRhoTests {
     function result(configName: string,
         points: NonAlgorithmicConfig,
         tableSeed: number, tableLength: number,
-        walksCount: number,
-        distinguishedMask: string) {
+        walksCount: number) {
         var sink = new ComputingResultSink();
         var curve = new ModCurve(BigInteger.parse(points.a), BigInteger.parse(points.b), BigInteger.parse(points.n), BigInteger.parse(points.order));
         var config = {
@@ -97,9 +97,9 @@ module PollardRhoTests {
             additionTableSeed: tableSeed,
             additionTableLength: tableLength,
             parrallelWalksCount: walksCount,
-            distinguishedPointMask: BigInteger.parse(distinguishedMask),
-            computePointsUniqueFraction: false,
-            checkCyclePeriod: tableLength * 2,
+            distinguishedPointMask: BigInteger.parse("0"),
+            computePointsUniqueFraction: true,
+            checkCyclePeriod: tableLength,
             checkCycleLength: tableLength
         };
 
@@ -120,8 +120,8 @@ module PollardRhoTests {
                 "10") // Expected result
         ];
 
-        correctResults.forEach(r => result("1 walk", r, 0, 64, 1, "1"));
-        correctResults.forEach(r => result("2 walks", r, 0, 64, 2, "1"));
+        correctResults.forEach(r => result("1 walk", r, 0, 64, 1));
+        correctResults.forEach(r => result("2 walks", r, 0, 64, 2));
     }
 }
 

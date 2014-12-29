@@ -17,16 +17,11 @@ module PollardRho {
             config.parrallelWalksCount == 1 ?
             new SingleCurveWalk(config, table) : new MultiCurveWalk(config, table);
 
-        var checkCycleIndex = 0;
-
         while (true) {
-            while (checkCycleIndex != config.checkCyclePeriod) {
+            for (var n = 0; n < config.checkCyclePeriod; n++) {
                 walk.step();
                 walk.send(resultSink);
-                checkCycleIndex++;
             }
-
-            checkCycleIndex = 0;
 
             var encountered = new ModPointSet();
             for (var n = 0; n < config.checkCycleLength; n++) {
@@ -41,7 +36,7 @@ module PollardRho {
         }
     }
 
-    // For tests, a version of run that finishes after a little while
+    // For tests, a version of run that finishes after a little while, and continuously checks for cycles
     export function runLimited(config: IConfig, resultSink: IResultSink): void {
         var table = new Addition.Table(config);
 
@@ -49,9 +44,22 @@ module PollardRho {
             config.parrallelWalksCount == 1 ?
             new SingleCurveWalk(config, table) : new MultiCurveWalk(config, table);
 
-        for (var n = 0; n < 100; n++) {
-            walk.step();
-            walk.send(resultSink);
+        for (var x = 0; x < 100; x++) {
+            for (var n = 0; n < config.checkCyclePeriod; n++) {
+                walk.step();
+                walk.send(resultSink);
+            }
+
+            var encountered = new ModPointSet();
+            for (var n = 0; n < config.checkCycleLength; n++) {
+                walk.step();
+                walk.send(resultSink);
+
+                if (!walk.addTo(encountered)) {
+                    walk.escape();
+                    break;
+                }
+            }
         }
     }
 
@@ -177,42 +185,36 @@ module PollardRho {
         }
 
         step(): void {
-            var x = Array<ModPointAddPartialResult>(this._walks.length);
+            var x = Array<ModPointAddPartialResult>();
+            var unfinishedWalks = new Array<SingleCurveWalk>();
 
             for (var n = 0; n < this._walks.length; n++) {
-                x[n] = this._walks[n].beginStep();
-            }
-
-            // Bit of a hack here, since some x[n] need not be inverted (the result could already be computed, without inversion)
-            // so we have to keep track both of the actual iterating index from x[],
-            // and of the one from the new arrays that may contain less elements
-
-            var a = Array<ModNumber>();
-            a[0] = x[0].denominator;
-            for (var n = 1, realN = n; n < this._walks.length; n++) {
-                if (x[n] != null) {
-                    a[realN] = a[realN - 1].mul(x[n].denominator);
-                    realN++;
+                var result = this._walks[n].beginStep();
+                if (result != null) {
+                    x.push(result);
+                    unfinishedWalks.push(this._walks[n]);
                 }
             }
 
-            var xinv = Array<ModNumber>(a.length);
-            var ainv = Array<ModNumber>(a.length);
-            ainv[a.length - 1] = a[a.length - 1].invert();
-            for (var n = this._walks.length - 1, realN = ainv.length - 1; realN > 0; n--) {
-                if (x[n] != null) {
-                    xinv[realN] = ainv[realN].mul(a[realN - 1]);
-                    ainv[realN - 1] = ainv[realN].mul(x[n].denominator);
-                    realN--;
+            if (unfinishedWalks.length != 0) {
+                var a = Array<ModNumber>();
+                a[0] = x[0].denominator;
+                for (var n = 1; n < unfinishedWalks.length; n++) {
+                    a[n] = a[n - 1].mul(x[n].denominator);
                 }
-            }
-            xinv[0] = ainv[0];
 
-            for (var n = 0, realN = 0; n < this._walks.length; n++) {
-                if (x[n] != null) {
-                    var lambda = x[n].numerator.mul(xinv[realN]);
-                    this._walks[n].endStep(lambda);
-                    realN++;
+                var xinv = Array<ModNumber>(a.length);
+                var ainv = Array<ModNumber>(a.length);
+                ainv[a.length - 1] = a[a.length - 1].invert();
+                for (var n = unfinishedWalks.length - 1; n > 0; n--) {
+                    xinv[n] = ainv[n].mul(a[n - 1]);
+                    ainv[n - 1] = ainv[n].mul(x[n].denominator);
+                }
+                xinv[0] = ainv[0];
+
+                for (var n = 0; n < unfinishedWalks.length; n++) {
+                    var lambda = x[n].numerator.mul(xinv[n]);
+                    unfinishedWalks[n].endStep(lambda);
                 }
             }
         }
