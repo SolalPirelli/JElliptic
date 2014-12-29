@@ -80,8 +80,7 @@ module PollardRho {
         private _u: ModNumber;
         private _v: ModNumber;
         private _current: ModPoint;
-
-        private _currentEntry: Addition.TableEntry;
+        private _currentIndex: number;
 
         private _allPoints: ModPointSet;
 
@@ -118,10 +117,10 @@ module PollardRho {
 
         step() {
             var index = this._current.partition(this._table.length);
-            this._currentEntry = this._table.at(index);
-            this._u = this._u.add(this._currentEntry.u);
-            this._v = this._v.add(this._currentEntry.v);
-            this.setCurrent(this._current.add(this._currentEntry.p));
+            var entry = this._table.at(index);
+
+            var candidate = this._current.add(entry.p);
+            this.setCurrent(candidate, entry.u, entry.v);
         }
 
         addTo(pointSet: ModPointSet) {
@@ -129,7 +128,7 @@ module PollardRho {
         }
 
         escape() {
-            this.setCurrent(this._current.add(this._current));
+            this.setCurrent(this._current.add(this._current), this._u, this._v);
         }
 
         send(sink: IResultSink): void {
@@ -145,32 +144,39 @@ module PollardRho {
         /** If the result can already be computed, returns null; endStep must then not be called. */
         beginStep(): ModPointAddPartialResult {
             var index = this._current.partition(this._table.length);
-            this._currentEntry = this._table.at(index);
-            this._u = this._u.add(this._currentEntry.u);
-            this._v = this._v.add(this._currentEntry.v);
-            var partialResult = this._current.beginAdd(this._currentEntry.p);
+            var entry = this._table.at(index);
+
+            var partialResult = this._current.beginAdd(entry.p);
             if (partialResult.result == undefined) {
                 return partialResult;
             }
-            this.setCurrent(partialResult.result);
+            this.setCurrent(partialResult.result, entry.u, entry.v);
             return null;
         }
 
         endStep(lambda: ModNumber): void {
-            this.setCurrent(this._current.endAdd(this._currentEntry.p, lambda));
+            var index = this._current.partition(this._table.length);
+            var entry = this._table.at(index);
+            this.setCurrent(this._current.endAdd(entry.p, lambda), entry.u, entry.v);
         }
 
-        private setCurrent(point: ModPoint): void {
-            var reflected = point.negate();
-            if (point.compareY(reflected) == 1) {
+        private setCurrent(candidate: ModPoint, u: ModNumber, v: ModNumber): void {
+            var reflected = candidate.negate();
+
+            this._u = this._u.add(u);
+            this._v = this._v.add(v);
+
+            if (candidate.compareY(reflected) == -1) {
                 // take the smallest y
-                point = reflected;
+                candidate = reflected;
+                this._u = this._u.negate();
+                this._v = this._v.negate();
             }
 
             if (this._config.computePointsUniqueFraction) {
-                this._allPoints.add(point);
+                this._allPoints.add(candidate);
             }
-            this._current = point;
+            this._current = candidate;
         }
     }
 
