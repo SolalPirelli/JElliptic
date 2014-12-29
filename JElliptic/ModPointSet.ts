@@ -1,12 +1,18 @@
 ﻿import ModPoint = require("ModPoint");
 
 class ModPointSet {
-    private _points: ModPoint[];
+    private static BUCKET_COUNT = 32;
+
+    private _buckets: ModPoint[][];
     private _totalCount: number;
     private _duplicatesCount: number;
 
     constructor() {
-        this._points = [];
+        this._buckets = [];
+        for (var n = 0; n < ModPointSet.BUCKET_COUNT; n++) {
+            this._buckets[n] = new Array<ModPoint>();
+        }
+
         this._totalCount = 0;
         this._duplicatesCount = 0;
     }
@@ -16,8 +22,10 @@ class ModPointSet {
     }
 
     contains(point: ModPoint): boolean {
-        for (var n = 0; n < this._points.length; n++) {
-            if (point.eq(this._points[n])) {
+        var hash = point.x.value.partition(ModPointSet.BUCKET_COUNT);
+        var bucket = this._buckets[hash];
+        for (var n = 0; n < bucket.length; n++) {
+            if (point.eq(bucket[n])) {
                 return true;
             }
         }
@@ -32,7 +40,8 @@ class ModPointSet {
             return false;
         }
 
-        this._points.push(point);
+        var hash = point.x.value.partition(ModPointSet.BUCKET_COUNT);
+        this._buckets[hash].push(point);
         return true;
     }
 }

@@ -53,6 +53,7 @@
     <TypeScriptCompile Include="test\BigIntegerTests.ts" />
     <TypeScriptCompile Include="test\lib\qunit.d.ts" />
     <TypeScriptCompile Include="test\ModNumberTests.ts" />
+    <TypeScriptCompile Include="test\ModPointSetTests.ts" />
     <TypeScriptCompile Include="test\ModPointTests.ts" />
     <TypeScriptCompile Include="test\PollardRhoTests.ts" />
     <TypeScriptCompile Include="test\test.ts" />
