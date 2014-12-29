@@ -41,7 +41,7 @@ module PollardRho {
         }
     }
 
-    // For unit tests, a version of run that finishes after a little while
+    // For tests, a version of run that finishes after a little while
     export function runLimited(config: IConfig, resultSink: IResultSink): void {
         var table = new Addition.Table(config);
 
