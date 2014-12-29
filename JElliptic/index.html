@@ -11,6 +11,7 @@
         <a href="./test/test.html">Run tests</a>
         <br />
         <a href="./bench/bench.html">Run benchmarks</a>
+
         <br />
         <br />
 
@@ -21,20 +22,29 @@
         + <input id="b" type="number" /> 
         (mod <input id="n" type="number" />)
         with order <input id="order" type="number" />
-
         <br />
-
         G: <input id="gx" type="number" />, <input id="gy" type="number" />
-
         <br />
-
         H: <input id="hx" type="number" />, <input id="hy" type="number" />
-
         <br />
 
         <button id="useSmall">Small curve</button>
         <button id="useLarge">Large curve</button>
 
+        <br />
+        <br />
+
+        Config:
+        <br />
+        Table seed: <input id="tableSeed" type="number" />, length: <input id="tableLength" type="number" />
+        <br />
+        Number of walks: <input id="walksCount" type="number" />
+        <br />
+        AND mask for distinguished points: <input id="mask" type="number" />
+        <br />
+        Cycle detection every: <input id="cyclePeriod" type="number" /> steps, for a duration of <input id="cycleLength" type="number" /> steps.
+        
+        <br />
         <br />
 
         <button id="start">Start Pollard Rho</button>

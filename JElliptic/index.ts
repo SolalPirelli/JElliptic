@@ -4,6 +4,10 @@ function value(elemName: string): string {
     return (<HTMLInputElement> document.getElementById(elemName)).value;
 }
 
+function intValue(elemName: string): number {
+    return parseInt(value(elemName));
+}
+
 function setValue(elemName: string, value: string): void {
     (<HTMLInputElement> document.getElementById(elemName)).value = value;
 }
@@ -30,7 +34,14 @@ function setLargeCurve(): void {
     setValue("hy", "3846759606494706724286139623885544");
 }
 
-setSmallCurve(); // by default
+// Default values
+setSmallCurve();
+setValue("tableSeed", "0");
+setValue("tableLength", "128");
+setValue("walksCount", "1");
+setValue("mask", "0");
+setValue("cycleLength", "256");
+setValue("cyclePeriod", "128");
 
 document.getElementById("useSmall").onclick = setSmallCurve;
 document.getElementById("useLarge").onclick = setLargeCurve;
@@ -47,13 +58,13 @@ document.getElementById("start").onclick = () => {
         generatorY: value("gy"),
         targetX: value("hx"),
         targetY: value("hy"),
-        additionTableSeed: 0,
-        additionTableLength: 128,
-        parrallelWalksCount: 1,
-        distinguishedPointMask: "0",
+        additionTableSeed: intValue("tableSeed"),
+        additionTableLength: intValue("tableLength"),
+        parrallelWalksCount: intValue("walksCount"),
+        distinguishedPointMask: value("mask"),
         computePointsUniqueFraction: true,
-        checkCycleLength: 256,
-        checkCyclePeriod: 128
+        checkCycleLength: intValue("cycleLength"),
+        checkCyclePeriod: intValue("cyclePeriod")
     }
 
     if (worker != null) {
