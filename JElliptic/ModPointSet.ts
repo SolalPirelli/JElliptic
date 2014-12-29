@@ -4,6 +4,7 @@ class ModPointSet {
     private static BUCKET_COUNT = 32;
 
     private _buckets: ModPoint[][];
+    private _containsInfinity: boolean;
     private _totalCount: number;
     private _duplicatesCount: number;
 
@@ -13,6 +14,7 @@ class ModPointSet {
             this._buckets[n] = new Array<ModPoint>();
         }
 
+        this._containsInfinity = false;
         this._totalCount = 0;
         this._duplicatesCount = 0;
     }
@@ -22,6 +24,10 @@ class ModPointSet {
     }
 
     contains(point: ModPoint): boolean {
+        if (point == ModPoint.INFINITY) {
+            return this._containsInfinity;
+        }
+
         var hash = point.x.value.partition(ModPointSet.BUCKET_COUNT);
         var bucket = this._buckets[hash];
         for (var n = 0; n < bucket.length; n++) {
@@ -38,6 +44,11 @@ class ModPointSet {
         if (this.contains(point)) {
             this._duplicatesCount++;
             return false;
+        }
+
+        if (point == ModPoint.INFINITY) {
+            this._containsInfinity = true;
+            return true;
         }
 
         var hash = point.x.value.partition(ModPointSet.BUCKET_COUNT);
