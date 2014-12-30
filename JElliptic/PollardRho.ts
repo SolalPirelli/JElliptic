@@ -72,6 +72,7 @@ module PollardRho {
         private _currentIndex: number;
 
         private _allPoints: ModPointSet;
+        private _reductionAdd: number;
 
 
         constructor(config: IConfig, table: Addition.Table) {
@@ -87,6 +88,8 @@ module PollardRho {
             if (config.computePointsUniqueFraction) {
                 this._allPoints = new ModPointSet();
             }
+
+            this._reductionAdd = 0;
 
             SingleCurveWalk.INDEX++;
         }
@@ -113,11 +116,16 @@ module PollardRho {
         }
 
         send(sink: IResultSink): void {
+            if (this._reductionAdd != 0) {
+                // we're in the middle of a cycle reduction, the current point isn't valid
+                return;
+            }
+
             if (this._current != ModPoint.INFINITY && (this._current.x.value.and(this._config.distinguishedPointMask)).compare(this._config.distinguishedPointMask) == 0) {
                 sink.send(this._u, this._v, this._current);
 
                 if (this._config.computePointsUniqueFraction) {
-                    console.log("% of unique points for walk " + this._index + ": " + (this._allPoints.uniqueFraction * 100.0));
+                    console.log(this._allPoints.toString());
                 }
             }
         }
@@ -136,9 +144,26 @@ module PollardRho {
         }
 
         endStep(lambda: ModNumber): void {
-            var index = this._current.partition(this._table.length);
+            var index = (this._current.partition(this._table.length) + this._reductionAdd) % this._table.length;
             var entry = this._table.at(index);
             this.setCurrent(this._current.endAdd(entry.p, lambda), entry.u, entry.v);
+
+            if (this._config.computePointsUniqueFraction) {
+                this._allPoints.add(this._current);
+            }
+
+            var newIndex = this._current.partition(this._table.length);
+            if (newIndex == index) {
+                this._reductionAdd++;
+
+                // this is extremely unlikely, but it can happen
+                if (this._reductionAdd == this._table.length) {
+                    this.escape();
+                    this._reductionAdd = 0;
+                }
+            } else {
+                this._reductionAdd = 0;
+            }
         }
 
         private setCurrent(candidate: ModPoint, u: ModNumber, v: ModNumber): void {
@@ -154,9 +179,6 @@ module PollardRho {
                 this._v = this._v.negate();
             }
 
-            if (this._config.computePointsUniqueFraction) {
-                this._allPoints.add(candidate);
-            }
             this._current = candidate;
         }
     }
