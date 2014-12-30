@@ -10,14 +10,6 @@
             this._totalCount = 0;
             this._duplicatesCount = 0;
         }
-        Object.defineProperty(ModPointSet.prototype, "uniqueFraction", {
-            get: function () {
-                return 1.0 - (this._duplicatesCount / this._totalCount);
-            },
-            enumerable: true,
-            configurable: true
-        });
-
         ModPointSet.prototype.contains = function (point) {
             if (point == ModPoint.INFINITY) {
                 return this._containsInfinity;
@@ -49,6 +41,10 @@
             var hash = point.x.value.partition(ModPointSet.BUCKET_COUNT);
             this._buckets[hash].push(point);
             return true;
+        };
+
+        ModPointSet.prototype.toString = function () {
+            return this._totalCount + " points, " + (this._duplicatesCount / this._totalCount * 100) + "% of which are duplicates.";
         };
         ModPointSet.BUCKET_COUNT = 32;
         return ModPointSet;

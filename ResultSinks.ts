@@ -22,7 +22,7 @@ module ResultSinks {
     export function debug(): IResultSink {
         return {
             send(u: ModNumber, v: ModNumber, p: ModPoint): void {
-                console.log("u = " + u + ", v = " + v + ", p = " + p);
+                //console.log("u = " + u + ", v = " + v + ", p = " + p);
             }
         };
     }

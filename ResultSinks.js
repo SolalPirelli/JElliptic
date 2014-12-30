@@ -21,7 +21,7 @@
         function debug() {
             return {
                 send: function (u, v, p) {
-                    console.log("u = " + u + ", v = " + v + ", p = " + p);
+                    //console.log("u = " + u + ", v = " + v + ", p = " + p);
                 }
             };
         }

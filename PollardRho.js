@@ -6,7 +6,7 @@
         function run(config, resultSink) {
             var table = new Addition.Table(config);
 
-            var walk = config.parrallelWalksCount == 1 ? new SingleCurveWalk(config, table) : new MultiCurveWalk(config, table);
+            var walk = new MultiCurveWalk(config, table);
 
             while (true) {
                 for (var n = 0; n < config.checkCyclePeriod; n++) {
@@ -32,7 +32,7 @@
         function runLimited(config, resultSink) {
             var table = new Addition.Table(config);
 
-            var walk = config.parrallelWalksCount == 1 ? new SingleCurveWalk(config, table) : new MultiCurveWalk(config, table);
+            var walk = new MultiCurveWalk(config, table);
 
             for (var x = 0; x < 100; x++) {
                 for (var n = 0; n < config.checkCyclePeriod; n++) {
@@ -69,6 +69,8 @@
                     this._allPoints = new ModPointSet();
                 }
 
+                this._reductionAdd = 0;
+
                 SingleCurveWalk.INDEX++;
             }
             Object.defineProperty(SingleCurveWalk.prototype, "u", {
@@ -95,14 +97,6 @@
                 configurable: true
             });
 
-            SingleCurveWalk.prototype.step = function () {
-                var index = this._current.partition(this._table.length);
-                var entry = this._table.at(index);
-
-                var candidate = this._current.add(entry.p);
-                this.setCurrent(candidate, entry.u, entry.v);
-            };
-
             SingleCurveWalk.prototype.addTo = function (pointSet) {
                 return pointSet.add(this._current);
             };
@@ -112,11 +106,16 @@
             };
 
             SingleCurveWalk.prototype.send = function (sink) {
+                if (this._reductionAdd != 0) {
+                    // we're in the middle of a cycle reduction, the current point isn't valid
+                    return;
+                }
+
                 if (this._current != ModPoint.INFINITY && (this._current.x.value.and(this._config.distinguishedPointMask)).compare(this._config.distinguishedPointMask) == 0) {
                     sink.send(this._u, this._v, this._current);
 
                     if (this._config.computePointsUniqueFraction) {
-                        console.log("% of unique points for walk " + this._index + ": " + (this._allPoints.uniqueFraction * 100.0));
+                        console.log(this._allPoints.toString());
                     }
                 }
             };
@@ -135,9 +134,26 @@
             };
 
             SingleCurveWalk.prototype.endStep = function (lambda) {
-                var index = this._current.partition(this._table.length);
+                var index = (this._current.partition(this._table.length) + this._reductionAdd) % this._table.length;
                 var entry = this._table.at(index);
                 this.setCurrent(this._current.endAdd(entry.p, lambda), entry.u, entry.v);
+
+                if (this._config.computePointsUniqueFraction) {
+                    this._allPoints.add(this._current);
+                }
+
+                var newIndex = this._current.partition(this._table.length);
+                if (newIndex == index) {
+                    this._reductionAdd++;
+
+                    // this is extremely unlikely, but it can happen
+                    if (this._reductionAdd == this._table.length) {
+                        this.escape();
+                        this._reductionAdd = 0;
+                    }
+                } else {
+                    this._reductionAdd = 0;
+                }
             };
 
             SingleCurveWalk.prototype.setCurrent = function (candidate, u, v) {
@@ -153,9 +169,6 @@
                     this._v = this._v.negate();
                 }
 
-                if (this._config.computePointsUniqueFraction) {
-                    this._allPoints.add(candidate);
-                }
                 this._current = candidate;
             };
             SingleCurveWalk.INDEX = 0;

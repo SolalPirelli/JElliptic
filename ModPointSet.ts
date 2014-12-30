@@ -19,10 +19,6 @@ class ModPointSet {
         this._duplicatesCount = 0;
     }
 
-    get uniqueFraction() {
-        return 1.0 - (this._duplicatesCount / this._totalCount);
-    }
-
     contains(point: ModPoint): boolean {
         if (point == ModPoint.INFINITY) {
             return this._containsInfinity;
@@ -54,6 +50,10 @@ class ModPointSet {
         var hash = point.x.value.partition(ModPointSet.BUCKET_COUNT);
         this._buckets[hash].push(point);
         return true;
+    }
+
+    toString(): string {
+        return this._totalCount + " points, " + (this._duplicatesCount / this._totalCount * 100) + "% of which are duplicates.";
     }
 }
 

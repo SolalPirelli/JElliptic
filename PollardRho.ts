@@ -13,9 +13,7 @@ module PollardRho {
     export function run(config: IConfig, resultSink: IResultSink): void {
         var table = new Addition.Table(config);
 
-        var walk: CurveWalk =
-            config.parrallelWalksCount == 1 ?
-            new SingleCurveWalk(config, table) : new MultiCurveWalk(config, table);
+        var walk = new MultiCurveWalk(config, table);
 
         while (true) {
             for (var n = 0; n < config.checkCyclePeriod; n++) {
@@ -40,9 +38,7 @@ module PollardRho {
     export function runLimited(config: IConfig, resultSink: IResultSink): void {
         var table = new Addition.Table(config);
 
-        var walk: CurveWalk =
-            config.parrallelWalksCount == 1 ?
-            new SingleCurveWalk(config, table) : new MultiCurveWalk(config, table);
+        var walk = new MultiCurveWalk(config, table);
 
         for (var x = 0; x < 100; x++) {
             for (var n = 0; n < config.checkCyclePeriod; n++) {
@@ -63,14 +59,7 @@ module PollardRho {
         }
     }
 
-    export interface CurveWalk {
-        step(): void;
-        addTo(pointSet: ModPointSet): boolean;
-        escape(): void;
-        send(sink: IResultSink): void;
-    }
-
-    export class SingleCurveWalk implements CurveWalk {
+    export class SingleCurveWalk {
         private static INDEX = 0;
 
         private _config: IConfig;
@@ -83,6 +72,7 @@ module PollardRho {
         private _currentIndex: number;
 
         private _allPoints: ModPointSet;
+        private _reductionAdd: number;
 
 
         constructor(config: IConfig, table: Addition.Table) {
@@ -98,6 +88,8 @@ module PollardRho {
             if (config.computePointsUniqueFraction) {
                 this._allPoints = new ModPointSet();
             }
+
+            this._reductionAdd = 0;
 
             SingleCurveWalk.INDEX++;
         }
@@ -115,14 +107,6 @@ module PollardRho {
             return this._current;
         }
 
-        step() {
-            var index = this._current.partition(this._table.length);
-            var entry = this._table.at(index);
-
-            var candidate = this._current.add(entry.p);
-            this.setCurrent(candidate, entry.u, entry.v);
-        }
-
         addTo(pointSet: ModPointSet) {
             return pointSet.add(this._current);
         }
@@ -132,11 +116,16 @@ module PollardRho {
         }
 
         send(sink: IResultSink): void {
+            if (this._reductionAdd != 0) {
+                // we're in the middle of a cycle reduction, the current point isn't valid
+                return;
+            }
+
             if (this._current != ModPoint.INFINITY && (this._current.x.value.and(this._config.distinguishedPointMask)).compare(this._config.distinguishedPointMask) == 0) {
                 sink.send(this._u, this._v, this._current);
 
                 if (this._config.computePointsUniqueFraction) {
-                    console.log("% of unique points for walk " + this._index + ": " + (this._allPoints.uniqueFraction * 100.0));
+                    console.log(this._allPoints.toString());
                 }
             }
         }
@@ -155,9 +144,26 @@ module PollardRho {
         }
 
         endStep(lambda: ModNumber): void {
-            var index = this._current.partition(this._table.length);
+            var index = (this._current.partition(this._table.length) + this._reductionAdd) % this._table.length;
             var entry = this._table.at(index);
             this.setCurrent(this._current.endAdd(entry.p, lambda), entry.u, entry.v);
+
+            if (this._config.computePointsUniqueFraction) {
+                this._allPoints.add(this._current);
+            }
+
+            var newIndex = this._current.partition(this._table.length);
+            if (newIndex == index) {
+                this._reductionAdd++;
+
+                // this is extremely unlikely, but it can happen
+                if (this._reductionAdd == this._table.length) {
+                    this.escape();
+                    this._reductionAdd = 0;
+                }
+            } else {
+                this._reductionAdd = 0;
+            }
         }
 
         private setCurrent(candidate: ModPoint, u: ModNumber, v: ModNumber): void {
@@ -173,14 +179,11 @@ module PollardRho {
                 this._v = this._v.negate();
             }
 
-            if (this._config.computePointsUniqueFraction) {
-                this._allPoints.add(candidate);
-            }
             this._current = candidate;
         }
     }
 
-    export class MultiCurveWalk implements CurveWalk {
+    export class MultiCurveWalk {
         private _walks: SingleCurveWalk[];
 
         constructor(config: IConfig, table: Addition.Table) {
