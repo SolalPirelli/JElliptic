@@ -1,8 +1,11 @@
-﻿class BigInteger {
-    private static MAX_SAFE_INT = 9007199254740991; // 2^53-1, where 53 is the mantissa size of IEEE-754 double-precision floating point numbers (what JS uses)
-    private static BASE = 10000000; // largest power of 10 smaller than sqrt(MAX_SAFE_INT)/2; also needs to be even
-    private static BASE_LOG10 = Math.floor(Math.log(BigInteger.BASE) / Math.log(10));
+﻿import BigInteger2 = require("BigInteger2");
 
+class BigInteger {
+    private static MAX_SAFE_INT = 9007199254740991; // 2^53-1, where 53 is the mantissa size of IEEE-754 double-precision floating point numbers (what JS uses)
+    // Largest number that is:
+    // - even (for halve())
+    // - smaller than sqrt(MAX_SAFE_INT) (to multiply digits in the safe space)
+    private static BASE = 94906264;
 
     private _isPositive: boolean;
     private _digits: number[]; // base BASE
@@ -44,31 +47,19 @@
             str = str.substring(1);
         }
 
-        var digits = Array<number>();
-        var currentDigit = 0;
-        var currentMul = 1;
-
-        for (var n = str.length - 1; n >= 0; n--) {
-            currentDigit += parseInt(str[n], 10) * currentMul;
-            currentMul *= 10;
-
-            if (currentMul >= BigInteger.BASE) {
-                var nextDigit = Math.floor(currentDigit / BigInteger.BASE);
-                currentDigit %= BigInteger.BASE;
-
-                digits.push(currentDigit);
-
-                currentDigit = nextDigit;
-                currentMul = 1;
-            }
+        var num = BigInteger2.parse(str);
+        var base = BigInteger.fromInt(BigInteger2.BASE);
+        var result = BigInteger.ZERO;
+        var multiplier = BigInteger.ONE;
+        for (var n = 0; n < num._digits.length; n++) {
+            result = result.add(multiplier.singleDigitMul(num._digits[n]));
+            multiplier = multiplier.mul(base);
         }
 
-        if (currentDigit != 0) {
-            digits.push(currentDigit % BigInteger.BASE);
-            digits.push(Math.floor(currentDigit / BigInteger.BASE));
+        if (!isPositive) {
+            result = result.negate();
         }
-
-        return BigInteger.create(isPositive, digits);
+        return result;
     }
 
     get isPositive(): boolean {
@@ -303,18 +294,26 @@
                 }
                 var highDivisor = divisor._digits[divisor._digits.length - 1];
 
-                var guess = Math.ceil(highRemainder / highDivisor);
+                var hi = Math.ceil(highRemainder / highDivisor);
+                var lo = 1;
 
-                var actual: BigInteger;
-                while (guess > 0) {
-                    actual = divisor.singleDigitMul(guess);
-                    if (actual.compareAbs(remainder) < 1) {
-                        break;
+                var result: BigInteger;
+                while (true) {
+                    var guess = Math.floor((hi + lo) / 2);
+                    result = divisor.singleDigitMul(guess);
+
+                    var sub = remainder.sub(result);
+                    if (sub.isPositive) {
+                        if (sub.compare(divisor) == -1) {
+                            break;
+                        }
+                        lo = guess + 1;
+                    } else {
+                        hi = guess;
                     }
-                    guess--;
                 }
 
-                remainder = remainder.sub(actual);
+                remainder = remainder.sub(result);
                 digits.push(guess);
             }
         }
@@ -424,26 +423,19 @@
 
     /** O(this.digits) */
     toString(): string {
-        var padNum = (n: number, len: number): string => {
-            var str = n.toString();
-            while (str.length < len) {
-                str = '0' + str;
-            }
-            return str;
+        var result = BigInteger2.ZERO;
+        var base = BigInteger2.fromInt(BigInteger.BASE);
+        var multiplier = BigInteger2.ONE;
+        for (var n = 0; n < this._digits.length; n++) {
+            var digit = BigInteger2.fromInt(this._digits[n]);
+            result = result.add(digit.mul(multiplier));
+            multiplier = multiplier.mul(base);
         }
-
-        var result = "";
-
-        for (var n = 0; n < this._digits.length - 1; n++) {
-            result = padNum(this._digits[n], BigInteger.BASE_LOG10) + result;
-        }
-        result = this._digits[this._digits.length - 1].toString() + result;
-
+        var str = result.toString();
         if (!this._isPositive) {
-            result = "-" + result;
+            str = "-" + str;
         }
-
-        return result;
+        return str;
     }
 
     /** O(this.digits + n) */
