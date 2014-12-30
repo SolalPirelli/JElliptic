@@ -13,9 +13,7 @@ module PollardRho {
     export function run(config: IConfig, resultSink: IResultSink): void {
         var table = new Addition.Table(config);
 
-        var walk: CurveWalk =
-            config.parrallelWalksCount == 1 ?
-            new SingleCurveWalk(config, table) : new MultiCurveWalk(config, table);
+        var walk = new MultiCurveWalk(config, table);
 
         while (true) {
             for (var n = 0; n < config.checkCyclePeriod; n++) {
@@ -40,9 +38,7 @@ module PollardRho {
     export function runLimited(config: IConfig, resultSink: IResultSink): void {
         var table = new Addition.Table(config);
 
-        var walk: CurveWalk =
-            config.parrallelWalksCount == 1 ?
-            new SingleCurveWalk(config, table) : new MultiCurveWalk(config, table);
+        var walk = new MultiCurveWalk(config, table);
 
         for (var x = 0; x < 100; x++) {
             for (var n = 0; n < config.checkCyclePeriod; n++) {
@@ -63,14 +59,7 @@ module PollardRho {
         }
     }
 
-    export interface CurveWalk {
-        step(): void;
-        addTo(pointSet: ModPointSet): boolean;
-        escape(): void;
-        send(sink: IResultSink): void;
-    }
-
-    export class SingleCurveWalk implements CurveWalk {
+    export class SingleCurveWalk {
         private static INDEX = 0;
 
         private _config: IConfig;
@@ -113,14 +102,6 @@ module PollardRho {
 
         get current(): ModPoint {
             return this._current;
-        }
-
-        step() {
-            var index = this._current.partition(this._table.length);
-            var entry = this._table.at(index);
-
-            var candidate = this._current.add(entry.p);
-            this.setCurrent(candidate, entry.u, entry.v);
         }
 
         addTo(pointSet: ModPointSet) {
@@ -180,7 +161,7 @@ module PollardRho {
         }
     }
 
-    export class MultiCurveWalk implements CurveWalk {
+    export class MultiCurveWalk {
         private _walks: SingleCurveWalk[];
 
         constructor(config: IConfig, table: Addition.Table) {

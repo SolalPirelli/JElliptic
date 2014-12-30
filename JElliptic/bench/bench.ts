@@ -219,7 +219,7 @@ function pollardRhoSuite() {
     var config_walks512 = configWithParrallelWalkCount(512);
     var config_walks1024 = configWithParrallelWalkCount(1024);
     var table = new Addition.Table(config16);
-    var walk1 = new PollardRho.SingleCurveWalk(config_walks1, table);
+    var walk1 = new PollardRho.MultiCurveWalk(config_walks1, table);
     var walk8 = new PollardRho.MultiCurveWalk(config_walks8, table);
     var walk16 = new PollardRho.MultiCurveWalk(config_walks16, table);
     var walk32 = new PollardRho.MultiCurveWalk(config_walks32, table);
