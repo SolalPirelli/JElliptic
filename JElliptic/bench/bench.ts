@@ -189,10 +189,9 @@ function pollardRhoSuite() {
     var config16 = configWithTableLength(16);
     var config64 = configWithTableLength(64);
     var config256 = configWithTableLength(256);
-    // FIXME: Too slow!
-    //s("Initialize an addition table with 16 elements over a 112-bit curve", () => new Addition.Table(config16));
-    //s("Initialize an addition table with 64 elements over a 112-bit curve", () => new Addition.Table(config64));
-    //s("Initialize an addition table with 256 elements over a 112-bit curve", () => new Addition.Table(config256));
+    s("Initialize an addition table with 16 elements over a 112-bit curve", () => new Addition.Table(config16));
+    s("Initialize an addition table with 64 elements over a 112-bit curve", () => new Addition.Table(config64));
+    s("Initialize an addition table with 256 elements over a 112-bit curve", () => new Addition.Table(config256));
 
     function configWithParrallelWalkCount(count: number) {
         return {
