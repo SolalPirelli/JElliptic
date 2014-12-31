@@ -287,33 +287,36 @@ class BigInteger {
             } else {
                 // Since remainder just became bigger than divisor,
                 // its length is either divisor's or one more
-                var highRemainder = remainder._digits[remainder._digits.length - 1];
-                if (remainder._digits.length > divisor._digits.length) {
-                    highRemainder *= BigInteger.BASE;
-                    highRemainder += remainder._digits[remainder._digits.length - 2];
-                }
-                var highDivisor = divisor._digits[divisor._digits.length - 1];
 
-                var hi = Math.ceil(highRemainder / highDivisor);
-                var lo = 1;
-
-                var result: BigInteger;
-                while (true) {
-                    var guess = Math.floor((hi + lo) / 2);
-                    result = divisor.singleDigitMul(guess);
-
-                    var sub = remainder.sub(result);
-                    if (sub.isPositive) {
-                        if (sub.compare(divisor) == -1) {
-                            break;
-                        }
-                        lo = guess + 1;
-                    } else {
-                        hi = guess;
+                var highRemainder: number, highDivisor: number;
+                if (remainder._digits.length > 2) {
+                    highRemainder = remainder._digits[remainder._digits.length - 1] * BigInteger.BASE + remainder._digits[remainder._digits.length - 2];
+                    if (remainder._digits.length > divisor._digits.length) {
+                        highRemainder *= BigInteger.BASE;
+                        highRemainder += remainder._digits[remainder._digits.length - 3];
                     }
+                    highDivisor = divisor._digits[divisor._digits.length - 1] * BigInteger.BASE + divisor._digits[divisor._digits.length - 2];
+                } else {
+                    highRemainder = remainder._digits[remainder._digits.length - 1];
+                    if (remainder._digits.length > divisor._digits.length) {
+                        highRemainder *= BigInteger.BASE;
+                        highRemainder += remainder._digits[remainder._digits.length - 2];
+                    }
+                    highDivisor = divisor._digits[divisor._digits.length - 1];
                 }
 
-                remainder = remainder.sub(result);
+                var guess = Math.ceil(highRemainder / highDivisor);
+
+                var actual: BigInteger;
+                while (guess > 0) {
+                    actual = divisor.singleDigitMul(guess);
+                    if (actual.compareAbs(remainder) < 1) {
+                        break;
+                    }
+                    guess--;
+                }
+
+                remainder = remainder.sub(actual);
                 digits.push(guess);
             }
         }
