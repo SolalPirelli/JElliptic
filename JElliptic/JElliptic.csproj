@@ -32,7 +32,6 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="AdditionTable.ts" />
-    <TypeScriptCompile Include="BigInteger2.ts" />
     <TypeScriptCompile Include="index.ts" />
     <TypeScriptCompile Include="bench\bench.ts" />
     <Content Include="bench\config.js" />

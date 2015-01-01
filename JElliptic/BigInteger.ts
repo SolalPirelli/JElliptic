@@ -1,6 +1,4 @@
-﻿import BigInteger2 = require("BigInteger2");
-
-class BigInteger {
+﻿class BigInteger {
     private static MAX_SAFE_INT = 9007199254740991; // 2^53-1, where 53 is the mantissa size of IEEE-754 double-precision floating point numbers (what JS uses)
     // Largest number that is:
     // - even (for halve())
@@ -47,12 +45,12 @@ class BigInteger {
             str = str.substring(1);
         }
 
-        var num = BigInteger2.parse(str);
-        var base = BigInteger.fromInt(BigInteger2.BASE);
+        var num = SlowBigIntegers.parse(str);
+        var base = BigInteger.fromInt(SlowBigIntegers.BASE);
         var result = BigInteger.ZERO;
         var multiplier = BigInteger.ONE;
-        for (var n = 0; n < num._digits.length; n++) {
-            result = result.add(multiplier.singleDigitMul(num._digits[n]));
+        for (var n = 0; n < num.length; n++) {
+            result = result.add(multiplier.singleDigitMul(num[n]));
             multiplier = multiplier.mul(base);
         }
 
@@ -426,15 +424,15 @@ class BigInteger {
 
     /** O(this.digits) */
     toString(): string {
-        var result = BigInteger2.ZERO;
-        var base = BigInteger2.fromInt(BigInteger.BASE);
-        var multiplier = BigInteger2.ONE;
+        var result = SlowBigIntegers.ZERO;
+        var base = SlowBigIntegers.fromInt(BigInteger.BASE);
+        var multiplier = SlowBigIntegers.ONE;
         for (var n = 0; n < this._digits.length; n++) {
-            var digit = BigInteger2.fromInt(this._digits[n]);
-            result = result.add(digit.mul(multiplier));
-            multiplier = multiplier.mul(base);
+            var digit = SlowBigIntegers.fromInt(this._digits[n]);
+            result = SlowBigIntegers.add(result, SlowBigIntegers.mul(digit, multiplier));
+            multiplier = SlowBigIntegers.mul(multiplier, base);
         }
-        var str = result.toString();
+        var str = SlowBigIntegers.toString(result);
         if (!this._isPositive) {
             str = "-" + str;
         }
@@ -522,6 +520,148 @@ class BigInteger {
         bi._isPositive = isPositive;
         bi._digits = digits;
         return bi;
+    }
+}
+
+/**
+ * This is an implementation of positive big integers, using a base that is a power of 10.
+ * Powers of 10 are extremely convenient as bases to parse and stringify, but they require more space to store big ints, since
+ * they're not as big as what can be used otherwise.
+ * Therefore, this module implements only what's necessary to parse and stringify, 
+ * and BigInteger internally converts when one of these two methods is called.
+ */
+module SlowBigIntegers {
+    export var BASE = 10000000; // largest power of 10 smaller than sqrt(MAX_SAFE_INT)/2; also needs to be even
+    var BASE_LOG10 = Math.floor(Math.log(BASE) / Math.log(10));
+
+    export var ZERO = [0];
+    export var ONE = [1];
+
+    export function fromInt(n: number): number[] {
+        var digits = Array<number>();
+
+        do {
+            var rem = n % BASE;
+            n = Math.floor(n / BASE);
+
+            digits.push(rem);
+        } while (n != 0);
+
+        return digits;
+    }
+
+    export function parse(str: string): number[] {
+        var chunksLength = Math.ceil(str.length / BASE_LOG10);
+        var chunks: string[] = [];
+
+        for (var n = 0; n < chunksLength; n++) {
+            var end = str.length - n * BASE_LOG10;
+            chunks[n] = str.substring(Math.max(0, end - BASE_LOG10), end);
+        }
+
+        return chunks.map(Number);
+    }
+
+    export function add(left: number[], right: number[]): number[] {
+        var digits = Array<number>();
+        var carry = 0;
+
+        var hi = left;
+        var lo = right;
+
+        if (left.length < right.length) {
+            hi = right;
+            lo = left;
+        }
+
+        var n = 0;
+
+        for (; n < lo.length; n++) {
+            var current = hi[n] + lo[n] + carry;
+
+            if (current >= BASE) {
+                carry = 1;
+                current -= BASE;
+            } else {
+                carry = 0;
+            }
+
+            digits[n] = current;
+        }
+
+        for (; carry == 1 && n < hi.length; n++) {
+            var current = hi[n] + carry;
+
+            if (current >= BASE) {
+                carry = 1;
+                current -= BASE;
+            } else {
+                carry = 0;
+            }
+
+            digits[n] = current;
+        }
+
+        if (carry == 0) {
+            for (; n < hi.length; n++) {
+                digits[n] = hi[n];
+            }
+        }
+        else {
+            digits[n] = 1;
+        }
+
+        return digits;
+    }
+
+
+    export function mul(left: number[], right: number[]): number[] {
+        var digits = Array<number>(left.length + right.length);
+        // Initialize all digits, otherwise funky stuff happens with 'undefined'
+        for (var n = 0; n < digits.length; n++) {
+            digits[n] = 0;
+        }
+
+        for (var n = 0; n < left.length; n++) {
+            var carry = 0;
+            for (var k = 0; k < right.length; k++) {
+                var sum = digits[n + k] + left[n] * right[k] + carry;
+                carry = Math.floor(sum / BASE);
+                sum = sum - BASE * carry;
+                digits[n + k] = sum;
+            }
+            if (carry != 0) {
+                // We can safely use = and no + here, as this cell hasn't been set yet
+                digits[n + right.length] = carry;
+            }
+        }
+
+        return digits;
+    }
+
+    export function toString(nums: number[]): string {
+        var padNum = (n: number, len: number): string => {
+            var str = n.toString();
+            while (str.length < len) {
+                str = '0' + str;
+            }
+            return str;
+        }
+
+        // Trim useless 0s
+        var max = nums.length - 1;
+        while (max > 0 && nums[max] == 0) {
+            max--;
+        }
+
+        var result = "";
+
+        for (var n = 0; n < max; n++) {
+            result = padNum(nums[n], BASE_LOG10) + result;
+        }
+        result = nums[max].toString() + result;
+
+        return result;
     }
 }
 
