@@ -14,22 +14,22 @@ class BigInteger {
 
 
     private _isPositive: boolean;
-    private _digits: number[]; // base BASE
+    private _digits: Uint32Array; // base BASE
 
 
-    static MINUS_ONE = new BigInteger(false, [1]);
-    static ZERO = new BigInteger(true, [0]);
-    static ONE = new BigInteger(true, [1]);
-    static TWO = new BigInteger(true, [2]);
+    static MINUS_ONE = new BigInteger(false, new Uint32Array([1]));
+    static ZERO = new BigInteger(true, new Uint32Array([0]));
+    static ONE = new BigInteger(true, new Uint32Array([1]));
+    static TWO = new BigInteger(true, new Uint32Array([2]));
 
     /** Unsafe: does not trim zeroes. */
-    constructor(isPositive: boolean, digits: number[]) {
+    constructor(isPositive: boolean, digits: Uint32Array) {
         this._isPositive = isPositive;
         this._digits = digits;
     }
 
     /** O(digits) */
-    static create(isPositive: boolean, digits: number[]): BigInteger {
+    static create(isPositive: boolean, digits: Uint32Array): BigInteger {
         // Remove useless digits
         var actualLength = digits.length;
         // Boolean NOT on a number also takes care of undefined
@@ -41,7 +41,7 @@ class BigInteger {
             return BigInteger.ZERO;
         }
 
-        return new BigInteger(isPositive, digits.slice(0, actualLength));
+        return new BigInteger(isPositive, digits.subarray(0, actualLength));
     }
 
 
@@ -65,7 +65,7 @@ class BigInteger {
         }
 
         var digitsCount = Math.ceil(Math.log(num) / BigInteger.BASE_LOG);
-        var digits = Array<number>(digitsCount);
+        var digits = new Uint32Array(digitsCount);
 
         for (var i = 0; i < digitsCount; i++) {
             var rem = num % BigInteger.BASE;
@@ -119,7 +119,7 @@ class BigInteger {
     /** O(this.digits)
         Rounds down. */
     halve(): BigInteger {
-        var digits = new Array<number>(this._digits.length);
+        var digits = new Uint32Array(this._digits.length);
         var hasRest = false;
         for (var n = this._digits.length - 1; n >= 0; n--) {
             digits[n] = this._digits[n];
@@ -147,8 +147,6 @@ class BigInteger {
             return this.sub(other.negate());
         }
 
-        var digits = Array<number>();
-        var carry = 0;
 
         var hi = this._digits;
         var lo = other._digits;
@@ -157,6 +155,9 @@ class BigInteger {
             hi = other._digits;
             lo = this._digits;
         }
+
+        var digits = new Uint32Array(hi.length + 1);
+        var carry = 0;
 
         var n = 0;
 
@@ -219,6 +220,7 @@ class BigInteger {
             hi = other.abs();
             lo = this.abs();
         }
+
         // Then, they need to be ordered
         var absCompResult = hi.compareAbs(lo);
         var resultIsPositive = true;
@@ -231,7 +233,7 @@ class BigInteger {
             lo = temp;
         }
 
-        var digits = Array<number>();
+        var digits = new Uint32Array(hi._digits.length);
         var carry = 0;
         var n = 0;
 
@@ -270,7 +272,7 @@ class BigInteger {
 
     /** O(max(this.digits, other.digits)^log_2(3)) */
     mul(other: BigInteger): BigInteger {
-        var digits = Array<number>(this._digits.length + other._digits.length);
+        var digits = new Uint32Array(this._digits.length + other._digits.length);
         // Initialize all digits, otherwise funky stuff happens with 'undefined'
         for (var n = 0; n < digits.length; n++) {
             digits[n] = 0;
@@ -315,13 +317,11 @@ class BigInteger {
                 }
         }
 
-        var digits = new Array<number>();
+        var digits = new Uint32Array(dividend._digits.length);
         var remainder = BigInteger.ZERO;
         for (var n = dividend._digits.length - 1; n >= 0; n--) {
             remainder = remainder.pushRight(dividend._digits[n]);
-            if (remainder.compare(divisor) == -1) {
-                digits[n] = 0;
-            } else {
+            if (remainder.compare(divisor) != -1) {
                 // Since remainder just became bigger than divisor,
                 // its length is either divisor's or one more
 
@@ -440,9 +440,10 @@ class BigInteger {
 
     /** O(min(this.digits, other.digits)) */
     and(other: BigInteger): BigInteger {
-        var digits = Array<number>();
+        var min = Math.min(this._digits.length, other._digits.length);
+        var digits = new Uint32Array(min);
 
-        for (var n = 0; n < this._digits.length && n < other._digits.length; n++) {
+        for (var n = 0; n < min; n++) {
             digits[n] = this._digits[n] & other._digits[n];
         }
 
@@ -479,7 +480,7 @@ class BigInteger {
 
     /** O(this.digits + n) */
     private leftShift(n: number): BigInteger {
-        var digits = new Array(this._digits.length + n);
+        var digits = new Uint32Array(this._digits.length + n);
 
         for (var i = 0; i < n; i++) {
             digits[i] = 0;
@@ -494,7 +495,7 @@ class BigInteger {
 
     /** O(this.digits + n) */
     private pushRight(n: number): BigInteger {
-        var digits = new Array(this._digits.length + 1);
+        var digits = new Uint32Array(this._digits.length + 1);
 
         digits[0] = n;
         for (var i = 0; i < this._digits.length; i++) {
@@ -506,7 +507,7 @@ class BigInteger {
 
     /** O(this.digits + n) */
     private rightShiftAbs(n: number): BigInteger {
-        var digits = new Array(this._digits.length - n);
+        var digits = new Uint32Array(this._digits.length - n);
 
         for (var i = 0; i < digits.length; i++) {
             digits[i] = this._digits[i + n];
@@ -517,7 +518,7 @@ class BigInteger {
 
     /** O(digits). Assumes that mul is positive. */
     private singleDigitMul(mul: number): BigInteger {
-        var digits = Array<number>(this._digits.length + 1);
+        var digits = new Uint32Array(this._digits.length + 1);
         var carry = 0;
         var n = 0;
         for (; n < this._digits.length; n++) {
