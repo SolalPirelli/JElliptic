@@ -9,19 +9,23 @@ import ModPointAddPartialResult = require("ModPointAddPartialResult");
 //       Unit tests will have to do...
 
 class ModPoint {
-    private static INF = new ModPoint();
+    private static INF = new ModPoint(null, null, null);
 
     private _x: ModNumber;
     private _y: ModNumber;
     private _curve: ModCurve;
 
-    static create(x: BigInteger, y: BigInteger, curve: ModCurve): ModPoint {
-        var point = new ModPoint();
-        point._x = ModNumber.create(x, curve.n);
-        point._y = ModNumber.create(y, curve.n);
-        point._curve = curve;
-        return point;
+
+    constructor(x: ModNumber, y: ModNumber, curve: ModCurve) {
+        this._x = x;
+        this._y = y;
+        this._curve = curve;
     }
+
+    static fromBigInts(x: BigInteger, y: BigInteger, curve: ModCurve): ModPoint {
+        return new ModPoint(ModNumber.create(x, curve.n),ModNumber.create(y, curve.n), curve);
+    }
+
 
     get x(): ModNumber {
         return this._x;
@@ -45,7 +49,7 @@ class ModPoint {
         if (this == ModPoint.INF) {
             return this;
         }
-        return ModPoint.fromModNumbers(this._x, this._y.negate(), this._curve);
+        return new ModPoint(this._x, this._y.negate(), this._curve);
     }
 
     add(other: ModPoint): ModPoint {
@@ -78,21 +82,21 @@ class ModPoint {
         var x = lambda.pow(2).sub(this._x).sub(other._x);
         var y = lambda.mul(this._x.sub(x)).sub(this._y);
 
-        return ModPoint.fromModNumbers(x, y, this._curve);
+        return new ModPoint(x, y, this._curve);
     }
 
     beginAdd(other: ModPoint): ModPointAddPartialResult {
         // Case 1: One of the points is infinity -> return the other
         if (this == ModPoint.INF) {
-            return ModPointAddPartialResult.fromResult(other);
+            return new ModPointAddPartialResult(null, null, other);
         }
         if (other == ModPoint.INF) {
-            return ModPointAddPartialResult.fromResult(this);
+            return new ModPointAddPartialResult(null, null, this);
         }
 
         // Case 2: The points are vertically symmetric -> return infinity
         if (this._x.eq(other._x) && this._y.eq(other._y.negate())) {
-            return ModPointAddPartialResult.fromResult(ModPoint.INF);
+            return new ModPointAddPartialResult(null, null, ModPoint.INF);
         }
 
         var num: ModNumber, denom: ModNumber;
@@ -106,14 +110,14 @@ class ModPoint {
             denom = other._x.sub(this._x);
         }
 
-        return ModPointAddPartialResult.fromDivision(num, denom);
+        return new ModPointAddPartialResult(num, denom, null);
     }
 
     endAdd(other: ModPoint, lambda: ModNumber): ModPoint {
         var x = lambda.pow(2).sub(this._x).sub(other._x);
         var y = lambda.mul(this._x.sub(x)).sub(this._y);
 
-        return ModPoint.fromModNumbers(x, y, this._curve);
+        return new ModPoint(x, y, this._curve);
     }
 
     /** O(n) */
@@ -173,14 +177,6 @@ class ModPoint {
             return "Infinity";
         }
         return "(" + this._x.value.toString() + ", " + this._y.value.toString() + ")";
-    }
-
-    private static fromModNumbers(x: ModNumber, y: ModNumber, curve: ModCurve) {
-        var point = new ModPoint();
-        point._x = x;
-        point._y = y;
-        point._curve = curve;
-        return point;
     }
 }
 

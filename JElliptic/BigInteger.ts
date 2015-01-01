@@ -17,10 +17,32 @@ class BigInteger {
     private _digits: number[]; // base BASE
 
 
-    static MINUS_ONE = BigInteger.uncheckedCreate(false, [1]);
-    static ZERO = BigInteger.uncheckedCreate(true, [0]);
-    static ONE = BigInteger.uncheckedCreate(true, [1]);
-    static TWO = BigInteger.uncheckedCreate(true, [2]);
+    static MINUS_ONE = new BigInteger(false, [1]);
+    static ZERO = new BigInteger(true, [0]);
+    static ONE = new BigInteger(true, [1]);
+    static TWO = new BigInteger(true, [2]);
+
+    /** Unsafe: does not trim zeroes. */
+    constructor(isPositive: boolean, digits: number[]) {
+        this._isPositive = isPositive;
+        this._digits = digits;
+    }
+
+    /** O(digits) */
+    static create(isPositive: boolean, digits: number[]): BigInteger {
+        // Remove useless digits
+        var actualLength = digits.length;
+        // Boolean NOT on a number also takes care of undefined
+        while (actualLength > 0 && !digits[actualLength - 1]) {
+            actualLength--;
+        }
+
+        if (actualLength == 0) {
+            return BigInteger.ZERO;
+        }
+
+        return new BigInteger(isPositive, digits.slice(0, actualLength));
+    }
 
 
     /** O(1) */
@@ -91,7 +113,7 @@ class BigInteger {
         if (this._isPositive) {
             return this;
         }
-        return BigInteger.uncheckedCreate(true, this._digits);
+        return new BigInteger(true, this._digits);
     }
 
     /** O(this.digits)
@@ -509,33 +531,6 @@ class BigInteger {
         }
 
         return BigInteger.create(this._isPositive, digits);
-    }
-
-    /** O(digits) */
-    private static create(isPositive: boolean, digits: number[]): BigInteger {
-        // Remove useless digits
-        var actualLength = digits.length;
-        // Boolean NOT on a number also takes care of undefined
-        while (actualLength > 0 && !digits[actualLength - 1]) {
-            actualLength--;
-        }
-
-        if (actualLength == 0) {
-            return BigInteger.ZERO;
-        }
-
-        var bi = new BigInteger();
-        bi._isPositive = isPositive;
-        bi._digits = digits.slice(0, actualLength);
-        return bi;
-    }
-
-    /** O(1) */
-    private static uncheckedCreate(isPositive: boolean, digits: number[]): BigInteger {
-        var bi = new BigInteger();
-        bi._isPositive = isPositive;
-        bi._digits = digits;
-        return bi;
     }
 }
 

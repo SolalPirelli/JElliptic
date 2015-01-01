@@ -142,14 +142,14 @@ function modNumberSuite() {
 function modPointSuite() {
     // very simple curve and points generated with Wolfram|Alpha
     var c1 = new ModCurve(BigInteger.parse("2"), BigInteger.parse("1"), BigInteger.parse("9"), BigInteger.parse("0")); // I don't know the order of that curve
-    var pSmall_1 = ModPoint.create(BigInteger.parse("4"), BigInteger.parse("1"), c1);
-    var pSmall_2 = ModPoint.create(BigInteger.parse("6"), BigInteger.parse("2"), c1);
+    var pSmall_1 = ModPoint.fromBigInts(BigInteger.parse("4"), BigInteger.parse("1"), c1);
+    var pSmall_2 = ModPoint.fromBigInts(BigInteger.parse("6"), BigInteger.parse("2"), c1);
 
     // using the values defined in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
     var cBig = new ModCurve(BigInteger.parse("4451685225093714772084598273548424"), BigInteger.parse("2061118396808653202902996166388514"),
         BigInteger.parse("4451685225093714772084598273548427"), BigInteger.parse("4451685225093714776491891542548933"));
-    var pBig_1 = ModPoint.create(BigInteger.parse("188281465057972534892223778713752"), BigInteger.parse("3419875491033170827167861896082688"), cBig);
-    var pBig_2 = ModPoint.create(BigInteger.parse("1415926535897932384626433832795028"), BigInteger.parse("3846759606494706724286139623885544"), cBig);
+    var pBig_1 = ModPoint.fromBigInts(BigInteger.parse("188281465057972534892223778713752"), BigInteger.parse("3419875491033170827167861896082688"), cBig);
+    var pBig_2 = ModPoint.fromBigInts(BigInteger.parse("1415926535897932384626433832795028"), BigInteger.parse("3846759606494706724286139623885544"), cBig);
 
     var s = BenchmarkSuite.create("ModPoint");
 
@@ -169,8 +169,8 @@ function pollardRhoSuite() {
 
     var curve = new ModCurve(BigInteger.parse("4451685225093714772084598273548424"), BigInteger.parse("2061118396808653202902996166388514"),
         BigInteger.parse("4451685225093714772084598273548427"), BigInteger.parse("4451685225093714776491891542548933"));
-    var gen = ModPoint.create(BigInteger.parse("188281465057972534892223778713752"), BigInteger.parse("3419875491033170827167861896082688"), curve);
-    var target = ModPoint.create(BigInteger.parse("1415926535897932384626433832795028"), BigInteger.parse("3846759606494706724286139623885544"), curve);
+    var gen = ModPoint.fromBigInts(BigInteger.parse("188281465057972534892223778713752"), BigInteger.parse("3419875491033170827167861896082688"), curve);
+    var target = ModPoint.fromBigInts(BigInteger.parse("1415926535897932384626433832795028"), BigInteger.parse("3846759606494706724286139623885544"), curve);
 
 
     function configWithTableLength(length: number) {
