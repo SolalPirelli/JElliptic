@@ -65,7 +65,7 @@ class BigInteger {
         }
 
         var digitsCount = Math.ceil(Math.log(num) / BigInteger.BASE_LOG);
-        var digits = new Array<number>(digitsCount);
+        var digits: number[] = [];
 
         for (var i = 0; i < digitsCount; i++) {
             var rem = num % BigInteger.BASE;
@@ -119,7 +119,7 @@ class BigInteger {
     /** O(this.digits)
         Rounds down. */
     halve(): BigInteger {
-        var digits = new Array<number>(this._digits.length);
+        var digits: number[] = [];
         var hasRest = false;
         for (var n = this._digits.length - 1; n >= 0; n--) {
             digits[n] = this._digits[n];
@@ -155,7 +155,7 @@ class BigInteger {
             lo = this._digits;
         }
 
-        var digits = new Array<number>(hi.length + 1);
+        var digits: number[] = [];
         var carry = 0;
 
         var n = 0;
@@ -231,7 +231,7 @@ class BigInteger {
             lo = temp;
         }
 
-        var digits = new Array<number>(hi._digits.length + 1);
+        var digits: number[] = [];
         var carry = 0;
         var n = 0;
 
@@ -270,9 +270,9 @@ class BigInteger {
 
     /** O(max(this.digits, other.digits)^log_2(3)) */
     mul(other: BigInteger): BigInteger {
-        var digits = new Array<number>(this._digits.length + other._digits.length);
+        var digits: number[] = [];
         // Initialize all digits, otherwise funky stuff happens with 'undefined'
-        for (var n = 0; n < digits.length; n++) {
+        for (var n = 0; n < this._digits.length + other._digits.length + 1; n++) {
             digits[n] = 0;
         }
 
@@ -315,7 +315,7 @@ class BigInteger {
                 }
         }
 
-        var digits = new Array<number>(dividend._digits.length);
+        var digits: number[] = [];
         var remainder = BigInteger.ZERO;
         for (var n = dividend._digits.length - 1; n >= 0; n--) {
             remainder = remainder.pushRight(dividend._digits[n]);
@@ -441,7 +441,7 @@ class BigInteger {
     /** O(min(this.digits, other.digits)) */
     and(other: BigInteger): BigInteger {
         var minLength = Math.min(this._digits.length, other._digits.length);
-        var digits = new Array<number>(minLength);
+        var digits: number[] = [];
 
         for (var n = 0; n < minLength; n++) {
             digits[n] = this._digits[n] & other._digits[n];
@@ -480,7 +480,7 @@ class BigInteger {
 
     /** O(this.digits + n) */
     private leftShift(n: number): BigInteger {
-        var digits = new Array<number>(this._digits.length + n);
+        var digits: number[] = [];
 
         for (var i = 0; i < n; i++) {
             digits[i] = 0;
@@ -495,7 +495,7 @@ class BigInteger {
 
     /** O(this.digits + n) */
     private pushRight(n: number): BigInteger {
-        var digits = new Array<number>(this._digits.length + 1);
+        var digits: number[] = [];
 
         digits[0] = n;
         for (var i = 0; i < this._digits.length; i++) {
@@ -507,7 +507,7 @@ class BigInteger {
 
     /** O(this.digits + n) */
     private rightShiftAbs(n: number): BigInteger {
-        var digits = new Array<number>(this._digits.length - n);
+        var digits: number[] = [];
 
         for (var i = 0; i < digits.length; i++) {
             digits[i] = this._digits[i + n];
@@ -518,7 +518,7 @@ class BigInteger {
 
     /** O(digits). Assumes that mul is positive. */
     private singleDigitMul(mul: number): BigInteger {
-        var digits = new Array<number>(this._digits.length + 1);
+        var digits: number[] = [];
         var carry = 0;
         var n = 0;
         for (; n < this._digits.length; n++) {
@@ -563,7 +563,7 @@ module SlowBigIntegers {
         }
 
         var digitsCount = Math.ceil(Math.log(num) / BASE_LOG);
-        var digits = new Array<number>(digitsCount);
+        var digits: number[] = [];
 
         for (var i = 0; i < digitsCount; i++) {
             var rem = num % BASE;
@@ -580,7 +580,7 @@ module SlowBigIntegers {
 
     export function parse(str: string): number[] {
         var chunksLength = Math.ceil(str.length / BASE_LOG10);
-        var chunks = Array<string>(chunksLength);
+        var chunks: string[] = [];
 
         for (var n = 0; n < chunksLength; n++) {
             var end = str.length - n * BASE_LOG10;
@@ -599,7 +599,7 @@ module SlowBigIntegers {
             lo = left;
         }
 
-        var digits = new Array<number>(hi.length + 1);
+        var digits: number[] = [];
         for (var n = 0; n < digits.length; n++) {
             digits[n] = 0;
         }
@@ -647,9 +647,9 @@ module SlowBigIntegers {
     }
 
     export function mul(left: number[], right: number[]): number[] {
-        var digits = new Array<number>(left.length + right.length);
+        var digits: number[] = [];
         // Initialize all digits, otherwise funky stuff happens with 'undefined'
-        for (var n = 0; n < digits.length; n++) {
+        for (var n = 0; n < left.length + right.length + 1; n++) {
             digits[n] = 0;
         }
 
