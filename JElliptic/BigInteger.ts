@@ -1,9 +1,15 @@
 ﻿class BigInteger {
-    private static MAX_SAFE_INT = 9007199254740991; // 2^53-1, where 53 is the mantissa size of IEEE-754 double-precision floating point numbers (what JS uses)
+    // 2^53-1, where 53 is the mantissa size of IEEE-754 double-precision floating point numbers (what JS uses)
+    private static MAX_SAFE_INT = 9007199254740991;
+
     // Largest number that is:
     // - even (for halve())
     // - smaller than sqrt(MAX_SAFE_INT) (to multiply digits in the safe space)
-    private static BASE = 94906264;
+    static BASE = 94906264;
+
+    // Cached stuff
+    private static BASE_LOG = Math.log(BigInteger.BASE);
+
 
     private _isPositive: boolean;
     private _digits: number[]; // base BASE
@@ -16,22 +22,32 @@
 
 
     /** O(1) */
-    static fromInt(n: number): BigInteger {
-        if (Math.abs(n) > BigInteger.MAX_SAFE_INT) {
+    static fromInt(num: number): BigInteger {
+        if (num == 0) {
+            return BigInteger.ZERO;
+        }
+        if (num == 1) {
+            return BigInteger.ONE;
+        }
+        if (num == -1) {
+            return BigInteger.MINUS_ONE;
+        }
+
+        var isPositive = num >= 0;
+        num = Math.abs(num);
+
+        if (num > BigInteger.MAX_SAFE_INT) {
             throw "BigInteger.fromInt cannot be called with inexact integers.";
         }
 
-        var isPositive = n >= 0;
-        var digits = Array<number>();
+        var digitsCount = Math.ceil(Math.log(num) / BigInteger.BASE_LOG);
+        var digits = Array<number>(digitsCount);
 
-        n = Math.abs(n);
-
-        do {
-            var rem = n % BigInteger.BASE;
-            n = Math.floor(n / BigInteger.BASE);
-
-            digits.push(rem);
-        } while (n != 0);
+        for (var i = 0; i < digitsCount; i++) {
+            var rem = num % BigInteger.BASE;
+            num = Math.floor(num / BigInteger.BASE);
+            digits[i] = rem;
+        }
 
         return BigInteger.create(isPositive, digits);
     }
@@ -46,12 +62,11 @@
         }
 
         var num = SlowBigIntegers.parse(str);
-        var base = BigInteger.fromInt(SlowBigIntegers.BASE);
         var result = BigInteger.ZERO;
         var multiplier = BigInteger.ONE;
         for (var n = 0; n < num.length; n++) {
             result = result.add(multiplier.singleDigitMul(num[n]));
-            multiplier = multiplier.mul(base);
+            multiplier = multiplier.mul(SlowBigIntegers.BASE_AS_NORMAL);
         }
 
         if (!isPositive) {
@@ -281,7 +296,7 @@
         for (var n = dividend._digits.length - 1; n >= 0; n--) {
             remainder = remainder.pushRight(dividend._digits[n]);
             if (remainder.compare(divisor) == -1) {
-                digits.push(0);
+                digits[n] = 0;
             } else {
                 // Since remainder just became bigger than divisor,
                 // its length is either divisor's or one more
@@ -315,7 +330,7 @@
                 }
 
                 remainder = remainder.sub(actual);
-                digits.push(guess);
+                digits[n] = guess;
             }
         }
 
@@ -323,7 +338,7 @@
             remainder = divisor.sub(remainder);
         }
 
-        return [BigInteger.create(isPositive, digits.reverse()), remainder];
+        return [BigInteger.create(isPositive, digits), remainder];
     }
 
     /** O(1) */
@@ -404,7 +419,7 @@
         var digits = Array<number>();
 
         for (var n = 0; n < this._digits.length && n < other._digits.length; n++) {
-            digits.push(this._digits[n] & other._digits[n]);
+            digits[n] = this._digits[n] & other._digits[n];
         }
 
         return BigInteger.create(true, digits);
@@ -425,12 +440,11 @@
     /** O(this.digits) */
     toString(): string {
         var result = SlowBigIntegers.ZERO;
-        var base = SlowBigIntegers.fromInt(BigInteger.BASE);
         var multiplier = SlowBigIntegers.ONE;
         for (var n = 0; n < this._digits.length; n++) {
             var digit = SlowBigIntegers.fromInt(this._digits[n]);
             result = SlowBigIntegers.add(result, SlowBigIntegers.mul(digit, multiplier));
-            multiplier = SlowBigIntegers.mul(multiplier, base);
+            multiplier = SlowBigIntegers.mul(multiplier, SlowBigIntegers.NORMAL_BASE);
         }
         var str = SlowBigIntegers.toString(result);
         if (!this._isPositive) {
@@ -531,24 +545,40 @@
  * and BigInteger internally converts when one of these two methods is called.
  */
 module SlowBigIntegers {
-    export var BASE = 10000000; // largest power of 10 smaller than sqrt(MAX_SAFE_INT)/2; also needs to be even
-    var BASE_LOG10 = Math.floor(Math.log(BASE) / Math.log(10));
+    export var BASE = 10000000;
+
+    // Cached stuff
+    var BASE_LOG = Math.log(BASE);
+    var BASE_LOG10 = Math.floor(BASE_LOG / Math.log(10));
+
 
     export var ZERO = [0];
     export var ONE = [1];
 
-    export function fromInt(n: number): number[] {
-        var digits = Array<number>();
 
-        do {
-            var rem = n % BASE;
-            n = Math.floor(n / BASE);
+    export function fromInt(num: number): number[] {
+        if (num == 0) {
+            return ZERO;
+        }
+        if (num == 1) {
+            return ONE;
+        }
 
-            digits.push(rem);
-        } while (n != 0);
+        var digitsCount = Math.ceil(Math.log(num) / BASE_LOG);
+        var digits = Array<number>(digitsCount);
+
+        for (var i = 0; i < digitsCount; i++) {
+            var rem = num % BASE;
+            num = Math.floor(num / BASE);
+            digits[i] = rem;
+        }
 
         return digits;
     }
+
+    // Cached stuff; declared here otherwise SlowBigInteger.fromInt is undefined
+    export var NORMAL_BASE = SlowBigIntegers.fromInt(BigInteger.BASE);
+    export var BASE_AS_NORMAL = BigInteger.fromInt(BASE);
 
     export function parse(str: string): number[] {
         var chunksLength = Math.ceil(str.length / BASE_LOG10);
@@ -613,7 +643,6 @@ module SlowBigIntegers {
 
         return digits;
     }
-
 
     export function mul(left: number[], right: number[]): number[] {
         var digits = Array<number>(left.length + right.length);
