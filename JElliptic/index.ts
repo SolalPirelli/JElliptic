@@ -62,7 +62,7 @@ document.getElementById("start").onclick = () => {
         additionTableLength: intValue("tableLength"),
         parrallelWalksCount: intValue("walksCount"),
         distinguishedPointMask: value("mask"),
-        computePointsUniqueFraction: true,
+        computeStats: true,
         checkCycleLength: intValue("cycleLength"),
         checkCyclePeriod: intValue("cyclePeriod")
     }

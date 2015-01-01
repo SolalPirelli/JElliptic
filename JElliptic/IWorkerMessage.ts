@@ -15,7 +15,7 @@ interface IWorkerMessage {
     additionTableLength: number;
     parrallelWalksCount: number;
     distinguishedPointMask: string;
-    computePointsUniqueFraction: boolean;
+    computeStats: boolean;
     checkCycleLength: number;
     checkCyclePeriod: number;
 }

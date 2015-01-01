@@ -10,7 +10,7 @@ interface IConfig {
     additionTableLength: number;
     parrallelWalksCount: number;
     distinguishedPointMask: BigInteger;
-    computePointsUniqueFraction: boolean;
+    computeStats: boolean;
     checkCyclePeriod: number;
     checkCycleLength: number;
 }

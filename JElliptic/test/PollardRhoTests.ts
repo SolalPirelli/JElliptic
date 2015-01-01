@@ -98,7 +98,7 @@ module PollardRhoTests {
             additionTableLength: tableLength,
             parrallelWalksCount: walksCount,
             distinguishedPointMask: BigInteger.parse("0"),
-            computePointsUniqueFraction: true,
+            computeStats: true,
             checkCyclePeriod: tableLength,
             checkCycleLength: tableLength
         };

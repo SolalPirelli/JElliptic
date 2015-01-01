@@ -5,8 +5,7 @@ class ModPointSet {
 
     private _buckets: ModPoint[][];
     private _containsInfinity: boolean;
-    private _totalCount: number;
-    private _duplicatesCount: number;
+    private _size: number;
 
     constructor() {
         this._buckets = [];
@@ -15,8 +14,11 @@ class ModPointSet {
         }
 
         this._containsInfinity = false;
-        this._totalCount = 0;
-        this._duplicatesCount = 0;
+        this._size = 0;
+    }
+
+    get size(): number {
+        return this._size;
     }
 
     contains(point: ModPoint): boolean {
@@ -35,12 +37,11 @@ class ModPointSet {
     }
 
     add(point: ModPoint): boolean {
-        this._totalCount++;
-
         if (this.contains(point)) {
-            this._duplicatesCount++;
             return false;
         }
+
+        this._size++;
 
         if (point == ModPoint.INFINITY) {
             this._containsInfinity = true;
@@ -50,10 +51,6 @@ class ModPointSet {
         var hash = point.x.value.partition(ModPointSet.BUCKET_COUNT);
         this._buckets[hash].push(point);
         return true;
-    }
-
-    toString(): string {
-        return this._totalCount + " points, " + (this._duplicatesCount / this._totalCount * 100) + "% of which are duplicates.";
     }
 }
 
