@@ -1,4 +1,6 @@
-﻿class BigInteger {
+﻿"use strict";
+
+class BigInteger {
     // 2^53-1, where 53 is the mantissa size of IEEE-754 double-precision floating point numbers (what JS uses)
     private static MAX_SAFE_INT = 9007199254740991;
 

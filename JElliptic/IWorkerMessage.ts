@@ -1,4 +1,6 @@
-﻿// This is only there for documentation purposes; 
+﻿"use strict";
+
+// This is only there for documentation purposes; 
 // its properties are only accessed from JS in a Worker,
 // never from TS.
 

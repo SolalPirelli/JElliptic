@@ -1,4 +1,6 @@
-﻿import BigIntegerTests = require("test/BigIntegerTests");
+﻿"use strict";
+
+import BigIntegerTests = require("test/BigIntegerTests");
 import ModNumberTests = require("test/ModNumberTests");
 import ModPointTests = require("test/ModPointTests");
 import ModPointSetTests = require("test/ModPointSetTests");

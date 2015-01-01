@@ -1,4 +1,6 @@
-﻿import BigInteger = require("BigInteger");
+﻿"use strict";
+
+import BigInteger = require("BigInteger");
 
 // TODO try to eliminate usages of create() here, make stuff smarter
 

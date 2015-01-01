@@ -1,4 +1,6 @@
-﻿import BigInteger = require("BigInteger");
+﻿"use strict";
+
+import BigInteger = require("BigInteger");
 
 // Very simple seeded RNG, based on http://stackoverflow.com/a/23304189
 class DeterministicRandom {

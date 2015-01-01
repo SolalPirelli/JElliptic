@@ -1,5 +1,7 @@
 ﻿/// <reference path="lib/qunit.d.ts" />
 
+"use strict";
+
 import BigInteger = require("BigInteger");
 import ModCurve = require("ModCurve");
 import ModPoint = require("ModPoint");

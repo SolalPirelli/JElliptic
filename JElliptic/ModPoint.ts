@@ -1,4 +1,6 @@
-﻿import BigInteger = require("BigInteger");
+﻿"use strict";
+
+import BigInteger = require("BigInteger");
 import ModNumber = require("ModNumber");
 import ModCurve = require("ModCurve");
 import ModPointAddPartialResult = require("ModPointAddPartialResult");

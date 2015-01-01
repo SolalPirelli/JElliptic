@@ -1,4 +1,6 @@
-﻿importScripts("lib/require.js");
+﻿"use strict";
+
+importScripts("lib/require.js");
 
 // N.B. passing objects around is extremely limited, better use native types
 

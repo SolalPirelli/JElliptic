@@ -1,5 +1,7 @@
 ﻿/// <reference path="lib/benchmark.d.ts" />
 
+"use strict";
+
 module BenchmarkSuite {
     var hasInit = false;
     var suites = new Array<Suite>();

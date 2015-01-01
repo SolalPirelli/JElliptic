@@ -1,4 +1,6 @@
-﻿import ModNumber = require("ModNumber");
+﻿"use strict";
+
+import ModNumber = require("ModNumber");
 import ModPoint = require("ModPoint");
 
 interface IResultSink {

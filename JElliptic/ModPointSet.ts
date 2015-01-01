@@ -1,4 +1,6 @@
-﻿import ModPoint = require("ModPoint");
+﻿"use strict";
+
+import ModPoint = require("ModPoint");
 
 class ModPointSet {
     private static BUCKET_COUNT = 32;

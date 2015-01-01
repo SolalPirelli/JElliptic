@@ -1,4 +1,6 @@
-﻿import IWorkerMessage = require("IWorkerMessage");
+﻿"use strict";
+
+import IWorkerMessage = require("IWorkerMessage");
 
 function value(elemName: string): string {
     return (<HTMLInputElement> document.getElementById(elemName)).value;
