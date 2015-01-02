@@ -42,7 +42,7 @@ module PollardRho {
 
         var walk = new MultiCurveWalk(config, table);
 
-        for (var x = 0; x < 100; x++) {
+        for (var x = 0; x < 10; x++) {
             for (var n = 0; n < config.checkCyclePeriod; n++) {
                 walk.step();
                 walk.send(resultSink);

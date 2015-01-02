@@ -131,9 +131,9 @@ function modNumberSuite() {
     s("Square a 20-digit number", () => i20_1.square());
     s("Square a 34-digit number", () => i34_1.square());
 
-    s("Compare two 1-digit numbers", () => i1_1.eq(i1_2));
-    s("Compare two 20-digit numbers", () => i20_1.eq(i20_2));
-    s("Compare two 34-digit numbers", () => i34_1.eq(i34_2));
+    s("Compare two 1-digit numbers", () => i1_1.compare(i1_2));
+    s("Compare two 20-digit numbers", () => i20_1.compare(i20_2));
+    s("Compare two 34-digit numbers", () => i34_1.compare(i34_2));
 }
 
 function modPointSuite() {

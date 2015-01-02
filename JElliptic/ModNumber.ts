@@ -80,11 +80,6 @@ class ModNumber {
         return this._value.compare(other._value);
     }
 
-    /** eq */
-    eq(other: ModNumber): boolean {
-        return this._value.compare(other._value) == 0;
-    }
-
     /** toString */
     toString(): string {
         return this._value.toString() + " mod " + this._n.toString();

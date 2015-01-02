@@ -5,9 +5,6 @@ import ModNumber = require("ModNumber");
 import ModCurve = require("ModCurve");
 import ModPointAddPartialResult = require("ModPointAddPartialResult");
 
-// N.B.: Ensuring the validity of a point on a curve is simply too slow
-//       Unit tests will have to do...
-
 class ModPoint {
     private static INF = new ModPoint(null, null, null);
 
@@ -35,10 +32,6 @@ class ModPoint {
         return this._y;
     }
 
-    get curve(): ModCurve {
-        return this._curve;
-    }
-
     static get INFINITY(): ModPoint {
         return ModPoint.INF;
     }
@@ -53,36 +46,11 @@ class ModPoint {
     }
 
     add(other: ModPoint): ModPoint {
-        // Case 1: One of the points is infinity -> return the other
-        if (this == ModPoint.INF) {
-            return other;
+        var partial = this.beginAdd(other);
+        if (partial.result != null) {
+            return partial.result;
         }
-        if (other == ModPoint.INF) {
-            return this;
-        }
-
-        // Case 2: The points are vertically symmetric -> return infinity
-        if (this._x.eq(other._x) && this._y.eq(other._y.negate())) {
-            return ModPoint.INF;
-        }
-
-        var num: ModNumber, denom: ModNumber;
-        if (this.eq(other)) {
-            // Case 3: The points are equal -> double the current point
-            num = this._x.square().mulNum(3).add(this._curve.a);
-            denom = this._y.mulNum(2);
-        } else {
-            // Case 4: Add the two points
-            num = other._y.sub(this._y);
-            denom = other._x.sub(this._x);
-        }
-
-        var lambda = num.div(denom);
-
-        var x = lambda.square().sub(this._x).sub(other._x);
-        var y = lambda.mul(this._x.sub(x)).sub(this._y);
-
-        return new ModPoint(x, y, this._curve);
+        return this.endAdd(other, partial.numerator.div(partial.denominator));
     }
 
     beginAdd(other: ModPoint): ModPointAddPartialResult {
@@ -95,7 +63,8 @@ class ModPoint {
         }
 
         // Case 2: The points are vertically symmetric -> return infinity
-        if (this._x.eq(other._x) && this._y.eq(other._y.negate())) {
+        if (this._x.compare(other._x) == 0
+         && this._y.compare(other._y.negate()) == 0) {
             return new ModPointAddPartialResult(null, null, ModPoint.INF);
         }
 
@@ -168,7 +137,8 @@ class ModPoint {
             return false;
         }
 
-        return this._x.eq(other._x) && this._y.eq(other._y);
+        return this._x.compare(other._x) == 0
+            && this._y.compare(other._y) == 0;
     }
 
     /** O(this.x.value.digits + this.y.value.digits) */
