@@ -451,18 +451,6 @@ class BigInteger {
     }
 
     /** O(this.digits) */
-    toInt(): number {
-        // Hack-y, but simple
-        var str = this.toString();
-        var n = parseInt(str);
-        if (Math.abs(n) > BigInteger.MAX_SAFE_INT) {
-            throw "toInt can only work with small BigIntegers.";
-        }
-
-        return n;
-    }
-
-    /** O(this.digits) */
     toString(): string {
         var result = SlowBigIntegers.ZERO;
         var multiplier = SlowBigIntegers.ONE;
@@ -479,21 +467,6 @@ class BigInteger {
     }
 
     /** O(this.digits + n) */
-    private leftShift(n: number): BigInteger {
-        var digits: number[] = [];
-
-        for (var i = 0; i < n; i++) {
-            digits[i] = 0;
-        }
-
-        for (var i = 0; i < this._digits.length; i++) {
-            digits[i + n] = this._digits[i];
-        }
-
-        return BigInteger.create(this._isPositive, digits);
-    }
-
-    /** O(this.digits + n) */
     private pushRight(n: number): BigInteger {
         var digits: number[] = [];
 
@@ -503,17 +476,6 @@ class BigInteger {
         }
 
         return BigInteger.create(this._isPositive, digits);
-    }
-
-    /** O(this.digits + n) */
-    private rightShiftAbs(n: number): BigInteger {
-        var digits: number[] = [];
-
-        for (var i = 0; i < digits.length; i++) {
-            digits[i] = this._digits[i + n];
-        }
-
-        return BigInteger.create(true, digits);
     }
 
     /** O(digits). Assumes that mul is positive. */
