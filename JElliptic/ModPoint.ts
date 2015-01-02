@@ -69,7 +69,7 @@ class ModPoint {
         var num: ModNumber, denom: ModNumber;
         if (this.eq(other)) {
             // Case 3: The points are equal -> double the current point
-            num = this._x.pow(2).mulNum(3).add(this._curve.a);
+            num = this._x.square().mulNum(3).add(this._curve.a);
             denom = this._y.mulNum(2);
         } else {
             // Case 4: Add the two points
@@ -79,7 +79,7 @@ class ModPoint {
 
         var lambda = num.div(denom);
 
-        var x = lambda.pow(2).sub(this._x).sub(other._x);
+        var x = lambda.square().sub(this._x).sub(other._x);
         var y = lambda.mul(this._x.sub(x)).sub(this._y);
 
         return new ModPoint(x, y, this._curve);
@@ -102,7 +102,7 @@ class ModPoint {
         var num: ModNumber, denom: ModNumber;
         if (this.eq(other)) {
             // Case 3: The points are equal -> double the current point
-            num = this._x.pow(2).mulNum(3).add(this._curve.a);
+            num = this._x.square().mulNum(3).add(this._curve.a);
             denom = this._y.mulNum(2);
         } else {
             // Case 4: Add the two points
@@ -114,7 +114,7 @@ class ModPoint {
     }
 
     endAdd(other: ModPoint, lambda: ModNumber): ModPoint {
-        var x = lambda.pow(2).sub(this._x).sub(other._x);
+        var x = lambda.square().sub(this._x).sub(other._x);
         var y = lambda.mul(this._x.sub(x)).sub(this._y);
 
         return new ModPoint(x, y, this._curve);

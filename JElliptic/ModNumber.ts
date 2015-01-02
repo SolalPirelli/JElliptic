@@ -2,8 +2,6 @@
 
 import BigInteger = require("BigInteger");
 
-// TODO try to eliminate usages of create() here, make stuff smarter
-
 class ModNumber {
     private _value: BigInteger;
     private _n: BigInteger;
@@ -38,6 +36,11 @@ class ModNumber {
         return new ModNumber(this._value.modInverse(this._n), this._n);
     }
 
+    /** mul */
+    square(): ModNumber {
+        return ModNumber.create(this._value.mul(this._value), this._n);
+    }
+
     /** add + compare + sub */
     add(other: ModNumber): ModNumber {
         var sum = this._value.add(other._value);
@@ -69,16 +72,7 @@ class ModNumber {
 
     /** mul + modInverse */
     div(other: ModNumber): ModNumber {
-        return ModNumber.create(this._value.mul(other._value.modInverse(this._n)), this._n);
-    }
-
-    /** mul * n */
-    pow(n: number): ModNumber {
-        var result = BigInteger.ONE;
-        for (var _ = 0; _ < n; _++) {
-            result = result.mul(this._value).divRem(this._n)[1];
-        }
-        return new ModNumber(result, this._n);
+        return this.mul(other.invert());
     }
 
     /** compare */
