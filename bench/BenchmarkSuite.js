@@ -22,7 +22,7 @@ define(["require", "exports"], function(require, exports) {
         function init() {
             // Add a button to run all suites
             var runButton = document.createElement("button");
-            runButton.innerText = "run all suites";
+            runButton.textContent = "run all suites";
             runButton.onclick = function () {
                 suites.forEach(function (s) {
                     return s.reset();
@@ -98,7 +98,7 @@ define(["require", "exports"], function(require, exports) {
 
                 // Set the function we'll use to change the status
                 this._statusSet = function (text) {
-                    return statusContainer.innerText = text;
+                    return statusContainer.textContent = text;
                 };
 
                 // Set and add the items container
@@ -179,7 +179,7 @@ define(["require", "exports"], function(require, exports) {
 
                 // Set the function we'll use to change the status
                 this._statusSet = function (text) {
-                    return statusContainer.innerText = text;
+                    return statusContainer.textContent = text;
                 };
 
                 // Show the container on the screen

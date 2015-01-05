@@ -21,7 +21,7 @@ module BenchmarkSuite {
     function init() {
         // Add a button to run all suites
         var runButton = document.createElement("button");
-        runButton.innerText = "run all suites";
+        runButton.textContent = "run all suites";
         runButton.onclick = () => {
             suites.forEach(s => s.reset());
             run(0);
@@ -103,7 +103,7 @@ module BenchmarkSuite {
             container.appendChild(document.createElement("br"));
 
             // Set the function we'll use to change the status
-            this._statusSet = (text) => statusContainer.innerText = text;
+            this._statusSet = (text) => statusContainer.textContent = text;
 
             // Set and add the items container
             this._itemsContainer = document.createElement("div");
@@ -176,7 +176,7 @@ module BenchmarkSuite {
             container.appendChild(document.createElement("br"));
 
             // Set the function we'll use to change the status
-            this._statusSet = (text) => statusContainer.innerText = text;
+            this._statusSet = (text) => statusContainer.textContent = text;
 
 
             // Show the container on the screen
