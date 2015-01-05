@@ -1,5 +1,7 @@
 ﻿/// <reference path="lib/qunit.d.ts" />
 
+"use strict";
+
 import BigInteger = require("BigInteger");
 import ModCurve = require("ModCurve");
 import ModPoint = require("ModPoint");
@@ -13,7 +15,7 @@ module ModPointSetTests {
         for (var n = 0; n < Math.floor(vals.length / 2); n++) {
             var x = BigInteger.parse(vals[2 * n]);
             var y = BigInteger.parse(vals[2 * n + 1]);
-            var point = ModPoint.create(x, y, CURVE);
+            var point = ModPoint.fromBigInts(x, y, CURVE);
             pointSet.add(point);
         }
         return pointSet;
@@ -22,7 +24,7 @@ module ModPointSetTests {
     function contains(name: string, x: string, y: string, pointSet: ModPointSet): void {
         var xp = BigInteger.parse(x);
         var yp = BigInteger.parse(y);
-        var point = ModPoint.create(xp, yp, CURVE);
+        var point = ModPoint.fromBigInts(xp, yp, CURVE);
 
         test(name, () => {
             ok(pointSet.contains(point));
@@ -32,7 +34,7 @@ module ModPointSetTests {
     function doesNotContain(name: string, x: string, y: string, pointSet: ModPointSet): void {
         var xp = BigInteger.parse(x);
         var yp = BigInteger.parse(y);
-        var point = ModPoint.create(xp, yp, CURVE);
+        var point = ModPoint.fromBigInts(xp, yp, CURVE);
 
         test(name, () => {
             ok(!pointSet.contains(point));

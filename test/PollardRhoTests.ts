@@ -1,5 +1,7 @@
 ﻿/// <reference path="lib/qunit.d.ts" />
 
+"use strict";
+
 import BigInteger = require("BigInteger");
 import ModNumber = require("ModNumber");
 import ModPoint = require("ModPoint");
@@ -68,7 +70,7 @@ module PollardRhoTests {
                 this._map[ps] = new Result(u, v, p);
             } else {
                 var existingResult = this._map[ps];
-                if (!existingResult.v.eq(v)) {
+                if (existingResult.v.compare(v) != 0) {
                     this.result = u.sub(existingResult.u).div(existingResult.v.sub(v));
                 }
             }
@@ -92,20 +94,20 @@ module PollardRhoTests {
         var curve = new ModCurve(BigInteger.parse(points.a), BigInteger.parse(points.b), BigInteger.parse(points.n), BigInteger.parse(points.order));
         var config = {
             curve: curve,
-            generator: ModPoint.create(BigInteger.parse(points.gx), BigInteger.parse(points.gy), curve),
-            target: ModPoint.create(BigInteger.parse(points.tx), BigInteger.parse(points.ty), curve),
+            generator: ModPoint.fromBigInts(BigInteger.parse(points.gx), BigInteger.parse(points.gy), curve),
+            target: ModPoint.fromBigInts(BigInteger.parse(points.tx), BigInteger.parse(points.ty), curve),
             additionTableSeed: tableSeed,
             additionTableLength: tableLength,
             parrallelWalksCount: walksCount,
             distinguishedPointMask: BigInteger.parse("0"),
-            computePointsUniqueFraction: true,
+            computeStats: true,
             checkCyclePeriod: tableLength,
             checkCycleLength: tableLength
         };
 
         test(configName + ": " + points.expected + " * " + config.generator + " = " + config.target + " on " + config.curve, () => {
             PollardRho.runLimited(config, sink);
-            ok(sink.result.eq(ModNumber.create(BigInteger.parse(points.expected), curve.order)));
+            equal(0, sink.result.compare(ModNumber.create(BigInteger.parse(points.expected), curve.order)));
         });
     }
 

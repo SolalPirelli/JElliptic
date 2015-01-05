@@ -1,4 +1,5 @@
-﻿define(["require", "exports", "BigInteger", "ModNumber", "DeterministicRandom"], function(require, exports, BigInteger, ModNumber, DeterministicRandom) {
+﻿"use strict";
+define(["require", "exports", "BigInteger", "ModNumber", "DeterministicRandom"], function(require, exports, BigInteger, ModNumber, DeterministicRandom) {
     var Table = (function () {
         function Table(config) {
             this._entries = new Array(config.additionTableLength);

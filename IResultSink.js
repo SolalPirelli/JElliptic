@@ -1,4 +1,5 @@
-﻿define(["require", "exports"], function(require, exports) {
+﻿"use strict";
+define(["require", "exports"], function(require, exports) {
     
 });
 //# sourceMappingURL=IResultSink.js.map

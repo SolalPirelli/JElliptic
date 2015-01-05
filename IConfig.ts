@@ -1,4 +1,6 @@
-﻿import BigInteger = require("BigInteger");
+﻿"use strict";
+
+import BigInteger = require("BigInteger");
 import ModCurve = require("ModCurve");
 import ModPoint = require("ModPoint");
 
@@ -10,7 +12,7 @@ interface IConfig {
     additionTableLength: number;
     parrallelWalksCount: number;
     distinguishedPointMask: BigInteger;
-    computePointsUniqueFraction: boolean;
+    computeStats: boolean;
     checkCyclePeriod: number;
     checkCycleLength: number;
 }

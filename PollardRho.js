@@ -1,4 +1,5 @@
-﻿define(["require", "exports", "ModPoint", "ModPointSet", "AdditionTable"], function(require, exports, ModPoint, ModPointSet, Addition) {
+﻿"use strict";
+define(["require", "exports", "ModPoint", "ModPointSet", "AdditionTable"], function(require, exports, ModPoint, ModPointSet, Addition) {
     var PollardRho;
     (function (PollardRho) {
         // based on the description in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
@@ -34,7 +35,7 @@
 
             var walk = new MultiCurveWalk(config, table);
 
-            for (var x = 0; x < 100; x++) {
+            for (var x = 0; x < 10; x++) {
                 for (var n = 0; n < config.checkCyclePeriod; n++) {
                     walk.step();
                     walk.send(resultSink);
@@ -54,26 +55,23 @@
         }
         PollardRho.runLimited = runLimited;
 
-        var SingleCurveWalk = (function () {
-            function SingleCurveWalk(config, table) {
+        var CurveWalk = (function () {
+            function CurveWalk(config, table) {
                 this._config = config;
                 this._table = table;
 
-                this._index = SingleCurveWalk.INDEX;
+                this._index = CurveWalk.INDEX;
                 var entry = this._table.at(this._index % this._table.length);
                 this._u = entry.u;
                 this._v = entry.v;
                 this._current = entry.p;
-
-                if (config.computePointsUniqueFraction) {
-                    this._allPoints = new ModPointSet();
-                }
-
                 this._reductionAdd = 0;
 
-                SingleCurveWalk.INDEX++;
+                this._stats = config.computeStats ? new Statistics() : null;
+
+                CurveWalk.INDEX++;
             }
-            Object.defineProperty(SingleCurveWalk.prototype, "u", {
+            Object.defineProperty(CurveWalk.prototype, "u", {
                 get: function () {
                     return this._u;
                 },
@@ -81,7 +79,7 @@
                 configurable: true
             });
 
-            Object.defineProperty(SingleCurveWalk.prototype, "v", {
+            Object.defineProperty(CurveWalk.prototype, "v", {
                 get: function () {
                     return this._v;
                 },
@@ -89,7 +87,7 @@
                 configurable: true
             });
 
-            Object.defineProperty(SingleCurveWalk.prototype, "current", {
+            Object.defineProperty(CurveWalk.prototype, "current", {
                 get: function () {
                     return this._current;
                 },
@@ -97,31 +95,34 @@
                 configurable: true
             });
 
-            SingleCurveWalk.prototype.addTo = function (pointSet) {
+            CurveWalk.prototype.addTo = function (pointSet) {
                 return pointSet.add(this._current);
             };
 
-            SingleCurveWalk.prototype.escape = function () {
+            CurveWalk.prototype.escape = function () {
                 this.setCurrent(this._current.add(this._current), this._u, this._v);
             };
 
-            SingleCurveWalk.prototype.send = function (sink) {
+            CurveWalk.prototype.send = function (sink) {
                 if (this._reductionAdd != 0) {
                     // we're in the middle of a cycle reduction, the current point isn't valid
+                    if (this._stats != null) {
+                        this._stats.incrementFruitless();
+                    }
                     return;
                 }
 
                 if (this._current != ModPoint.INFINITY && (this._current.x.value.and(this._config.distinguishedPointMask)).compare(this._config.distinguishedPointMask) == 0) {
                     sink.send(this._u, this._v, this._current);
 
-                    if (this._config.computePointsUniqueFraction) {
-                        console.log(this._allPoints.toString());
+                    if (this._stats != null) {
+                        console.log("Walk " + this._index + ": " + this._stats.toString());
                     }
                 }
             };
 
             /** If the result can already be computed, returns null; endStep must then not be called. */
-            SingleCurveWalk.prototype.beginStep = function () {
+            CurveWalk.prototype.beginStep = function () {
                 var index = this._current.partition(this._table.length);
                 var entry = this._table.at(index);
 
@@ -133,13 +134,13 @@
                 return null;
             };
 
-            SingleCurveWalk.prototype.endStep = function (lambda) {
+            CurveWalk.prototype.endStep = function (lambda) {
                 var index = (this._current.partition(this._table.length) + this._reductionAdd) % this._table.length;
                 var entry = this._table.at(index);
                 this.setCurrent(this._current.endAdd(entry.p, lambda), entry.u, entry.v);
 
-                if (this._config.computePointsUniqueFraction) {
-                    this._allPoints.add(this._current);
+                if (this._stats != null) {
+                    this._stats.addPoint(this._current);
                 }
 
                 var newIndex = this._current.partition(this._table.length);
@@ -156,7 +157,7 @@
                 }
             };
 
-            SingleCurveWalk.prototype.setCurrent = function (candidate, u, v) {
+            CurveWalk.prototype.setCurrent = function (candidate, u, v) {
                 var reflected = candidate.negate();
 
                 this._u = this._u.add(u);
@@ -171,16 +172,15 @@
 
                 this._current = candidate;
             };
-            SingleCurveWalk.INDEX = 0;
-            return SingleCurveWalk;
+            CurveWalk.INDEX = 0;
+            return CurveWalk;
         })();
-        PollardRho.SingleCurveWalk = SingleCurveWalk;
 
         var MultiCurveWalk = (function () {
             function MultiCurveWalk(config, table) {
                 this._walks = Array(config.parrallelWalksCount);
                 for (var n = 0; n < this._walks.length; n++) {
-                    this._walks[n] = new SingleCurveWalk(config, table);
+                    this._walks[n] = new CurveWalk(config, table);
                 }
             }
             MultiCurveWalk.prototype.step = function () {
@@ -242,6 +242,28 @@
         })();
         PollardRho.MultiCurveWalk = MultiCurveWalk;
     })(PollardRho || (PollardRho = {}));
+
+    var Statistics = (function () {
+        function Statistics() {
+            this._points = new ModPointSet();
+            this._duplicatesCount = 0;
+            this._fruitlessCount = 0;
+        }
+        Statistics.prototype.incrementFruitless = function () {
+            this._fruitlessCount++;
+        };
+
+        Statistics.prototype.addPoint = function (point) {
+            if (!this._points.add(point)) {
+                this._duplicatesCount++;
+            }
+        };
+
+        Statistics.prototype.toString = function () {
+            return this._points.size + " unique points, " + this._duplicatesCount + " duplicates, " + this._fruitlessCount + " points in fruitless cycles";
+        };
+        return Statistics;
+    })();
 
     
     return PollardRho;

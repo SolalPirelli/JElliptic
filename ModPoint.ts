@@ -1,25 +1,28 @@
-﻿import BigInteger = require("BigInteger");
+﻿"use strict";
+
+import BigInteger = require("BigInteger");
 import ModNumber = require("ModNumber");
 import ModCurve = require("ModCurve");
 import ModPointAddPartialResult = require("ModPointAddPartialResult");
 
-// N.B.: Ensuring the validity of a point on a curve is simply too slow
-//       Unit tests will have to do...
-
 class ModPoint {
-    private static INF = new ModPoint();
+    private static INF = new ModPoint(null, null, null);
 
     private _x: ModNumber;
     private _y: ModNumber;
     private _curve: ModCurve;
 
-    static create(x: BigInteger, y: BigInteger, curve: ModCurve): ModPoint {
-        var point = new ModPoint();
-        point._x = ModNumber.create(x, curve.n);
-        point._y = ModNumber.create(y, curve.n);
-        point._curve = curve;
-        return point;
+
+    constructor(x: ModNumber, y: ModNumber, curve: ModCurve) {
+        this._x = x;
+        this._y = y;
+        this._curve = curve;
     }
+
+    static fromBigInts(x: BigInteger, y: BigInteger, curve: ModCurve): ModPoint {
+        return new ModPoint(ModNumber.create(x, curve.n),ModNumber.create(y, curve.n), curve);
+    }
+
 
     get x(): ModNumber {
         return this._x;
@@ -27,10 +30,6 @@ class ModPoint {
 
     get y(): ModNumber {
         return this._y;
-    }
-
-    get curve(): ModCurve {
-        return this._curve;
     }
 
     static get INFINITY(): ModPoint {
@@ -43,60 +42,36 @@ class ModPoint {
         if (this == ModPoint.INF) {
             return this;
         }
-        return ModPoint.fromModNumbers(this._x, this._y.negate(), this._curve);
+        return new ModPoint(this._x, this._y.negate(), this._curve);
     }
 
     add(other: ModPoint): ModPoint {
-        // Case 1: One of the points is infinity -> return the other
-        if (this == ModPoint.INF) {
-            return other;
+        var partial = this.beginAdd(other);
+        if (partial.result != null) {
+            return partial.result;
         }
-        if (other == ModPoint.INF) {
-            return this;
-        }
-
-        // Case 2: The points are vertically symmetric -> return infinity
-        if (this._x.eq(other._x) && this._y.eq(other._y.negate())) {
-            return ModPoint.INF;
-        }
-
-        var num: ModNumber, denom: ModNumber;
-        if (this.eq(other)) {
-            // Case 3: The points are equal -> double the current point
-            num = this._x.pow(2).mulNum(3).add(this._curve.a);
-            denom = this._y.mulNum(2);
-        } else {
-            // Case 4: Add the two points
-            num = other._y.sub(this._y);
-            denom = other._x.sub(this._x);
-        }
-
-        var lambda = num.div(denom);
-
-        var x = lambda.pow(2).sub(this._x).sub(other._x);
-        var y = lambda.mul(this._x.sub(x)).sub(this._y);
-
-        return ModPoint.fromModNumbers(x, y, this._curve);
+        return this.endAdd(other, partial.numerator.div(partial.denominator));
     }
 
     beginAdd(other: ModPoint): ModPointAddPartialResult {
         // Case 1: One of the points is infinity -> return the other
         if (this == ModPoint.INF) {
-            return ModPointAddPartialResult.fromResult(other);
+            return new ModPointAddPartialResult(null, null, other);
         }
         if (other == ModPoint.INF) {
-            return ModPointAddPartialResult.fromResult(this);
+            return new ModPointAddPartialResult(null, null, this);
         }
 
         // Case 2: The points are vertically symmetric -> return infinity
-        if (this._x.eq(other._x) && this._y.eq(other._y.negate())) {
-            return ModPointAddPartialResult.fromResult(ModPoint.INF);
+        if (this._x.compare(other._x) == 0
+         && this._y.compare(other._y.negate()) == 0) {
+            return new ModPointAddPartialResult(null, null, ModPoint.INF);
         }
 
         var num: ModNumber, denom: ModNumber;
         if (this.eq(other)) {
             // Case 3: The points are equal -> double the current point
-            num = this._x.pow(2).mulNum(3).add(this._curve.a);
+            num = this._x.square().mulNum(3).add(this._curve.a);
             denom = this._y.mulNum(2);
         } else {
             // Case 4: Add the two points
@@ -104,14 +79,14 @@ class ModPoint {
             denom = other._x.sub(this._x);
         }
 
-        return ModPointAddPartialResult.fromDivision(num, denom);
+        return new ModPointAddPartialResult(num, denom, null);
     }
 
     endAdd(other: ModPoint, lambda: ModNumber): ModPoint {
-        var x = lambda.pow(2).sub(this._x).sub(other._x);
+        var x = lambda.square().sub(this._x).sub(other._x);
         var y = lambda.mul(this._x.sub(x)).sub(this._y);
 
-        return ModPoint.fromModNumbers(x, y, this._curve);
+        return new ModPoint(x, y, this._curve);
     }
 
     /** O(n) */
@@ -162,7 +137,8 @@ class ModPoint {
             return false;
         }
 
-        return this._x.eq(other._x) && this._y.eq(other._y);
+        return this._x.compare(other._x) == 0
+            && this._y.compare(other._y) == 0;
     }
 
     /** O(this.x.value.digits + this.y.value.digits) */
@@ -171,14 +147,6 @@ class ModPoint {
             return "Infinity";
         }
         return "(" + this._x.value.toString() + ", " + this._y.value.toString() + ")";
-    }
-
-    private static fromModNumbers(x: ModNumber, y: ModNumber, curve: ModCurve) {
-        var point = new ModPoint();
-        point._x = x;
-        point._y = y;
-        point._curve = curve;
-        return point;
     }
 }
 

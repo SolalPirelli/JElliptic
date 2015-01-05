@@ -1,4 +1,5 @@
 ﻿/// <reference path="lib/qunit.d.ts" />
+"use strict";
 define(["require", "exports", "BigInteger", "ModNumber"], function(require, exports, BigInteger, ModNumber) {
     var ModNumberTests;
     (function (ModNumberTests) {

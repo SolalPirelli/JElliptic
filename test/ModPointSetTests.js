@@ -1,4 +1,5 @@
 ﻿/// <reference path="lib/qunit.d.ts" />
+"use strict";
 define(["require", "exports", "BigInteger", "ModCurve", "ModPoint", "ModPointSet"], function(require, exports, BigInteger, ModCurve, ModPoint, ModPointSet) {
     var ModPointSetTests;
     (function (ModPointSetTests) {
@@ -13,7 +14,7 @@ define(["require", "exports", "BigInteger", "ModCurve", "ModPoint", "ModPointSet
             for (var n = 0; n < Math.floor(vals.length / 2); n++) {
                 var x = BigInteger.parse(vals[2 * n]);
                 var y = BigInteger.parse(vals[2 * n + 1]);
-                var point = ModPoint.create(x, y, CURVE);
+                var point = ModPoint.fromBigInts(x, y, CURVE);
                 pointSet.add(point);
             }
             return pointSet;
@@ -22,7 +23,7 @@ define(["require", "exports", "BigInteger", "ModCurve", "ModPoint", "ModPointSet
         function contains(name, x, y, pointSet) {
             var xp = BigInteger.parse(x);
             var yp = BigInteger.parse(y);
-            var point = ModPoint.create(xp, yp, CURVE);
+            var point = ModPoint.fromBigInts(xp, yp, CURVE);
 
             test(name, function () {
                 ok(pointSet.contains(point));
@@ -32,7 +33,7 @@ define(["require", "exports", "BigInteger", "ModCurve", "ModPoint", "ModPointSet
         function doesNotContain(name, x, y, pointSet) {
             var xp = BigInteger.parse(x);
             var yp = BigInteger.parse(y);
-            var point = ModPoint.create(xp, yp, CURVE);
+            var point = ModPoint.fromBigInts(xp, yp, CURVE);
 
             test(name, function () {
                 ok(!pointSet.contains(point));

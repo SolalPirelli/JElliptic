@@ -1,4 +1,6 @@
-﻿import BigInteger = require("BigInteger");
+﻿"use strict";
+
+import BigInteger = require("BigInteger");
 import ModNumber = require("ModNumber");
 import ModPoint = require("ModPoint");
 import ModPointAddPartialResult = require("ModPointAddPartialResult");
@@ -40,7 +42,7 @@ module PollardRho {
 
         var walk = new MultiCurveWalk(config, table);
 
-        for (var x = 0; x < 100; x++) {
+        for (var x = 0; x < 10; x++) {
             for (var n = 0; n < config.checkCyclePeriod; n++) {
                 walk.step();
                 walk.send(resultSink);
@@ -59,7 +61,7 @@ module PollardRho {
         }
     }
 
-    export class SingleCurveWalk {
+    class CurveWalk {
         private static INDEX = 0;
 
         private _config: IConfig;
@@ -70,28 +72,25 @@ module PollardRho {
         private _v: ModNumber;
         private _current: ModPoint;
         private _currentIndex: number;
-
-        private _allPoints: ModPointSet;
         private _reductionAdd: number;
+
+        private _stats: Statistics;
 
 
         constructor(config: IConfig, table: Addition.Table) {
             this._config = config;
             this._table = table;
 
-            this._index = SingleCurveWalk.INDEX;
+            this._index = CurveWalk.INDEX;
             var entry = this._table.at(this._index % this._table.length);
             this._u = entry.u;
             this._v = entry.v;
             this._current = entry.p;
-
-            if (config.computePointsUniqueFraction) {
-                this._allPoints = new ModPointSet();
-            }
-
             this._reductionAdd = 0;
 
-            SingleCurveWalk.INDEX++;
+            this._stats = config.computeStats ? new Statistics() : null;
+
+            CurveWalk.INDEX++;
         }
 
 
@@ -118,14 +117,17 @@ module PollardRho {
         send(sink: IResultSink): void {
             if (this._reductionAdd != 0) {
                 // we're in the middle of a cycle reduction, the current point isn't valid
+                if (this._stats != null) {
+                    this._stats.incrementFruitless();
+                }
                 return;
             }
 
             if (this._current != ModPoint.INFINITY && (this._current.x.value.and(this._config.distinguishedPointMask)).compare(this._config.distinguishedPointMask) == 0) {
                 sink.send(this._u, this._v, this._current);
 
-                if (this._config.computePointsUniqueFraction) {
-                    console.log(this._allPoints.toString());
+                if (this._stats != null) {
+                    console.log("Walk " + this._index + ": " + this._stats.toString());
                 }
             }
         }
@@ -148,8 +150,8 @@ module PollardRho {
             var entry = this._table.at(index);
             this.setCurrent(this._current.endAdd(entry.p, lambda), entry.u, entry.v);
 
-            if (this._config.computePointsUniqueFraction) {
-                this._allPoints.add(this._current);
+            if (this._stats != null) {
+                this._stats.addPoint(this._current);
             }
 
             var newIndex = this._current.partition(this._table.length);
@@ -184,18 +186,18 @@ module PollardRho {
     }
 
     export class MultiCurveWalk {
-        private _walks: SingleCurveWalk[];
+        private _walks: CurveWalk[];
 
         constructor(config: IConfig, table: Addition.Table) {
-            this._walks = Array<SingleCurveWalk>(config.parrallelWalksCount);
+            this._walks = Array<CurveWalk>(config.parrallelWalksCount);
             for (var n = 0; n < this._walks.length; n++) {
-                this._walks[n] = new SingleCurveWalk(config, table);
+                this._walks[n] = new CurveWalk(config, table);
             }
         }
 
         step(): void {
             var x = Array<ModPointAddPartialResult>();
-            var unfinishedWalks = new Array<SingleCurveWalk>();
+            var unfinishedWalks = new Array<CurveWalk>();
 
             for (var n = 0; n < this._walks.length; n++) {
                 var result = this._walks[n].beginStep();
@@ -244,6 +246,32 @@ module PollardRho {
         send(sink: IResultSink): void {
             this._walks.forEach(w => w.send(sink));
         }
+    }
+}
+
+class Statistics {
+    private _points: ModPointSet;
+    private _duplicatesCount: number;
+    private _fruitlessCount: number;
+
+    constructor() {
+        this._points = new ModPointSet();
+        this._duplicatesCount = 0;
+        this._fruitlessCount = 0;
+    }
+
+    incrementFruitless(): void {
+        this._fruitlessCount++;
+    }
+
+    addPoint(point: ModPoint): void {
+        if (!this._points.add(point)) {
+            this._duplicatesCount++;
+        }
+    }
+
+    toString(): string {
+        return this._points.size + " unique points, " + this._duplicatesCount + " duplicates, " + this._fruitlessCount + " points in fruitless cycles";
     }
 }
 

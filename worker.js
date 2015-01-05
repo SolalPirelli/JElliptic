@@ -1,4 +1,6 @@
-﻿importScripts("lib/require.js");
+﻿"use strict";
+
+importScripts("lib/require.js");
 
 // N.B. passing objects around is extremely limited, better use native types
 
@@ -17,11 +19,10 @@ onmessage = function (e) {
                 additionTableLength: msg.additionTableLength,
                 parrallelWalksCount: msg.parrallelWalksCount,
                 distinguishedPointMask: bigInt.parse(msg.distinguishedPointMask),
-                computePointsUniqueFraction: msg.computePointsUniqueFraction,
+                computeStats: msg.computeStats,
                 checkCycleLength: msg.checkCycleLength,
                 checkCyclePeriod: msg.checkCyclePeriod
             };
-
 
             var sink = resultSinks.debug(); //resultSinks.combine(resultSinks.server(), resultSinks.debug());
 

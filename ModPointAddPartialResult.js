@@ -1,21 +1,12 @@
-﻿define(["require", "exports"], function(require, exports) {
+﻿"use strict";
+define(["require", "exports"], function(require, exports) {
     // either num and denom are set, or result is set
     var ModPointAddPartialResult = (function () {
-        function ModPointAddPartialResult() {
+        function ModPointAddPartialResult(num, denom, res) {
+            this._num = num;
+            this._denom = denom;
+            this._res = res;
         }
-        ModPointAddPartialResult.fromDivision = function (num, denom) {
-            var res = new ModPointAddPartialResult();
-            res._num = num;
-            res._denom = denom;
-            return res;
-        };
-
-        ModPointAddPartialResult.fromResult = function (result) {
-            var res = new ModPointAddPartialResult();
-            res._res = result;
-            return res;
-        };
-
         Object.defineProperty(ModPointAddPartialResult.prototype, "numerator", {
             get: function () {
                 return this._num;

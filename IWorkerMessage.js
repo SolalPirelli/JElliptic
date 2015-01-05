@@ -1,6 +1,4 @@
-﻿// This is only there for documentation purposes;
-// its properties are only accessed from JS in a Worker,
-// never from TS.
+﻿"use strict";
 define(["require", "exports"], function(require, exports) {
     
 

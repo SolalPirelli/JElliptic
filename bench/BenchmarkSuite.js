@@ -1,4 +1,5 @@
 ﻿/// <reference path="lib/benchmark.d.ts" />
+"use strict";
 define(["require", "exports"], function(require, exports) {
     var BenchmarkSuite;
     (function (BenchmarkSuite) {

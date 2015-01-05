@@ -1,4 +1,5 @@
-﻿define(["require", "exports"], function(require, exports) {
+﻿"use strict";
+define(["require", "exports"], function(require, exports) {
     function value(elemName) {
         return document.getElementById(elemName).value;
     }
@@ -61,7 +62,7 @@
             additionTableLength: intValue("tableLength"),
             parrallelWalksCount: intValue("walksCount"),
             distinguishedPointMask: value("mask"),
-            computePointsUniqueFraction: true,
+            computeStats: true,
             checkCycleLength: intValue("cycleLength"),
             checkCyclePeriod: intValue("cyclePeriod")
         };

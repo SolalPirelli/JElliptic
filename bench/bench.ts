@@ -1,4 +1,6 @@
-﻿import BigInteger = require("BigInteger");
+﻿"use strict";
+
+import BigInteger = require("BigInteger");
 import ModNumber = require("ModNumber");
 import ModCurve = require("ModCurve");
 import ModPoint = require("ModPoint");
@@ -125,29 +127,26 @@ function modNumberSuite() {
     s("Divide two 20-digit numbers", () => i20_1.div(i20_2));
     s("Divide two 34-digit numbers", () => i34_1.div(i34_2));
 
-    s("Square a 1-digit number", () => i1_1.pow(2));
-    s("Square a 20-digit number", () => i20_1.pow(2));
-    s("Square a 34-digit number", () => i34_1.pow(2));
-    s("Cube a 1-digit number", () => i1_1.pow(3));
-    s("Cube a 20-digit number", () => i20_1.pow(3));
-    s("Cube a 34-digit number", () => i34_1.pow(3));
+    s("Square a 1-digit number", () => i1_1.square());
+    s("Square a 20-digit number", () => i20_1.square());
+    s("Square a 34-digit number", () => i34_1.square());
 
-    s("Compare two 1-digit numbers", () => i1_1.eq(i1_2));
-    s("Compare two 20-digit numbers", () => i20_1.eq(i20_2));
-    s("Compare two 34-digit numbers", () => i34_1.eq(i34_2));
+    s("Compare two 1-digit numbers", () => i1_1.compare(i1_2));
+    s("Compare two 20-digit numbers", () => i20_1.compare(i20_2));
+    s("Compare two 34-digit numbers", () => i34_1.compare(i34_2));
 }
 
 function modPointSuite() {
     // very simple curve and points generated with Wolfram|Alpha
     var c1 = new ModCurve(BigInteger.parse("2"), BigInteger.parse("1"), BigInteger.parse("9"), BigInteger.parse("0")); // I don't know the order of that curve
-    var pSmall_1 = ModPoint.create(BigInteger.parse("4"), BigInteger.parse("1"), c1);
-    var pSmall_2 = ModPoint.create(BigInteger.parse("6"), BigInteger.parse("2"), c1);
+    var pSmall_1 = ModPoint.fromBigInts(BigInteger.parse("4"), BigInteger.parse("1"), c1);
+    var pSmall_2 = ModPoint.fromBigInts(BigInteger.parse("6"), BigInteger.parse("2"), c1);
 
     // using the values defined in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
     var cBig = new ModCurve(BigInteger.parse("4451685225093714772084598273548424"), BigInteger.parse("2061118396808653202902996166388514"),
         BigInteger.parse("4451685225093714772084598273548427"), BigInteger.parse("4451685225093714776491891542548933"));
-    var pBig_1 = ModPoint.create(BigInteger.parse("188281465057972534892223778713752"), BigInteger.parse("3419875491033170827167861896082688"), cBig);
-    var pBig_2 = ModPoint.create(BigInteger.parse("1415926535897932384626433832795028"), BigInteger.parse("3846759606494706724286139623885544"), cBig);
+    var pBig_1 = ModPoint.fromBigInts(BigInteger.parse("188281465057972534892223778713752"), BigInteger.parse("3419875491033170827167861896082688"), cBig);
+    var pBig_2 = ModPoint.fromBigInts(BigInteger.parse("1415926535897932384626433832795028"), BigInteger.parse("3846759606494706724286139623885544"), cBig);
 
     var s = BenchmarkSuite.create("ModPoint");
 
@@ -167,8 +166,8 @@ function pollardRhoSuite() {
 
     var curve = new ModCurve(BigInteger.parse("4451685225093714772084598273548424"), BigInteger.parse("2061118396808653202902996166388514"),
         BigInteger.parse("4451685225093714772084598273548427"), BigInteger.parse("4451685225093714776491891542548933"));
-    var gen = ModPoint.create(BigInteger.parse("188281465057972534892223778713752"), BigInteger.parse("3419875491033170827167861896082688"), curve);
-    var target = ModPoint.create(BigInteger.parse("1415926535897932384626433832795028"), BigInteger.parse("3846759606494706724286139623885544"), curve);
+    var gen = ModPoint.fromBigInts(BigInteger.parse("188281465057972534892223778713752"), BigInteger.parse("3419875491033170827167861896082688"), curve);
+    var target = ModPoint.fromBigInts(BigInteger.parse("1415926535897932384626433832795028"), BigInteger.parse("3846759606494706724286139623885544"), curve);
 
 
     function configWithTableLength(length: number) {
@@ -180,7 +179,7 @@ function pollardRhoSuite() {
             additionTableSeed: 0,
             distinguishedPointMask: BigInteger.parse("1"),
             parrallelWalksCount: 1,
-            computePointsUniqueFraction: false,
+            computeStats: false,
             checkCyclePeriod: length * 2,
             checkCycleLength: length
         };
@@ -203,7 +202,7 @@ function pollardRhoSuite() {
             additionTableSeed: 0,
             distinguishedPointMask: BigInteger.parse("4294967295"),
             parrallelWalksCount: count,
-            computePointsUniqueFraction: false,
+            computeStats: false,
             checkCyclePeriod: 32,
             checkCycleLength: 16
         };
@@ -221,18 +220,18 @@ function pollardRhoSuite() {
     var table16 = new Addition.Table(config16);
     var table64 = new Addition.Table(config64);
     var table256 = new Addition.Table(config256);
-    var table2048 = new Addition.Table(config2048);
+    //var table2048 = new Addition.Table(config2048);
     var walk1_16 = new PollardRho.MultiCurveWalk(config_walks1, table16);
     var walk1_64 = new PollardRho.MultiCurveWalk(config_walks1, table64);
     var walk1_256 = new PollardRho.MultiCurveWalk(config_walks1, table256);
-    var walk1_2048 = new PollardRho.MultiCurveWalk(config_walks1, table2048);
+    //var walk1_2048 = new PollardRho.MultiCurveWalk(config_walks1, table2048);
     var walk8_16 = new PollardRho.MultiCurveWalk(config_walks8, table16);
     var walk16_16 = new PollardRho.MultiCurveWalk(config_walks16, table16);
     var walk32_16 = new PollardRho.MultiCurveWalk(config_walks32, table16);
     var walk64_16 = new PollardRho.MultiCurveWalk(config_walks64, table16);
     var walk64_64 = new PollardRho.MultiCurveWalk(config_walks64, table64);
     var walk64_256 = new PollardRho.MultiCurveWalk(config_walks64, table256);
-    var walk64_2048 = new PollardRho.MultiCurveWalk(config_walks64, table2048);
+    //var walk64_2048 = new PollardRho.MultiCurveWalk(config_walks64, table2048);
     var walk128_16 = new PollardRho.MultiCurveWalk(config_walks128, table16);
     var walk256_16 = new PollardRho.MultiCurveWalk(config_walks256, table16);
     var walk512_16 = new PollardRho.MultiCurveWalk(config_walks512, table16);
@@ -286,12 +285,12 @@ function pollardRhoSuite() {
             walk1_256.step();
         }
     });
-    s("Step of a single walk over a 112-bit curve (r = 2048)", () => walk1_2048.step());
-    s("100 steps of a single walk over a 112-bit curve (r = 2048)", () => {
-        for (var n = 0; n < 100; n++) {
-            walk1_2048.step();
-        }
-    });
+    //s("Step of a single walk over a 112-bit curve (r = 2048)", () => walk1_2048.step());
+    //s("100 steps of a single walk over a 112-bit curve (r = 2048)", () => {
+    //    for (var n = 0; n < 100; n++) {
+    //        walk1_2048.step();
+    //    }
+    //});
 
     s("Step of 64 parrallel walks over a 112-bit curve (r = 64)", () => walk64_64.step());
     s("100 steps of 64 parrallel walks over a 112-bit curve (r = 64)", () => {
@@ -305,12 +304,12 @@ function pollardRhoSuite() {
             walk64_256.step();
         }
     });
-    s("Step of 64 parrallel walks over a 112-bit curve (r = 2048)", () => walk64_2048.step());
-    s("100 steps of 64 parrallel walks over a 112-bit curve (r = 2048)", () => {
-        for (var n = 0; n < 100; n++) {
-            walk64_2048.step();
-        }
-    });
+    //s("Step of 64 parrallel walks over a 112-bit curve (r = 2048)", () => walk64_2048.step());
+    //s("100 steps of 64 parrallel walks over a 112-bit curve (r = 2048)", () => {
+    //    for (var n = 0; n < 100; n++) {
+    //        walk64_2048.step();
+    //    }
+    //});
 }
 
 bigIntegerSuite();

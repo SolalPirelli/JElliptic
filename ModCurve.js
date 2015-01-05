@@ -1,4 +1,5 @@
-﻿define(["require", "exports", "ModNumber"], function(require, exports, ModNumber) {
+﻿"use strict";
+define(["require", "exports", "ModNumber"], function(require, exports, ModNumber) {
     var ModCurve = (function () {
         function ModCurve(a, b, n, order) {
             this._a = ModNumber.create(a, n);

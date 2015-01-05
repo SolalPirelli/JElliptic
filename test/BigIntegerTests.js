@@ -1,36 +1,22 @@
 ﻿/// <reference path="lib/qunit.d.ts" />
+"use strict";
 define(["require", "exports", "BigInteger"], function(require, exports, BigInteger) {
     var BigIntegerTests;
     (function (BigIntegerTests) {
-        function equivalent(str, n) {
-            test("parse: " + n, function () {
-                var actual = BigInteger.parse(str).toInt();
-
-                equal(actual, n);
-            });
-
-            test("toString: " + str, function () {
+        function fromInt(n, res) {
+            test("toString: " + res, function () {
                 var actual = BigInteger.fromInt(n).toString();
 
-                equal(actual, str);
+                equal(actual, res);
             });
         }
 
-        function roundtripS(str) {
+        function roundtrip(str) {
             test("string round-trip: " + str, function () {
                 var parsed = BigInteger.parse(str);
                 var actual = parsed.toString();
 
                 equal(actual, str);
-            });
-        }
-
-        function roundtripI(n) {
-            test("int round-trip: " + n, function () {
-                var parsed = BigInteger.fromInt(n);
-                var actual = parsed.toInt();
-
-                equal(actual, n);
             });
         }
 
@@ -163,29 +149,26 @@ define(["require", "exports", "BigInteger"], function(require, exports, BigInteg
         function run() {
             QUnit.module("BigInteger");
 
-            equivalent("-1", -1);
-            equivalent("0", 0);
-            equivalent("1", 1);
-            equivalent("-1000000000", -1000000000);
-            equivalent("1000000000", 1000000000);
-            equivalent("8794308446", 8794308446);
-            equivalent("-234655687", -234655687);
+            fromInt(-1, "-1");
+            fromInt(0, "0");
+            fromInt(1, "1");
+            fromInt(-1000000000, "-1000000000");
+            fromInt(1000000000, "1000000000");
+            fromInt(8794308446, "8794308446");
+            fromInt(-234655687, "-234655687");
 
-            roundtripS("-1");
-            roundtripS("0");
-            roundtripS("-1");
-            roundtripS("-10000000000000000000000");
-            roundtripS("10000000000000000000000");
-            roundtripS("843654783738219391462891409156201482963598234021939235792375230490324365");
-            roundtripS("-96758932056432684895346825495765794382534257436257190023854239555353");
-
-            roundtripI(-1);
-            roundtripI(0);
-            roundtripI(1);
-            roundtripI(-1000000000);
-            roundtripI(1000000000);
-            roundtripI(4365447743);
-            roundtripI(-578445757);
+            roundtrip("-1");
+            roundtrip("0");
+            roundtrip("-1");
+            roundtrip("-1000000000");
+            roundtrip("1000000000");
+            roundtrip("4365447743");
+            roundtrip("-578445757");
+            roundtrip("-10000000000000000000000");
+            roundtrip("10000000000000000000000");
+            roundtrip("843654783738219391462891409156201482963598234021939235792375230490324365");
+            roundtrip("-96758932056432684895346825495765794382534257436257190023854239555353");
+            roundtrip("888888888888888888888888888888888888888888888888888888888888888888888");
 
             negate("0", "0");
             negate("1", "-1");

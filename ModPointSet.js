@@ -1,4 +1,5 @@
-﻿define(["require", "exports", "ModPoint"], function(require, exports, ModPoint) {
+﻿"use strict";
+define(["require", "exports", "ModPoint"], function(require, exports, ModPoint) {
     var ModPointSet = (function () {
         function ModPointSet() {
             this._buckets = [];
@@ -7,9 +8,16 @@
             }
 
             this._containsInfinity = false;
-            this._totalCount = 0;
-            this._duplicatesCount = 0;
+            this._size = 0;
         }
+        Object.defineProperty(ModPointSet.prototype, "size", {
+            get: function () {
+                return this._size;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
         ModPointSet.prototype.contains = function (point) {
             if (point == ModPoint.INFINITY) {
                 return this._containsInfinity;
@@ -26,12 +34,11 @@
         };
 
         ModPointSet.prototype.add = function (point) {
-            this._totalCount++;
-
             if (this.contains(point)) {
-                this._duplicatesCount++;
                 return false;
             }
+
+            this._size++;
 
             if (point == ModPoint.INFINITY) {
                 this._containsInfinity = true;
@@ -41,10 +48,6 @@
             var hash = point.x.value.partition(ModPointSet.BUCKET_COUNT);
             this._buckets[hash].push(point);
             return true;
-        };
-
-        ModPointSet.prototype.toString = function () {
-            return this._totalCount + " points, " + (this._duplicatesCount / this._totalCount * 100) + "% of which are duplicates.";
         };
         ModPointSet.BUCKET_COUNT = 32;
         return ModPointSet;

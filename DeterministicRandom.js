@@ -1,4 +1,5 @@
-﻿define(["require", "exports"], function(require, exports) {
+﻿"use strict";
+define(["require", "exports"], function(require, exports) {
     // Very simple seeded RNG, based on http://stackoverflow.com/a/23304189
     var DeterministicRandom = (function () {
         function DeterministicRandom(seed) {

@@ -1,4 +1,6 @@
-﻿import ModNumber = require("ModNumber");
+﻿"use strict";
+
+import ModNumber = require("ModNumber");
 import ModPoint = require("ModPoint");
 
 // either num and denom are set, or result is set
@@ -7,20 +9,11 @@ class ModPointAddPartialResult {
     private _denom: ModNumber;
     private _res: ModPoint;
 
-
-    static fromDivision(num: ModNumber, denom: ModNumber): ModPointAddPartialResult {
-        var res = new ModPointAddPartialResult();
-        res._num = num;
-        res._denom = denom;
-        return res;
+    constructor(num: ModNumber, denom: ModNumber, res: ModPoint) {
+        this._num = num;
+        this._denom = denom;
+        this._res = res;
     }
-
-    static fromResult(result: ModPoint): ModPointAddPartialResult {
-        var res = new ModPointAddPartialResult();
-        res._res = result;
-        return res;
-    }
-
 
     get numerator(): ModNumber {
         return this._num;

@@ -1,4 +1,6 @@
-﻿// This is only there for documentation purposes; 
+﻿"use strict";
+
+// This is only there for documentation purposes; 
 // its properties are only accessed from JS in a Worker,
 // never from TS.
 
@@ -15,7 +17,7 @@ interface IWorkerMessage {
     additionTableLength: number;
     parrallelWalksCount: number;
     distinguishedPointMask: string;
-    computePointsUniqueFraction: boolean;
+    computeStats: boolean;
     checkCycleLength: number;
     checkCyclePeriod: number;
 }
