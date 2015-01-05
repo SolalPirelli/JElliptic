@@ -360,7 +360,7 @@ class BigInteger {
                     guess--;
                 }
 
-                remainder = remainder.sub(actual);
+                remainder.MUTATE_sub(actual);
                 digits[n] = guess;
             }
         }
@@ -473,15 +473,6 @@ class BigInteger {
         return str;
     }
 
-    /** Mutates the current instance.
-        O(this.digits + n) */
-    private MUTATE_pushRight(n: number): void {
-        for (var i = this._digits.length; i > 0; i--) {
-            this._digits[i] = this._digits[i - 1];
-        }
-        this._digits[0] = n;
-    }
-
     /** O(digits). Assumes that mul is positive. */
     private singleDigitMul(mul: number): BigInteger {
         var digits: number[] = [];
@@ -498,6 +489,58 @@ class BigInteger {
         }
 
         return BigInteger.create(this._isPositive, digits);
+    }
+
+    /** Mutates the current instance.
+        O(this.digits + n) */
+    private MUTATE_pushRight(n: number): void {
+        if (this._digits.length == 1 && this._digits[0] == 0) {
+            this._digits[0] = n;
+            return;
+        }
+
+        for (var i = this._digits.length; i > 0; i--) {
+            this._digits[i] = this._digits[i - 1];
+        }
+        this._digits[0] = n;
+    }
+
+    /** Mutates the current instance.
+        Assumes that this > other, this > 0, other > 0
+        O(max(this.digits, other.digits)) */
+    private MUTATE_sub(other: BigInteger): void {
+        var carry = 0;
+        var n = 0;
+
+        for (; n < other._digits.length; n++) {
+            var current = this._digits[n] - other._digits[n] - carry;
+
+            if (current < 0) {
+                carry = 1;
+                current += BigInteger.BASE;
+            } else {
+                carry = 0;
+            }
+
+            this._digits[n] = current;
+        }
+
+        for (; carry == 1 && n < this._digits.length; n++) {
+            var current = this._digits[n] - carry;
+
+            if (current < 0) {
+                carry = 1;
+                current += BigInteger.BASE;
+            } else {
+                carry = 0;
+            }
+
+            this._digits[n] = current;
+        }
+
+        while (this._digits[this._digits.length - 1] == 0 && this._digits.length > 1) {
+            this._digits.length--;
+        }
     }
 }
 
