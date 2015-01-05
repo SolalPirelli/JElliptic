@@ -16,7 +16,7 @@ class BigInteger {
     private _isPositive: boolean;
     private _digits: number[]; // base BASE
 
-
+    // These three are properties so that unsafe methods can be called on their return values
     static get MINUS_ONE(): BigInteger {
         return new BigInteger(false, [1]);
     }
@@ -39,8 +39,7 @@ class BigInteger {
     static create(isPositive: boolean, digits: number[]): BigInteger {
         // Remove useless digits
         var actualLength = digits.length;
-        // Boolean NOT on a number also takes care of undefined
-        while (actualLength > 0 && !digits[actualLength - 1]) {
+        while (actualLength > 0 && digits[actualLength - 1] == 0) {
             actualLength--;
         }
 
@@ -143,10 +142,10 @@ class BigInteger {
 
     /** O(max(this.digits, other.digits)) */
     add(other: BigInteger): BigInteger {
-        if (this.compare(BigInteger.ZERO) == 0) {
+        if (this.isZero()) {
             return other;
         }
-        if (other.compare(BigInteger.ZERO) == 0) {
+        if (other.isZero()) {
             return this;
         }
 
@@ -207,10 +206,10 @@ class BigInteger {
 
     /** O(max(this.digits, other.digits)) */
     sub(other: BigInteger): BigInteger {
-        if (this.compare(BigInteger.ZERO) == 0) {
+        if (this.isZero()) {
             return other.negate();
         }
-        if (other.compare(BigInteger.ZERO) == 0) {
+        if (other.isZero()) {
             return this;
         }
 
@@ -382,7 +381,7 @@ class BigInteger {
         var x = n, nextX = this;
         var z = BigInteger.ZERO, nextZ = BigInteger.ONE;
 
-        while (!(nextX._digits.length == 1 && nextX._digits[0] == 0)) {
+        while (!(nextX.isZero())) {
             var q = x.divRem(nextX)[0];
 
             var oldX = x;
@@ -399,6 +398,11 @@ class BigInteger {
         }
 
         return z;
+    }
+
+    /** O(1) */
+    isZero(): boolean {
+        return this._digits.length == 1 && this._digits[0] == 0;
     }
 
     /** O(min(this.digits, other.digits)) */
@@ -494,7 +498,7 @@ class BigInteger {
     /** Mutates the current instance.
         O(this.digits + n) */
     private MUTATE_pushRight(n: number): void {
-        if (this._digits.length == 1 && this._digits[0] == 0) {
+        if (this.isZero()) {
             this._digits[0] = n;
             return;
         }
