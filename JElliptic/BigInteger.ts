@@ -379,26 +379,26 @@ class BigInteger {
 
     /** O(log(n)^2) */
     modInverse(n: BigInteger): BigInteger {
-        var t = BigInteger.ZERO, newt = BigInteger.ONE;
-        var r = n, newr = this;
-        while (newr.compare(BigInteger.ZERO) != 0) {
-            var quotient = r.divRem(newr)[0];
+        var x = n, nextX = this;
+        var z = BigInteger.ZERO, nextZ = BigInteger.ONE;
 
-            var oldt = t;
-            t = newt;
-            newt = oldt.sub(quotient.mul(newt));
+        while (!(nextX._digits.length == 1 && nextX._digits[0] == 0)) {
+            var q = x.divRem(nextX)[0];
 
-            var oldr = r;
-            r = newr;
-            newr = oldr.sub(quotient.mul(newr));
+            var oldX = x;
+            x = nextX;
+            nextX = oldX.sub(q.mul(nextX));
+
+            var oldZ = z;
+            z = nextZ;
+            nextZ = oldZ.sub(q.mul(nextZ));
         }
-        if (r.compare(BigInteger.ONE) == 1) {
-            throw (this + " is not invertible");
+
+        if (!z._isPositive) {
+            z = z.add(n);
         }
-        if (!t._isPositive) {
-            t = t.add(n);
-        }
-        return t;
+
+        return z;
     }
 
     /** O(min(this.digits, other.digits)) */
