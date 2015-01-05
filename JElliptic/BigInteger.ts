@@ -17,10 +17,17 @@ class BigInteger {
     private _digits: number[]; // base BASE
 
 
-    static MINUS_ONE = new BigInteger(false, [1]);
-    static ZERO = new BigInteger(true, [0]);
-    static ONE = new BigInteger(true, [1]);
-    static TWO = new BigInteger(true, [2]);
+    static get MINUS_ONE(): BigInteger {
+        return new BigInteger(false, [1]);
+    }
+
+    static get ZERO(): BigInteger {
+        return new BigInteger(true, [0]);
+    }
+
+    static get ONE(): BigInteger {
+        return new BigInteger(true, [1]);
+    }
 
     /** Unsafe: does not trim zeroes. */
     constructor(isPositive: boolean, digits: number[]) {
@@ -318,7 +325,7 @@ class BigInteger {
         var digits: number[] = [];
         var remainder = BigInteger.ZERO;
         for (var n = dividend._digits.length - 1; n >= 0; n--) {
-            remainder = remainder.pushRight(dividend._digits[n]);
+            remainder.MUTATE_pushRight(dividend._digits[n]);
             if (remainder.compare(divisor) == -1) {
                 digits[n] = 0;
             } else {
@@ -466,16 +473,13 @@ class BigInteger {
         return str;
     }
 
-    /** O(this.digits + n) */
-    private pushRight(n: number): BigInteger {
-        var digits: number[] = [];
-
-        digits[0] = n;
-        for (var i = 0; i < this._digits.length; i++) {
-            digits[i + 1] = this._digits[i];
+    /** Mutates the current instance.
+        O(this.digits + n) */
+    private MUTATE_pushRight(n: number): void {
+        for (var i = this._digits.length; i > 0; i--) {
+            this._digits[i] = this._digits[i - 1];
         }
-
-        return BigInteger.create(this._isPositive, digits);
+        this._digits[0] = n;
     }
 
     /** O(digits). Assumes that mul is positive. */
