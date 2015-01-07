@@ -13,8 +13,8 @@ onmessage = function (e) {
 
             var config = {
                 curve: curve,
-                generator: modPoint.create(bigInt.parse(msg.generatorX), bigInt.parse(msg.generatorY), curve),
-                target: modPoint.create(bigInt.parse(msg.targetX), bigInt.parse(msg.targetY), curve),
+                generator: modPoint.fromBigInts(bigInt.parse(msg.generatorX), bigInt.parse(msg.generatorY), curve),
+                target: modPoint.fromBigInts(bigInt.parse(msg.targetX), bigInt.parse(msg.targetY), curve),
                 additionTableSeed: msg.additionTableSeed,
                 additionTableLength: msg.additionTableLength,
                 parrallelWalksCount: msg.parrallelWalksCount,

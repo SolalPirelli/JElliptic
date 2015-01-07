@@ -346,7 +346,6 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModCurve", "ModPoint",
         var config16 = configWithTableLength(16);
         var config64 = configWithTableLength(64);
         var config256 = configWithTableLength(256);
-        var config2048 = configWithTableLength(2048);
         s("Initialize an addition table with 16 elements over a 112-bit curve", function () {
             return new Addition.Table(config16);
         });
@@ -373,6 +372,8 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModCurve", "ModPoint",
         }
 
         var config_walks1 = configWithParrallelWalkCount(1);
+        var config_walks2 = configWithParrallelWalkCount(2);
+        var config_walks4 = configWithParrallelWalkCount(4);
         var config_walks8 = configWithParrallelWalkCount(8);
         var config_walks16 = configWithParrallelWalkCount(16);
         var config_walks32 = configWithParrallelWalkCount(32);
@@ -384,21 +385,17 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModCurve", "ModPoint",
         var table16 = new Addition.Table(config16);
         var table64 = new Addition.Table(config64);
         var table256 = new Addition.Table(config256);
-
-        //var table2048 = new Addition.Table(config2048);
         var walk1_16 = new PollardRho.MultiCurveWalk(config_walks1, table16);
         var walk1_64 = new PollardRho.MultiCurveWalk(config_walks1, table64);
         var walk1_256 = new PollardRho.MultiCurveWalk(config_walks1, table256);
-
-        //var walk1_2048 = new PollardRho.MultiCurveWalk(config_walks1, table2048);
+        var walk2_16 = new PollardRho.MultiCurveWalk(config_walks2, table16);
+        var walk4_16 = new PollardRho.MultiCurveWalk(config_walks4, table16);
         var walk8_16 = new PollardRho.MultiCurveWalk(config_walks8, table16);
         var walk16_16 = new PollardRho.MultiCurveWalk(config_walks16, table16);
         var walk32_16 = new PollardRho.MultiCurveWalk(config_walks32, table16);
         var walk64_16 = new PollardRho.MultiCurveWalk(config_walks64, table16);
         var walk64_64 = new PollardRho.MultiCurveWalk(config_walks64, table64);
         var walk64_256 = new PollardRho.MultiCurveWalk(config_walks64, table256);
-
-        //var walk64_2048 = new PollardRho.MultiCurveWalk(config_walks64, table2048);
         var walk128_16 = new PollardRho.MultiCurveWalk(config_walks128, table16);
         var walk256_16 = new PollardRho.MultiCurveWalk(config_walks256, table16);
         var walk512_16 = new PollardRho.MultiCurveWalk(config_walks512, table16);
@@ -406,6 +403,12 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModCurve", "ModPoint",
 
         s("Step of a single walk over a 112-bit curve (r = 16)", function () {
             return walk1_16.step();
+        });
+        s("Step of 2 parrallel walks over a 112-bit curve (r = 16)", function () {
+            return walk2_16.step();
+        });
+        s("Step of 4 parrallel walks over a 112-bit curve (r = 16)", function () {
+            return walk4_16.step();
         });
         s("Step of 8 parrallel walks over a 112-bit curve (r = 16)", function () {
             return walk8_16.step();
@@ -432,28 +435,38 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModCurve", "ModPoint",
             return walk1024_16.step();
         });
 
-        s("100 steps of a single walk over a 112-bit curve (r = 16)", function () {
-            for (var n = 0; n < 100; n++) {
+        s("1000 steps of a single walk over a 112-bit curve (r = 16)", function () {
+            for (var n = 0; n < 1000; n++) {
                 walk1_16.step();
             }
         });
-        s("100 steps of 8 parrallel walks over a 112-bit curve (r = 16)", function () {
-            for (var n = 0; n < 100; n++) {
+        s("1000 steps of 2 parrallel walks over a 112-bit curve (r = 16)", function () {
+            for (var n = 0; n < 1000; n++) {
+                walk2_16.step();
+            }
+        });
+        s("1000 steps of 4 parrallel walks over a 112-bit curve (r = 16)", function () {
+            for (var n = 0; n < 1000; n++) {
+                walk4_16.step();
+            }
+        });
+        s("1000 steps of 8 parrallel walks over a 112-bit curve (r = 16)", function () {
+            for (var n = 0; n < 1000; n++) {
                 walk8_16.step();
             }
         });
-        s("100 steps of 16 parrallel walks over a 112-bit curve (r = 16)", function () {
-            for (var n = 0; n < 100; n++) {
+        s("1000 steps of 16 parrallel walks over a 112-bit curve (r = 16)", function () {
+            for (var n = 0; n < 1000; n++) {
                 walk16_16.step();
             }
         });
-        s("100 steps of 32 parrallel walks over a 112-bit curve (r = 16)", function () {
-            for (var n = 0; n < 100; n++) {
+        s("1000 steps of 32 parrallel walks over a 112-bit curve (r = 16)", function () {
+            for (var n = 0; n < 1000; n++) {
                 walk32_16.step();
             }
         });
-        s("100 steps of 64 parrallel walks over a 112-bit curve (r = 16)", function () {
-            for (var n = 0; n < 100; n++) {
+        s("1000 steps of 64 parrallel walks over a 112-bit curve (r = 16)", function () {
+            for (var n = 0; n < 1000; n++) {
                 walk64_16.step();
             }
         });
@@ -461,48 +474,36 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModCurve", "ModPoint",
         s("Step of a single walk over a 112-bit curve (r = 64)", function () {
             return walk1_64.step();
         });
-        s("100 steps of a single walk over a 112-bit curve (r = 64)", function () {
-            for (var n = 0; n < 100; n++) {
+        s("1000 steps of a single walk over a 112-bit curve (r = 64)", function () {
+            for (var n = 0; n < 1000; n++) {
                 walk1_64.step();
             }
         });
         s("Step of a single walk over a 112-bit curve (r = 256)", function () {
             return walk1_256.step();
         });
-        s("100 steps of a single walk over a 112-bit curve (r = 256)", function () {
-            for (var n = 0; n < 100; n++) {
+        s("1000 steps of a single walk over a 112-bit curve (r = 256)", function () {
+            for (var n = 0; n < 1000; n++) {
                 walk1_256.step();
             }
         });
 
-        //s("Step of a single walk over a 112-bit curve (r = 2048)", () => walk1_2048.step());
-        //s("100 steps of a single walk over a 112-bit curve (r = 2048)", () => {
-        //    for (var n = 0; n < 100; n++) {
-        //        walk1_2048.step();
-        //    }
-        //});
         s("Step of 64 parrallel walks over a 112-bit curve (r = 64)", function () {
             return walk64_64.step();
         });
-        s("100 steps of 64 parrallel walks over a 112-bit curve (r = 64)", function () {
-            for (var n = 0; n < 100; n++) {
+        s("1000 steps of 64 parrallel walks over a 112-bit curve (r = 64)", function () {
+            for (var n = 0; n < 1000; n++) {
                 walk64_64.step();
             }
         });
         s("Step of 64 parrallel walks over a 112-bit curve (r = 256)", function () {
             return walk64_256.step();
         });
-        s("100 steps of 64 parrallel walks over a 112-bit curve (r = 256)", function () {
-            for (var n = 0; n < 100; n++) {
+        s("1000 steps of 64 parrallel walks over a 112-bit curve (r = 256)", function () {
+            for (var n = 0; n < 1000; n++) {
                 walk64_256.step();
             }
         });
-        //s("Step of 64 parrallel walks over a 112-bit curve (r = 2048)", () => walk64_2048.step());
-        //s("100 steps of 64 parrallel walks over a 112-bit curve (r = 2048)", () => {
-        //    for (var n = 0; n < 100; n++) {
-        //        walk64_2048.step();
-        //    }
-        //});
     }
 
     bigIntegerSuite();

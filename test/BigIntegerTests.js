@@ -51,16 +51,6 @@ define(["require", "exports", "BigInteger"], function(require, exports, BigInteg
             });
         }
 
-        function halve(s, result) {
-            var i = BigInteger.parse(s);
-            var iResult = BigInteger.parse(result);
-
-            test("halve: " + s, function () {
-                var half = i.halve();
-                equal(0, half.compare(iResult), "Got " + half.toString());
-            });
-        }
-
         function add(s1, s2, result) {
             op("add", s1, s2, result, function (b1, b2) {
                 return b1.add(b2);
@@ -173,15 +163,6 @@ define(["require", "exports", "BigInteger"], function(require, exports, BigInteg
             negate("0", "0");
             negate("1", "-1");
             negate("843654783738219391462891409156201482963598234021939235792375230490324365", "-843654783738219391462891409156201482963598234021939235792375230490324365");
-
-            halve("0", "0");
-            halve("1", "0");
-            halve("2", "1");
-            halve("-1", "0");
-            halve("-2", "-1");
-            halve("10", "5");
-            halve("888888888888888888888888888888888888888888888888888888888888888888888", "444444444444444444444444444444444444444444444444444444444444444444444");
-            halve("-123456789123456789123456789123456789123456789123456789123456789", "-61728394561728394561728394561728394561728394561728394561728394");
 
             add("0", "0", "0");
             add("1", "1", "2");

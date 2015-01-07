@@ -43,7 +43,6 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModPoint", "ModCurve",
                 this.result = null;
             }
             ComputingResultSink.prototype.send = function (u, v, p) {
-                console.log("received " + p);
                 var ps = p.toString();
                 if (this._map[ps] == undefined) {
                     this._map[ps] = new Result(u, v, p);
@@ -81,7 +80,7 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModPoint", "ModCurve",
                 additionTableLength: tableLength,
                 parrallelWalksCount: walksCount,
                 distinguishedPointMask: BigInteger.parse("0"),
-                computeStats: true,
+                computeStats: false,
                 checkCyclePeriod: tableLength,
                 checkCycleLength: tableLength
             };

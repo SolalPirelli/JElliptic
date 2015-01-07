@@ -4,10 +4,8 @@ class BigInteger {
     // 2^53-1, where 53 is the mantissa size of IEEE-754 double-precision floating point numbers (what JS uses)
     private static MAX_SAFE_INT = 9007199254740991;
 
-    // Largest number that is:
-    // - even (for halve())
-    // - smaller than sqrt(MAX_SAFE_INT) (to multiply digits in the safe space)
-    static BASE = 94906264;
+    // Largest number that is smaller than sqrt(MAX_SAFE_INT) (to multiply digits in the safe space)
+    static BASE = 94906265;
 
     // Cached stuff
     private static BASE_LOG = Math.log(BigInteger.BASE);
@@ -16,7 +14,7 @@ class BigInteger {
     private _isPositive: boolean;
     private _digits: number[]; // base BASE
 
-
+    // These three are properties so that unsafe methods can be called on their return values
     static get MINUS_ONE(): BigInteger {
         return new BigInteger(false, [1]);
     }
@@ -39,8 +37,7 @@ class BigInteger {
     static create(isPositive: boolean, digits: number[]): BigInteger {
         // Remove useless digits
         var actualLength = digits.length;
-        // Boolean NOT on a number also takes care of undefined
-        while (actualLength > 0 && !digits[actualLength - 1]) {
+        while (actualLength > 0 && digits[actualLength - 1] == 0) {
             actualLength--;
         }
 
@@ -123,30 +120,12 @@ class BigInteger {
         return new BigInteger(true, this._digits);
     }
 
-    /** O(this.digits)
-        Rounds down. */
-    halve(): BigInteger {
-        var digits: number[] = [];
-        var hasRest = false;
-        for (var n = this._digits.length - 1; n >= 0; n--) {
-            digits[n] = this._digits[n];
-            if (hasRest) {
-                digits[n] += BigInteger.BASE;
-            }
-            digits[n] = Math.floor(digits[n] / 2);
-
-            hasRest = this._digits[n] % 2 == 1;
-        }
-
-        return BigInteger.create(this._isPositive, digits);
-    }
-
     /** O(max(this.digits, other.digits)) */
     add(other: BigInteger): BigInteger {
-        if (this.compare(BigInteger.ZERO) == 0) {
+        if (this.isZero()) {
             return other;
         }
-        if (other.compare(BigInteger.ZERO) == 0) {
+        if (other.isZero()) {
             return this;
         }
 
@@ -207,10 +186,10 @@ class BigInteger {
 
     /** O(max(this.digits, other.digits)) */
     sub(other: BigInteger): BigInteger {
-        if (this.compare(BigInteger.ZERO) == 0) {
+        if (this.isZero()) {
             return other.negate();
         }
-        if (other.compare(BigInteger.ZERO) == 0) {
+        if (other.isZero()) {
             return this;
         }
 
@@ -327,7 +306,7 @@ class BigInteger {
         for (var n = dividend._digits.length - 1; n >= 0; n--) {
             remainder.MUTATE_pushRight(dividend._digits[n]);
             if (remainder.compare(divisor) == -1) {
-                digits[n] = 0;
+                digits.push(0);
             } else {
                 // Since remainder just became bigger than divisor,
                 // its length is either divisor's or one more
@@ -361,7 +340,7 @@ class BigInteger {
                 }
 
                 remainder.MUTATE_sub(actual);
-                digits[n] = guess;
+                digits.push(guess);
             }
         }
 
@@ -369,7 +348,7 @@ class BigInteger {
             remainder = divisor.sub(remainder);
         }
 
-        return [BigInteger.create(isPositive, digits), remainder];
+        return [BigInteger.create(isPositive, digits.reverse()), remainder];
     }
 
     /** O(1) */
@@ -379,26 +358,31 @@ class BigInteger {
 
     /** O(log(n)^2) */
     modInverse(n: BigInteger): BigInteger {
-        var t = BigInteger.ZERO, newt = BigInteger.ONE;
-        var r = n, newr = this;
-        while (newr.compare(BigInteger.ZERO) != 0) {
-            var quotient = r.divRem(newr)[0];
+        var x = n, nextX = this;
+        var z = BigInteger.ZERO, nextZ = BigInteger.ONE;
 
-            var oldt = t;
-            t = newt;
-            newt = oldt.sub(quotient.mul(newt));
+        while (!(nextX.isZero())) {
+            var q = x.divRem(nextX)[0];
 
-            var oldr = r;
-            r = newr;
-            newr = oldr.sub(quotient.mul(newr));
+            var oldX = x;
+            x = nextX;
+            nextX = oldX.sub(q.mul(nextX));
+
+            var oldZ = z;
+            z = nextZ;
+            nextZ = oldZ.sub(q.mul(nextZ));
         }
-        if (r.compare(BigInteger.ONE) == 1) {
-            throw (this + " is not invertible");
+
+        if (!z._isPositive) {
+            z = z.add(n);
         }
-        if (!t._isPositive) {
-            t = t.add(n);
-        }
-        return t;
+
+        return z;
+    }
+
+    /** O(1) */
+    isZero(): boolean {
+        return this._digits.length == 1 && this._digits[0] == 0;
     }
 
     /** O(min(this.digits, other.digits)) */
@@ -494,7 +478,7 @@ class BigInteger {
     /** Mutates the current instance.
         O(this.digits + n) */
     private MUTATE_pushRight(n: number): void {
-        if (this._digits.length == 1 && this._digits[0] == 0) {
+        if (this.isZero()) {
             this._digits[0] = n;
             return;
         }
