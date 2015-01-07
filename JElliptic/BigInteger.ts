@@ -4,10 +4,8 @@ class BigInteger {
     // 2^53-1, where 53 is the mantissa size of IEEE-754 double-precision floating point numbers (what JS uses)
     private static MAX_SAFE_INT = 9007199254740991;
 
-    // Largest number that is:
-    // - even (for halve())
-    // - smaller than sqrt(MAX_SAFE_INT) (to multiply digits in the safe space)
-    static BASE = 94906264;
+    // Largest number that is smaller than sqrt(MAX_SAFE_INT) (to multiply digits in the safe space)
+    static BASE = 94906265;
 
     // Cached stuff
     private static BASE_LOG = Math.log(BigInteger.BASE);
@@ -120,24 +118,6 @@ class BigInteger {
             return this;
         }
         return new BigInteger(true, this._digits);
-    }
-
-    /** O(this.digits)
-        Rounds down. */
-    halve(): BigInteger {
-        var digits: number[] = [];
-        var hasRest = false;
-        for (var n = this._digits.length - 1; n >= 0; n--) {
-            digits[n] = this._digits[n];
-            if (hasRest) {
-                digits[n] += BigInteger.BASE;
-            }
-            digits[n] = Math.floor(digits[n] / 2);
-
-            hasRest = this._digits[n] % 2 == 1;
-        }
-
-        return BigInteger.create(this._isPositive, digits);
     }
 
     /** O(max(this.digits, other.digits)) */
@@ -326,7 +306,7 @@ class BigInteger {
         for (var n = dividend._digits.length - 1; n >= 0; n--) {
             remainder.MUTATE_pushRight(dividend._digits[n]);
             if (remainder.compare(divisor) == -1) {
-                digits[n] = 0;
+                digits.push(0);
             } else {
                 // Since remainder just became bigger than divisor,
                 // its length is either divisor's or one more
@@ -360,7 +340,7 @@ class BigInteger {
                 }
 
                 remainder.MUTATE_sub(actual);
-                digits[n] = guess;
+                digits.push(guess);
             }
         }
 
@@ -368,7 +348,7 @@ class BigInteger {
             remainder = divisor.sub(remainder);
         }
 
-        return [BigInteger.create(isPositive, digits), remainder];
+        return [BigInteger.create(isPositive, digits.reverse()), remainder];
     }
 
     /** O(1) */

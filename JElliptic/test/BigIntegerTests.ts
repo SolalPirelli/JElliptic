@@ -53,16 +53,6 @@ module BigIntegerTests {
         });
     }
 
-    function halve(s: string, result: string) {
-        var i = BigInteger.parse(s);
-        var iResult = BigInteger.parse(result);
-
-        test("halve: " + s, () => {
-            var half = i.halve();
-            equal(0, half.compare(iResult), "Got " + half.toString());
-        });
-    }
-
     function add(s1: string, s2: string, result: string) {
         op("add", s1, s2, result, (b1, b2) => b1.add(b2));
         op("sub", result, s2, s1, (b1, b2) => b1.sub(b2));
@@ -148,17 +138,6 @@ module BigIntegerTests {
         negate("1", "-1");
         negate("843654783738219391462891409156201482963598234021939235792375230490324365",
             "-843654783738219391462891409156201482963598234021939235792375230490324365");
-
-        halve("0", "0");
-        halve("1", "0");
-        halve("2", "1");
-        halve("-1", "0");
-        halve("-2", "-1");
-        halve("10", "5");
-        halve("888888888888888888888888888888888888888888888888888888888888888888888",
-            "444444444444444444444444444444444444444444444444444444444444444444444");
-        halve("-123456789123456789123456789123456789123456789123456789123456789",
-            "-61728394561728394561728394561728394561728394561728394561728394");
 
         add("0", "0", "0");
         add("1", "1", "2");
