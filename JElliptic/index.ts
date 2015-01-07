@@ -44,11 +44,20 @@ setValue("walksCount", "1");
 setValue("mask", "0");
 setValue("cycleLength", "256");
 setValue("cyclePeriod", "128");
+setValue("threadsCount", "1");
 
 document.getElementById("useSmall").onclick = setSmallCurve;
 document.getElementById("useLarge").onclick = setLargeCurve;
 
-var worker: Worker = null;
+var workers: Worker[] = null;
+
+function terminateWorkers() {
+    if (workers != null) {
+        for (var n = 0; n < workers.length; n++) {
+            workers[n].terminate();
+        }
+    }
+}
 
 document.getElementById("start").onclick = () => {
     var msg: IWorkerMessage = {
@@ -69,16 +78,17 @@ document.getElementById("start").onclick = () => {
         checkCyclePeriod: intValue("cyclePeriod")
     }
 
-    if (worker != null) {
-        worker.terminate();
+    terminateWorkers();
+
+    var threadsCount = intValue("threadsCount");
+    workers = [];
+    for (var n = 0; n < threadsCount; n++) {
+        workers[n] = new Worker("worker.js");
     }
-    worker = new Worker("worker.js");
-    worker.postMessage([msg]);
+
+    for (var n = 0; n < threadsCount; n++) {
+        workers[n].postMessage([msg]);
+    }
 };
 
-document.getElementById("cancel").onclick = () => {
-    if (worker != null) {
-        worker.terminate();
-        worker = null;
-    }
-};
+document.getElementById("cancel").onclick = terminateWorkers;
