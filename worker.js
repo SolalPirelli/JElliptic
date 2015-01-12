@@ -8,7 +8,7 @@ onmessage = function (e) {
     requirejs(["require", "BigInteger", "ModCurve", "ModPoint", "PollardRho", "ResultSinks"],
         function (_, bigInt, modCurve, modPoint, pollardRho, resultSinks) {
             var msg = e.data[0]; // of type IWorkerMessage
-
+            console.log("Hello from worker");
             var curve = new modCurve(bigInt.parse(msg.curveA), bigInt.parse(msg.curveB), bigInt.parse(msg.curveN), bigInt.parse(msg.curveOrder));
 
             var config = {

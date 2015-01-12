@@ -1,14 +1,14 @@
 ﻿"use strict";
 define(["require", "exports", "BigInteger", "ModNumber", "ModCurve", "ModPoint", "AdditionTable", "PollardRho", "bench/BenchmarkSuite"], function(require, exports, BigInteger, ModNumber, ModCurve, ModPoint, Addition, PollardRho, BenchmarkSuite) {
     function bigIntegerSuite() {
-        var i1_1 = BigInteger.parse("1");
-        var i1_2 = BigInteger.parse("9");
+        var i1_smaller = BigInteger.parse("1");
+        var i1_larger = BigInteger.parse("9");
 
-        var i20_1 = BigInteger.parse("12345678901234567890");
-        var i20_2 = BigInteger.parse("71755440315342536873");
+        var i20_smaller = BigInteger.parse("12345678901234567890");
+        var i20_larger = BigInteger.parse("71755440315342536873");
 
-        var i34_1 = BigInteger.parse("2061118396808653202902996166388514");
-        var i34_2 = BigInteger.parse("4451685225093714772084598273548427");
+        var i40_smaller = BigInteger.parse("1247392211317907151303247721489640699240");
+        var i40_larger = BigInteger.parse("1550031797834347859248576414813139942411");
 
         var s = BenchmarkSuite.create("BigInteger");
 
@@ -25,144 +25,144 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModCurve", "ModPoint",
         s("Parse 20-digit number", function () {
             return BigInteger.parse("1234578901234567890");
         });
-        s("Parse 34-digit number", function () {
-            return BigInteger.parse("4451685225093714772084598273548427");
+        s("Parse 40-digit number", function () {
+            return BigInteger.parse("1317953763239595888465524145589872695690");
         });
 
         s("Negate a 1-digit number", function () {
-            return i1_1.negate();
+            return i1_smaller.negate();
         });
         s("Negate a 20-digit number", function () {
-            return i20_1.negate();
+            return i20_smaller.negate();
         });
-        s("Negate a 34-digit number", function () {
-            return i34_1.negate();
+        s("Negate a 40-digit number", function () {
+            return i40_smaller.negate();
         });
 
         s("Absolute value of a 1-digit number", function () {
-            return i1_1.abs();
+            return i1_smaller.abs();
         });
         s("Absolute value of a 20-digit number", function () {
-            return i20_1.abs();
+            return i20_smaller.abs();
         });
-        s("Absolute value of a 34-digit number", function () {
-            return i34_1.abs();
+        s("Absolute value of a 40-digit number", function () {
+            return i40_smaller.abs();
         });
 
         s("Add two 1-digit numbers", function () {
-            return i1_1.add(i1_2);
+            return i1_smaller.add(i1_larger);
         });
         s("Add 20-digit and 1-digit numbers", function () {
-            return i20_1.add(i1_1);
+            return i20_smaller.add(i1_smaller);
         });
         s("Add two 20-digit numbers", function () {
-            return i20_1.add(i20_2);
+            return i20_smaller.add(i20_larger);
         });
-        s("Add 34-digit and 20-digit numbers", function () {
-            return i34_1.add(i20_1);
+        s("Add 40-digit and 20-digit numbers", function () {
+            return i40_smaller.add(i20_smaller);
         });
-        s("Add two 34-digit numbers", function () {
-            return i34_1.add(i34_2);
+        s("Add two 40-digit numbers", function () {
+            return i40_smaller.add(i40_larger);
         });
 
         s("Subtract two 1-digit numbers", function () {
-            return i1_1.sub(i1_2);
+            return i1_smaller.sub(i1_larger);
         });
         s("Subtract 20-digit and 1-digit numbers", function () {
-            return i20_1.sub(i1_1);
+            return i20_smaller.sub(i1_smaller);
         });
         s("Subtract two 20-digit numbers", function () {
-            return i20_1.sub(i20_2);
+            return i20_smaller.sub(i20_larger);
         });
-        s("Subtract 34-digit and 20-digit numbers", function () {
-            return i34_1.sub(i20_1);
+        s("Subtract 40-digit and 20-digit numbers", function () {
+            return i40_smaller.sub(i20_smaller);
         });
-        s("Subtract two 34-digit numbers", function () {
-            return i34_1.sub(i34_2);
+        s("Subtract two 40-digit numbers", function () {
+            return i40_smaller.sub(i40_larger);
         });
 
         s("Multiply two 1-digit numbers", function () {
-            return i1_1.mul(i1_2);
+            return i1_smaller.mul(i1_larger);
         });
         s("Multiply 20-digit and 1-digit numbers", function () {
-            return i20_1.mul(i1_1);
+            return i20_smaller.mul(i1_smaller);
         });
         s("Multiply two 20-digit numbers", function () {
-            return i20_1.mul(i20_2);
+            return i20_smaller.mul(i20_larger);
         });
-        s("Multiply 34-digit and 20-digit numbers", function () {
-            return i34_1.mul(i20_1);
+        s("Multiply 40-digit and 20-digit numbers", function () {
+            return i40_smaller.mul(i20_smaller);
         });
-        s("Multiply two 34-digit numbers", function () {
-            return i34_1.mul(i34_2);
+        s("Multiply two 40-digit numbers", function () {
+            return i40_smaller.mul(i40_larger);
         });
 
         s("Div/rem of two 1-digit numbers", function () {
-            return i1_1.divRem(i1_2);
+            return i1_smaller.divRem(i1_larger);
         });
         s("Div/rem of 20-digit and 1-digit numbers", function () {
-            return i20_1.divRem(i1_1);
+            return i20_smaller.divRem(i1_smaller);
         });
         s("Div/rem of two 20-digit numbers", function () {
-            return i20_1.divRem(i20_2);
+            return i20_larger.divRem(i20_smaller);
         });
-        s("Div/rem of 34-digit and 20-digit numbers", function () {
-            return i34_1.divRem(i20_1);
+        s("Div/rem of 40-digit and 20-digit numbers", function () {
+            return i40_smaller.divRem(i20_smaller);
         });
-        s("Div/rem of two 34-digit numbers", function () {
-            return i34_1.divRem(i34_2);
+        s("Div/rem of two 40-digit numbers", function () {
+            return i40_larger.divRem(i40_smaller);
         });
 
         s("Modular inverse of a 1-digit number", function () {
-            return i1_1.modInverse(i1_2);
+            return i1_smaller.modInverse(i1_larger);
         });
         s("Modular inverse a 20-digit number", function () {
-            return i20_1.modInverse(i20_2);
+            return i20_smaller.modInverse(i20_larger);
         });
-        s("Modular inverse a 34-digit number", function () {
-            return i34_1.modInverse(i34_2);
+        s("Modular inverse a 40-digit number", function () {
+            return i40_smaller.modInverse(i40_larger);
         });
 
         s("Logical AND of two 1-digit numbers", function () {
-            return i1_1.and(i1_2);
+            return i1_smaller.and(i1_larger);
         });
         s("Logical AND of 20-digit and 1-digit numbers", function () {
-            return i20_1.and(i1_1);
+            return i20_smaller.and(i1_smaller);
         });
         s("Logical AND of two 20-digit numbers", function () {
-            return i20_1.and(i20_2);
+            return i20_smaller.and(i20_larger);
         });
-        s("Logical AND of 34-digit and 20-digit numbers", function () {
-            return i34_1.and(i20_1);
+        s("Logical AND of 40-digit and 20-digit numbers", function () {
+            return i40_smaller.and(i20_smaller);
         });
-        s("Logical AND of two 34-digit numbers", function () {
-            return i34_1.and(i34_2);
+        s("Logical AND of two 40-digit numbers", function () {
+            return i40_smaller.and(i40_larger);
         });
 
         s("Compare two 1-digit numbers", function () {
-            return i1_1.compare(i1_2);
+            return i1_smaller.compare(i1_larger);
         });
         s("Compare 20-digit and 1-digit numbers", function () {
-            return i20_1.compare(i1_1);
+            return i20_smaller.compare(i1_smaller);
         });
         s("Compare two 20-digit numbers", function () {
-            return i20_1.compare(i20_2);
+            return i20_smaller.compare(i20_larger);
         });
-        s("Compare 34-digit and 20-digit numbers", function () {
-            return i34_1.compare(i20_1);
+        s("Compare 40-digit and 20-digit numbers", function () {
+            return i40_smaller.compare(i20_smaller);
         });
-        s("Compare two 34-digit numbers", function () {
-            return i34_1.compare(i34_2);
+        s("Compare two 40-digit numbers", function () {
+            return i40_smaller.compare(i40_larger);
         });
 
         s("Stringify a 1-digit number", function () {
-            return i1_1.toString();
+            return i1_smaller.toString();
         });
         s("Stringify a 20-digit number", function () {
-            return i20_1.toString();
+            return i20_smaller.toString();
         });
-        s("Stringify a 34-digit number", function () {
-            return i34_1.toString();
+        s("Stringify a 40-digit number", function () {
+            return i40_smaller.toString();
         });
     }
 
@@ -321,8 +321,8 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModCurve", "ModPoint",
         });
     }
 
-    function pollardRhoSuite() {
-        var s = BenchmarkSuite.create("PollardRho");
+    function pollardRho112Suite() {
+        var s = BenchmarkSuite.create("PollardRho (112-bit)");
 
         var curve = new ModCurve(BigInteger.parse("4451685225093714772084598273548424"), BigInteger.parse("2061118396808653202902996166388514"), BigInteger.parse("4451685225093714772084598273548427"), BigInteger.parse("4451685225093714776491891542548933"));
         var gen = ModPoint.fromBigInts(BigInteger.parse("188281465057972534892223778713752"), BigInteger.parse("3419875491033170827167861896082688"), curve);
@@ -346,13 +346,13 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModCurve", "ModPoint",
         var config16 = configWithTableLength(16);
         var config64 = configWithTableLength(64);
         var config256 = configWithTableLength(256);
-        s("Initialize an addition table with 16 elements over a 112-bit curve", function () {
+        s("Initialize an addition table with 16 elements", function () {
             return new Addition.Table(config16);
         });
-        s("Initialize an addition table with 64 elements over a 112-bit curve", function () {
+        s("Initialize an addition table with 64 elements", function () {
             return new Addition.Table(config64);
         });
-        s("Initialize an addition table with 256 elements over a 112-bit curve", function () {
+        s("Initialize an addition table with 256 elements", function () {
             return new Addition.Table(config256);
         });
 
@@ -401,114 +401,213 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModCurve", "ModPoint",
         var walk512_16 = new PollardRho.MultiCurveWalk(config_walks512, table16);
         var walk1024_16 = new PollardRho.MultiCurveWalk(config_walks1024, table16);
 
-        s("Step of a single walk over a 112-bit curve (r = 16)", function () {
+        s("Step of a single walk (r = 16)", function () {
             return walk1_16.step();
         });
-        s("Step of 2 parrallel walks over a 112-bit curve (r = 16)", function () {
+        s("Step of 2 parrallel walks (r = 16)", function () {
             return walk2_16.step();
         });
-        s("Step of 4 parrallel walks over a 112-bit curve (r = 16)", function () {
+        s("Step of 4 parrallel walks (r = 16)", function () {
             return walk4_16.step();
         });
-        s("Step of 8 parrallel walks over a 112-bit curve (r = 16)", function () {
+        s("Step of 8 parrallel walks (r = 16)", function () {
             return walk8_16.step();
         });
-        s("Step of 16 parrallel walks over a 112-bit curve (r = 16)", function () {
+        s("Step of 16 parrallel walks (r = 16)", function () {
             return walk16_16.step();
         });
-        s("Step of 32 parrallel walks over a 112-bit curve (r = 16)", function () {
+        s("Step of 32 parrallel walks (r = 16)", function () {
             return walk32_16.step();
         });
-        s("Step of 64 parrallel walks over a 112-bit curve (r = 16)", function () {
+        s("Step of 64 parrallel walks (r = 16)", function () {
             return walk64_16.step();
         });
-        s("Step of 128 parrallel walks over a 112-bit curve (r = 16)", function () {
+        s("Step of 128 parrallel walks (r = 16)", function () {
             return walk128_16.step();
         });
-        s("Step of 256 parrallel walks over a 112-bit curve (r = 16)", function () {
+        s("Step of 256 parrallel walks (r = 16)", function () {
             return walk256_16.step();
         });
-        s("Step of 512 parrallel walks over a 112-bit curve (r = 16)", function () {
+        s("Step of 512 parrallel walks (r = 16)", function () {
             return walk512_16.step();
         });
-        s("Step of 1024 parrallel walks over a 112-bit curve (r = 16)", function () {
+        s("Step of 1024 parrallel walks (r = 16)", function () {
             return walk1024_16.step();
         });
 
-        s("1000 steps of a single walk over a 112-bit curve (r = 16)", function () {
+        s("1000 steps of a single walk (r = 16)", function () {
             for (var n = 0; n < 1000; n++) {
                 walk1_16.step();
             }
         });
-        s("1000 steps of 2 parrallel walks over a 112-bit curve (r = 16)", function () {
+        s("1000 steps of 2 parrallel walks (r = 16)", function () {
             for (var n = 0; n < 1000; n++) {
                 walk2_16.step();
             }
         });
-        s("1000 steps of 4 parrallel walks over a 112-bit curve (r = 16)", function () {
+        s("1000 steps of 4 parrallel walks (r = 16)", function () {
             for (var n = 0; n < 1000; n++) {
                 walk4_16.step();
             }
         });
-        s("1000 steps of 8 parrallel walks over a 112-bit curve (r = 16)", function () {
+        s("1000 steps of 8 parrallel walks (r = 16)", function () {
             for (var n = 0; n < 1000; n++) {
                 walk8_16.step();
             }
         });
-        s("1000 steps of 16 parrallel walks over a 112-bit curve (r = 16)", function () {
+        s("1000 steps of 16 parrallel walks (r = 16)", function () {
             for (var n = 0; n < 1000; n++) {
                 walk16_16.step();
             }
         });
-        s("1000 steps of 32 parrallel walks over a 112-bit curve (r = 16)", function () {
+        s("1000 steps of 32 parrallel walks (r = 16)", function () {
             for (var n = 0; n < 1000; n++) {
                 walk32_16.step();
             }
         });
-        s("1000 steps of 64 parrallel walks over a 112-bit curve (r = 16)", function () {
+        s("1000 steps of 64 parrallel walks (r = 16)", function () {
             for (var n = 0; n < 1000; n++) {
                 walk64_16.step();
             }
         });
 
-        s("Step of a single walk over a 112-bit curve (r = 64)", function () {
+        s("Step of a single walk (r = 64)", function () {
             return walk1_64.step();
         });
-        s("1000 steps of a single walk over a 112-bit curve (r = 64)", function () {
+        s("1000 steps of a single walk (r = 64)", function () {
             for (var n = 0; n < 1000; n++) {
                 walk1_64.step();
             }
         });
-        s("Step of a single walk over a 112-bit curve (r = 256)", function () {
+        s("Step of a single walk (r = 256)", function () {
             return walk1_256.step();
         });
-        s("1000 steps of a single walk over a 112-bit curve (r = 256)", function () {
+        s("1000 steps of a single walk (r = 256)", function () {
             for (var n = 0; n < 1000; n++) {
                 walk1_256.step();
             }
         });
 
-        s("Step of 64 parrallel walks over a 112-bit curve (r = 64)", function () {
+        s("Step of 64 parrallel walks (r = 64)", function () {
             return walk64_64.step();
         });
-        s("1000 steps of 64 parrallel walks over a 112-bit curve (r = 64)", function () {
+        s("1000 steps of 64 parrallel walks (r = 64)", function () {
             for (var n = 0; n < 1000; n++) {
                 walk64_64.step();
             }
         });
-        s("Step of 64 parrallel walks over a 112-bit curve (r = 256)", function () {
+        s("Step of 64 parrallel walks (r = 256)", function () {
             return walk64_256.step();
         });
-        s("1000 steps of 64 parrallel walks over a 112-bit curve (r = 256)", function () {
+        s("1000 steps of 64 parrallel walks (r = 256)", function () {
             for (var n = 0; n < 1000; n++) {
                 walk64_256.step();
             }
         });
     }
 
+    function pollardRho131Suite() {
+        var s = BenchmarkSuite.create("PollardRho (131-bit)");
+
+        var curve = new ModCurve(BigInteger.parse("1399267573763578815877905235971153316710"), BigInteger.parse("1009296542191532464076260367525816293976"), BigInteger.parse("1550031797834347859248576414813139942411"), BigInteger.parse("1550031797834347859219047037805205710577"));
+        var gen = ModPoint.fromBigInts(BigInteger.parse("1317953763239595888465524145589872695690"), BigInteger.parse("434829348619031278460656303481105428081"), curve);
+        var target = ModPoint.fromBigInts(BigInteger.parse("1247392211317907151303247721489640699240"), BigInteger.parse("207534858442090452193999571026315995117"), curve);
+
+        function configWithParrallelWalkCount(count) {
+            return {
+                additionTableLength: 16,
+                curve: curve,
+                generator: gen,
+                target: target,
+                additionTableSeed: 0,
+                distinguishedPointMask: BigInteger.parse("4294967295"),
+                parrallelWalksCount: count,
+                computeStats: false,
+                checkCyclePeriod: 32,
+                checkCycleLength: 16
+            };
+        }
+
+        function configWithTableLength(length) {
+            return {
+                additionTableLength: length,
+                curve: curve,
+                generator: gen,
+                target: target,
+                additionTableSeed: 0,
+                distinguishedPointMask: BigInteger.parse("1"),
+                parrallelWalksCount: 1,
+                computeStats: false,
+                checkCyclePeriod: length * 2,
+                checkCycleLength: length
+            };
+        }
+
+        var config16 = configWithTableLength(16);
+
+        var config_walks1 = configWithParrallelWalkCount(1);
+        var config_walks2 = configWithParrallelWalkCount(2);
+        var config_walks4 = configWithParrallelWalkCount(4);
+        var config_walks8 = configWithParrallelWalkCount(8);
+        var config_walks16 = configWithParrallelWalkCount(16);
+        var config_walks32 = configWithParrallelWalkCount(32);
+        var config_walks64 = configWithParrallelWalkCount(64);
+        var config_walks128 = configWithParrallelWalkCount(128);
+        var config_walks256 = configWithParrallelWalkCount(256);
+        var config_walks512 = configWithParrallelWalkCount(512);
+        var config_walks1024 = configWithParrallelWalkCount(1024);
+        var table16 = new Addition.Table(config16);
+        var walk1_16 = new PollardRho.MultiCurveWalk(config_walks1, table16);
+        var walk2_16 = new PollardRho.MultiCurveWalk(config_walks2, table16);
+        var walk4_16 = new PollardRho.MultiCurveWalk(config_walks4, table16);
+        var walk8_16 = new PollardRho.MultiCurveWalk(config_walks8, table16);
+        var walk16_16 = new PollardRho.MultiCurveWalk(config_walks16, table16);
+        var walk32_16 = new PollardRho.MultiCurveWalk(config_walks32, table16);
+        var walk64_16 = new PollardRho.MultiCurveWalk(config_walks64, table16);
+        var walk128_16 = new PollardRho.MultiCurveWalk(config_walks128, table16);
+        var walk256_16 = new PollardRho.MultiCurveWalk(config_walks256, table16);
+        var walk512_16 = new PollardRho.MultiCurveWalk(config_walks512, table16);
+        var walk1024_16 = new PollardRho.MultiCurveWalk(config_walks1024, table16);
+
+        s("Step of a single walk (r = 16)", function () {
+            return walk1_16.step();
+        });
+        s("Step of 2 parrallel walks (r = 16)", function () {
+            return walk2_16.step();
+        });
+        s("Step of 4 parrallel walks (r = 16)", function () {
+            return walk4_16.step();
+        });
+        s("Step of 8 parrallel walks (r = 16)", function () {
+            return walk8_16.step();
+        });
+        s("Step of 16 parrallel walks (r = 16)", function () {
+            return walk16_16.step();
+        });
+        s("Step of 32 parrallel walks (r = 16)", function () {
+            return walk32_16.step();
+        });
+        s("Step of 64 parrallel walks (r = 16)", function () {
+            return walk64_16.step();
+        });
+        s("Step of 128 parrallel walks (r = 16)", function () {
+            return walk128_16.step();
+        });
+        s("Step of 256 parrallel walks (r = 16)", function () {
+            return walk256_16.step();
+        });
+        s("Step of 512 parrallel walks (r = 16)", function () {
+            return walk512_16.step();
+        });
+        s("Step of 1024 parrallel walks (r = 16)", function () {
+            return walk1024_16.step();
+        });
+    }
+
     bigIntegerSuite();
     modNumberSuite();
     modPointSuite();
-    pollardRhoSuite();
+    pollardRho112Suite();
+    pollardRho131Suite();
 });
 //# sourceMappingURL=bench.js.map
