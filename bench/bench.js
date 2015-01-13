@@ -287,10 +287,10 @@ define(["require", "exports", "BigInteger", "ModNumber", "ModCurve", "ModPoint",
         var pSmall_1 = ModPoint.fromBigInts(BigInteger.parse("4"), BigInteger.parse("1"), c1);
         var pSmall_2 = ModPoint.fromBigInts(BigInteger.parse("6"), BigInteger.parse("2"), c1);
 
-        // using the values defined in http://lacal.epfl.ch/files/content/sites/lacal/files/papers/noan112.pdf
-        var cBig = new ModCurve(BigInteger.parse("4451685225093714772084598273548424"), BigInteger.parse("2061118396808653202902996166388514"), BigInteger.parse("4451685225093714772084598273548427"), BigInteger.parse("4451685225093714776491891542548933"));
-        var pBig_1 = ModPoint.fromBigInts(BigInteger.parse("188281465057972534892223778713752"), BigInteger.parse("3419875491033170827167861896082688"), cBig);
-        var pBig_2 = ModPoint.fromBigInts(BigInteger.parse("1415926535897932384626433832795028"), BigInteger.parse("3846759606494706724286139623885544"), cBig);
+        // Certicom 131
+        var cBig = new ModCurve(BigInteger.parse("1399267573763578815877905235971153316710"), BigInteger.parse("1009296542191532464076260367525816293976"), BigInteger.parse("1550031797834347859248576414813139942411"), BigInteger.parse("1550031797834347859219047037805205710577"));
+        var pBig_1 = ModPoint.fromBigInts(BigInteger.parse("1317953763239595888465524145589872695690"), BigInteger.parse("434829348619031278460656303481105428081"), cBig);
+        var pBig_2 = ModPoint.fromBigInts(BigInteger.parse("1247392211317907151303247721489640699240"), BigInteger.parse("207534858442090452193999571026315995117"), cBig);
 
         var s = BenchmarkSuite.create("ModPoint");
 
