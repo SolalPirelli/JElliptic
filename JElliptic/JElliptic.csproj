@@ -16,6 +16,7 @@
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <ItemGroup>
     <Content Include="bench\bench.html" />
@@ -27,7 +28,6 @@
     <Content Include="test\css\qunit.css" />
     <Content Include="test\test.html" />
     <Content Include="test\lib\qunit.js" />
-    <Content Include="web.config" />
     <Content Include="worker.js" />
   </ItemGroup>
   <ItemGroup>
@@ -57,14 +57,6 @@
     <TypeScriptCompile Include="test\ModPointTests.ts" />
     <TypeScriptCompile Include="test\PollardRhoTests.ts" />
     <TypeScriptCompile Include="test\test.ts" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="web.Debug.config">
-      <DependentUpon>web.config</DependentUpon>
-    </None>
-    <None Include="web.Release.config">
-      <DependentUpon>web.config</DependentUpon>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
